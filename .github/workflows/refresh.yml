@@ -1,0 +1,92 @@
+name: Refresh
+
+# The target effective cadence is the cadence guard (GUARD_INTERVAL_HOURS,
+# default 6h — docs/open-decisions.md #5). The trigger fires every 2h because
+# GitHub's scheduler is best-effort and drops slots: a dropped 6-hourly slot
+# would mean waiting 12 hours, while a dropped 2-hourly slot is picked up 2
+# hours later. The guard stands surplus triggers down before any upstream is
+# contacted, so a scheduler that misbehaves costs us freshness, never a rate
+# limit. Off the hour (:23) to avoid the thundering herd.
+
+on:
+  schedule:
+    - cron: "23 */2 * * *"
+  workflow_dispatch:
+    inputs:
+      force:
+        description: "Bypass the cadence guard"
+        type: boolean
+        default: false
+      no_screenshots:
+        description: "Skip screenshot evidence capture"
+        type: boolean
+        default: false
+
+# A run in progress is always less valuable than the newest one.
+concurrency:
+  group: refresh
+  cancel-in-progress: true
+
+# contents:write — the pipeline commits data/, evidence/, site/ to main.
+# pages:write + id-token:write — this workflow deploys Pages itself, because
+# a push made with GITHUB_TOKEN does NOT trigger other workflows, so relying
+# on pages.yml to fire on our own commit would leave Pages permanently stale.
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      # Full history so the push-retry below can rebase onto origin/main. A
+      # shallow clone cannot always find a merge base to rebase against.
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - uses: astral-sh/setup-uv@v9.0.0
+        with:
+          version: "0.12.3"
+          enable-cache: true
+
+      - name: Install Python and dependencies
+        run: |
+          uv python install 3.13
+          uv sync --frozen
+
+      - name: Run pipeline poll
+        run: |
+          FLAGS=""
+          if [ "${{ inputs.force }}" = "true" ]; then FLAGS="$FLAGS --force"; fi
+          if [ "${{ inputs.no_screenshots }}" = "true" ]; then FLAGS="$FLAGS --no-screenshots"; fi
+          # shellcheck disable=SC2086
+          uv run xevents poll $FLAGS
+
+      - name: Render site
+        run: uv run xevents render-site
+
+      - name: Commit and push
+        run: |
+          git config user.name "xevents-pipeline"
+          git config user.email "xevents-pipeline@users.noreply.github.com"
+          git add data evidence site
+          if ! git diff --cached --quiet; then
+            git commit -m "pipeline: refresh $(date -u +%Y-%m-%dT%H:%MZ)"
+          fi
+          # Rebase-retry: a keepalive run or a manual push may have landed
+          # first. Never force-push; the ledger must stay append-only.
+          for i in 1 2 3; do
+            git pull --rebase origin main && git push origin main && break
+            sleep 10
+          done
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+      - name: Deploy to Pages
+        uses: actions/deploy-pages@v4
