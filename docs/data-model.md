@@ -1,6 +1,8 @@
 # xevents — Data Model
 
-**Status:** draft, 2026-09-18. Implements ADRs 0001–0007. No code has been
+**Status:** draft, 2026-09-18 (revised 2026-09-20: `poll_run` table,
+`incident_membership` currency rule, JSON export contract, ADR 0008).
+Implements ADRs 0001–0008. No code has been
 written against this schema; field names are proposals for redline.
 
 ## Design principles
@@ -17,6 +19,8 @@ written against this schema; field names are proposals for redline.
 - **Versioned components are registered.** `pipeline_version`,
   `resolution_model_version`, and `model_version` text fields reference rows in
   the `model_version` registry — versions are records, not free text.
+- **System of record is PostgreSQL** (ADR 0008). Column types below
+  (`timestamptz`, `jsonb`, `text[]`, enums) are PostgreSQL types.
 
 ## Entities
 
@@ -54,6 +58,27 @@ administrative, not historical.
 | `last_polled_at` | timestamptz nullable | |
 | `known_limitations` | text | feeds the published coverage-boundary statement (see below): what this source systematically misses or distorts |
 | `notes` | text | |
+
+### poll_run
+
+Run-level auditing for every ingest execution (de-listing math, failure
+debugging, and the "did the poller actually run?" question all hang off
+this table). **Append-only**; the `source.last_polled_at` field is a cached
+view of the latest successful run.
+
+| field | type | notes |
+|---|---|---|
+| `id` | uuid PK | |
+| `source_id` | uuid FK → source | |
+| `started_at` | timestamptz | |
+| `finished_at` | timestamptz nullable | null while running |
+| `status` | enum | `running` \| `ok` \| `partial` \| `error` |
+| `items_seen` | integer | distinct source items encountered |
+| `items_new` | integer | new observation rows written |
+| `items_errored` | integer | items that failed ingest (each logged in `error_log`) |
+| `poller_version` | text | registered in `model_version` |
+| `error_log` | text nullable | run-level failures (timeouts, HTTP errors, parse faults) |
+| `created_at` | timestamptz | |
 
 ### observation
 
@@ -191,7 +216,14 @@ rationale-carrying revisions (ADR 0001).
 
 Typed links between observations and incidents. **Immutable rows**; a changed
 judgment is a new row (the old link stands as history, annotated by any
-`correction_event`).
+`correction_event` targeting it — see `correction_event.target_kind`).
+
+**Currency rule.** A membership row is *current* unless a `correction_event`
+with `target_kind = incident_membership` and `event_type` in
+(`correction`, `retraction`) targets it; withdrawn rows remain in the table
+as history. Current-membership views filter them out. Adding a row with the
+same (`incident_id`, `observation_id`) as a withdrawn row re-opens the link
+with a fresh rationale (e.g. a relist after a removal — see ADR 0007).
 
 | field | type | notes |
 |---|---|---|
@@ -210,7 +242,7 @@ First-class correction history (ADR 0004). **Append-only.**
 | field | type | notes |
 |---|---|---|
 | `id` | uuid PK | |
-| `target_kind` | enum | `observation` \| `incident` \| `entity` \| `alias` |
+| `target_kind` | enum | `observation` \| `incident` \| `entity` \| `alias` \| `incident_membership` |
 | `target_id` | uuid | |
 | `event_type` | enum | `correction` \| `denial` \| `removal` \| `retraction` \| `dispute_opened` \| `dispute_resolved` |
 | `asserted_by` | text | who asserted it: source name, victim org, "xevents-review", … |
@@ -317,6 +349,35 @@ The schema reserves the pattern; the ingest does not exist yet
    it, or KEV ransomware-use overlaps a victim's timeframe with supporting
    evidence). The rationale must state the basis for the link — co-occurrence
    alone is not linkage.
+
+## JSON export contract
+
+The MVP's operational surface (mvp-scope.md item 7) offers JSON export of
+incident records. The export is a fixed contract — consumers pin against it,
+so fields are added, never renamed or removed, without a contract version
+bump. **Excluded by construction:** internal confidence weights
+(`supporting_weight`, `refuting_weight`), reviewer identities
+(`resolved_by` → published as "xevents-review" only), and any redacted
+bytes. The export root carries `exported_at`, `contract_version`, and the
+published coverage-boundary statement (see above), so a downloaded file is
+self-describing.
+
+Per incident:
+
+- `id`, `status`, `title`, `summary`
+- `primary_entity` — resolved entity (id, name, kind) or null with the raw
+  subject string preserved as `subject_raw`
+- `first_observed_at`, `last_updated_at`
+- `confidence` — `band`, `rationale`, `model_version`, `inputs_hash`,
+  `independence_classes` (contributing classes only; echoes collapsed)
+- `observations[]` — id, source name, `claim_type`, `subject_raw`,
+  `observed_at`, `source_claimed_at`, `confidence` (observation-level band +
+  rationale), evidence artifact hashes and kinds (bytes only by separate
+  retrieval; redaction notes included)
+- `corrections[]` — the append-only ledger rows touching this incident or
+  its observations, in event order
+- `attribution[]` — per-source attribution strings (source registry),
+  satisfying CC BY 4.0 for RansomLook-derived content
 
 ## Interoperability notes
 
