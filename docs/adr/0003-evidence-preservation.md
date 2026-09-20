@@ -31,6 +31,12 @@ redistribution of stolen content or personal data.
 1. **Capture at ingest, every observation.** Minimum per observation:
    timestamped screenshot + raw HTML/metadata of the source as seen. WARC
    capture as an enhancement where feasible, not a requirement.
+   **API-source adaptation:** where the source is a JSON API (RansomLook in
+   the MVP), the raw API response body plus fetch metadata *is* what the
+   source showed — it satisfies the minimum alongside the source-provided
+   screenshot (`screen` field, fetched and archived). No synthetic screenshot
+   of our own rendering is required; screenshots remain mandatory where the
+   source itself is an HTML page.
 2. **Content-addressed storage.** Evidence artifacts are stored keyed by
    SHA-256; the hash is recorded on the observation, so any consumer can verify
    the artifact matches what was captured.

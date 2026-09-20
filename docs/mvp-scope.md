@@ -20,13 +20,25 @@ redesign.
 
 ### 1. Single-source ingest: RansomLook API
 
-- Scheduled poller against RansomLook's no-key public API (ADR 0002).
-- **Idempotent ingest.** Every source item carries a stable `source_item_key`
-  (group + victim + URL). Re-polls update `listing_state.last_seen`; they
-  never create duplicate observations (data-model.md: `listing_state`).
+- Scheduled poller against RansomLook's no-key public API (ADR 0002). Full
+  endpoint/schema/poller rules: docs/source-spec-ransomlook.md (verified
+  live 2026-09-20).
+- **Idempotent ingest.** Idempotency key is the item's `misp_uuid`
+  (fallback: the entity link path). Re-polls update
+  `listing_state.last_seen_at` and the `poll_run` row; they never create
+  duplicate observations (data-model.md: `listing_state`, `poll_run`).
+- **Backfill policy.** First run ingests the full available history via
+  `/api/posts/period/{start}/{end}` (verify the endpoint at build time).
+  Backfilled rows get `observed_at` = backfill time and
+  `source_claimed_at` = the item's `discovered` — the two clocks keep
+  backfill provenance honest. Backfill volume must be triaged against the
+  entity-resolution review queue (item 3) before MVP sign-off; a full
+  history dump that buries the queue fails the item-3 acceptance.
 - Every genuinely new item → one immutable observation: `subject_raw`
   verbatim, `source_claimed_at` from RansomLook's `discovered`, raw payload
-  stored, pipeline version recorded.
+  stored, pipeline version recorded. Non-victim entries (`audit team`
+  operational notices, `private="True"` items) are filtered at ingest and
+  logged in the `poll_run` row.
 - **Acceptance:** poller runs unattended on schedule; a re-run of any poll
   creates zero duplicate observations; RansomLook's current license terms are
   re-verified and the attribution string is rendered before first ingest.
@@ -63,12 +75,28 @@ redesign.
   `incident_membership` rows with human-readable rationales (ADR 0001).
   Incident IDs stable; resolution model version recorded in the
   `model_version` registry (data-model.md).
+- **Grouping rule (MVP).** Observations group into one incident when they
+  share the normalized threat-group string and resolve to the same victim
+  entity (or the same unresolvable `subject_raw` string). Grouping rationale
+  is generated from the rule plus the specific evidence (e.g. "same
+  normalized group 'qilin', same resolved entity ACME Corp (CIK 000123);
+  3 observations, 2026-09-10…2026-09-18"); ambiguous cases go to the review
+  queue instead of auto-grouping.
+- **Relist after removal.** A relist following a `removed_confirmed`
+  listing state opens a **new candidate incident**, linked to the prior
+  incident in the rationale. Re-compromise is a distinct event until
+  evidenced otherwise; the reviewer confirms or merges. (ADR 0007: removal
+  ≠ retraction.)
+- **Victim rename mid-stream.** A changed `subject_raw` for the same
+  underlying org becomes an `alias` row with provenance; the incident keeps
+  its ID and the membership rationale notes the rename.
 - **Explicitly:** with one source there is no cross-source reconciliation.
   MVP "reconciliation" means dedup, repeat-listing grouping, and correction
   handling — not multi-vantage corroboration. Cross-source reconciliation is
   non-goal 3.
 - **Acceptance:** the same victim relisted by the same group resolves to one
-  incident; every membership link carries a rationale a non-author can follow.
+  incident; a relist-after-removal opens a linked candidate incident; every
+  membership link carries a rationale a non-author can follow.
 
 ### 5. Explainable confidence
 
@@ -114,6 +142,15 @@ redesign.
 
 - Load the frozen ransomwatch 2020–2025 archive (Unlicense) as observations
   to seed history. No live polling of a dead source.
+- Archive observations carry provenance marked `ransomwatch_archive` and
+  source metadata as evidence in place of screenshots (item 2 acceptance
+  carve-out). If accepted, the confidence model gains the independence
+  class `aggregator_ransomwatch_archive` (a frozen archive is its own
+  class — it cannot echo and cannot be re-polled); adding it is a model
+  change recorded in the `model_version` registry (ADR 0006).
+- **Archive location/format/loader are UNVERIFIED** — the loader spec must
+  be written and verified against the actual archive (joshhighet/ransomwatch
+  repository) before this proposal can be accepted.
 - **Acceptance:** archive items queryable with provenance marked
   `ransomwatch_archive`.
 

@@ -78,6 +78,12 @@ from EDGAR alone.
   produced the band.
 - Assessments must be re-run when new observations or corrections land on an
   incident; the superseded chain is the audit trail.
+- **Reassessment mechanism (MVP).** The incident-resolution pipeline run is
+  the trigger: every pipeline run that adds observations, memberships, or
+  correction events to an incident emits a new assessment that supersedes
+  the prior one (new row, `superseded_by` linked). No separate scheduler in
+  MVP — assessment freshness follows pipeline activity. Dispute-driven
+  reassessment is manual via the review queue (ADR 0005 item 4).
 
 ## Research basis
 

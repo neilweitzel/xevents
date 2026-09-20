@@ -31,6 +31,11 @@ established fact.
   version; plus the observation→incident and correction propagation
   lifecycles, coverage-boundary contents, and the vulnerability-linkage
   pattern.
+- [docs/source-spec-ransomlook.md](docs/source-spec-ransomlook.md) — the MVP
+  ingest source, specified: verified endpoints, record schema, poller rules,
+  backfill policy, known limitations. Re-verify at build time.
+- [docs/retention-policy.md](docs/retention-policy.md) — **PROPOSAL:**
+  evidence tiering and ledger retention (required by ADR 0003).
 - [docs/glossary.md](docs/glossary.md) — precise definitions; the authoritative
   home for what terms mean.
 - [research/landscape-report.md](research/landscape-report.md) — the evidence
