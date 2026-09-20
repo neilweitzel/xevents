@@ -184,3 +184,31 @@ Authoritative reasoning: ADR 0003. This section is the rules.
   the public surface.
 - The landscape report is a snapshot (September 17, 2026). Re-verify source
   terms before building; terms change.
+
+## Automation (xfeeds pattern — ADR 0009)
+
+xevents runs like xfeeds: fully automated on GitHub Actions + Pages.
+
+- The scheduled refresh workflow owns the pipeline: cron + internal cadence
+  guard (cron fires more often than the effective poll interval — GitHub's
+  scheduler drops slots), `cancel-in-progress` concurrency, full-history
+  checkout, rebase-retry on push.
+- A push made with `GITHUB_TOKEN` does **not** trigger other workflows.
+  The refresh workflow therefore deploys Pages itself; `pages.yml` is only
+  a `workflow_run` safety net.
+- Human review lives in GitHub Issues: the pipeline opens issues with
+  review checklists; it never auto-applies a judgment a human should make.
+- `keepalive.yml` commits a timestamp only when the repo has gone quiet
+  (14 days vs GitHub's 60-day scheduled-workflow disable).
+- Never add a second scheduler, a server component, or a secret the
+  pipeline doesn't strictly need without a new ADR.
+
+## Code quality (mirrors xfeeds)
+
+- `pytest` — a plethora of tests; no pipeline logic goes untested.
+  Every PR adds or updates tests for the behavior it changes.
+- `ruff` (line-length 100) and `mypy --strict` — clean on every PR, enforced
+  by CI. No `Any` without a comment saying why.
+- `uv` for dependency and Python version management.
+- Append-only data files are sacred: CI asserts a pipeline run never
+  rewrites a line in an append-only file.

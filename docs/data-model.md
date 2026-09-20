@@ -19,8 +19,40 @@ written against this schema; field names are proposals for redline.
 - **Versioned components are registered.** `pipeline_version`,
   `resolution_model_version`, and `model_version` text fields reference rows in
   the `model_version` registry — versions are records, not free text.
-- **System of record is PostgreSQL** (ADR 0008). Column types below
-  (`timestamptz`, `jsonb`, `text[]`, enums) are PostgreSQL types.
+- **System of record is git, not a database server** (ADR 0009,
+  superseding ADR 0008). Tables below are *logical*; their physical form is
+  append-only JSONL under `data/` (see "Physical mapping (static-first)").
+
+## Physical mapping (static-first)
+
+The logical schema above is implemented without a database server. Mapping:
+
+| logical type | physical form |
+|---|---|
+| `timestamptz` | ISO-8601 UTC string, e.g. `2026-09-20T17:44:25.273479+00:00` |
+| `jsonb` | nested JSON value |
+| `text[]` | JSON array of strings |
+| `enum` | JSON string (values as documented) |
+| `uuid` | lowercase canonical string |
+| `numeric` (weights) | JSON number; never published (see export contract) |
+
+File layout (all committed to `main` by the pipeline):
+
+| path | contents | write pattern |
+|---|---|---|
+| `data/observations.jsonl` | one JSON object per line, immutable | append-only |
+| `data/correction_events.jsonl` | append-only ledger | append-only |
+| `data/confidence_assessments.jsonl` | superseded, never edited | append-only |
+| `data/poll_runs.jsonl` | run manifests (replaces the `poll_run` table) | append-only |
+| `data/listing_state.json` | `source_item_key` → last-seen map (replaces the `listing_state` table) | rewritten atomically per run |
+| `data/entities.jsonl`, `data/aliases.jsonl`, `data/incidents.jsonl`, `data/incident_membership.jsonl`, `data/review_tasks.jsonl`, `data/evidence_artifacts.jsonl`, `data/sources.jsonl`, `data/model_versions.jsonl` | registries | append-only (registries), rewritten only where the logical table is mutable (`source`) |
+| `evidence/<sha256>` | raw artifact bytes, content-addressed | write-once |
+| `site/` | generated HTML + JSON snapshots for Pages | regenerated per run |
+
+Immutability is enforced by convention + CI (a test asserts that a pipeline
+run never rewrites a line in an append-only file), and is publicly auditable
+via git history. A SQLite file may be built at pipeline time as a
+*derived* convenience artifact; it is never authoritative.
 
 ## Entities
 

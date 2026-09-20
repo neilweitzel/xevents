@@ -1,6 +1,6 @@
 # ADR 0008: PostgreSQL as the system of record
 
-- Status: proposed (pending user redline)
+- Status: **superseded by ADR 0009** (2026-09-20) — retained for the record.
 - Date: 2026-09-20
 - Deciders: project lead
 
