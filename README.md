@@ -24,7 +24,8 @@ established fact.
   - 0005 — entity-resolution strategy
   - 0006 — explainable, independence-aware confidence model
   - 0007 — de-listing/removal detection via re-polling and diffing
-  - 0008 — PostgreSQL as the system of record
+  - 0008 — PostgreSQL as the system of record (superseded by 0009)
+  - 0009 — static-first architecture: GitHub Actions + Pages, git as the system of record
 - [docs/data-model.md](docs/data-model.md) — core schema: source, observation,
   evidence artifact, listing state, entity, alias, incident, membership,
   evidence, correction event, confidence assessment, review task, model
@@ -36,6 +37,8 @@ established fact.
   backfill policy, known limitations. Re-verify at build time.
 - [docs/retention-policy.md](docs/retention-policy.md) — **PROPOSAL:**
   evidence tiering and ledger retention (required by ADR 0003).
+- [docs/evidence-storage.md](docs/evidence-storage.md) — physical evidence
+  plan: content-addressed `evidence/`, volume strategy, Pages exclusion.
 - [docs/glossary.md](docs/glossary.md) — precise definitions; the authoritative
   home for what terms mean.
 - [research/landscape-report.md](research/landscape-report.md) — the evidence
