@@ -9,8 +9,11 @@ name: Refresh
 # limit. Off the hour (:23) to avoid the thundering herd.
 
 on:
-  schedule:
-    - cron: "23 */2 * * *"
+  # Schedule trigger intentionally disabled: no automated runs until the
+  # pipeline has been triggered manually a few times and validated, and the
+  # user explicitly approves a regular schedule. Re-enable by restoring:
+  #   schedule:
+  #     - cron: "23 */2 * * *"
   workflow_dispatch:
     inputs:
       force:
