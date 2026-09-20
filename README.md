@@ -24,6 +24,7 @@ established fact.
   - 0005 — entity-resolution strategy
   - 0006 — explainable, independence-aware confidence model
   - 0007 — de-listing/removal detection via re-polling and diffing
+  - 0008 — PostgreSQL as the system of record
 - [docs/data-model.md](docs/data-model.md) — core schema: source, observation,
   evidence artifact, listing state, entity, alias, incident, membership,
   evidence, correction event, confidence assessment, review task, model
