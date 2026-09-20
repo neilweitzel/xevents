@@ -88,6 +88,17 @@ This is a documented coverage boundary, not a bug to hide.
    RansomLook group profiles, the deepdarkCTI directory, and analyst
    reporting. No automated group-resolution pipeline in MVP — group aliasing
    is observation-driven and human-confirmed.
+8. **Threat-group intake workflow (MVP).** RansomLook `group_name` strings
+   are normalized (lowercase/strip) on ingest; a first-seen string creates a
+   `threat_group` entity with status `candidate` — no automatic merge with
+   existing groups. Rebrand/successor/seizure claims (from RansomLook group
+   profiles, the deepdarkCTI directory, or analyst reporting) enter as
+   group-identity observations and go through the review queue; the reviewer
+   confirms the alias link (or rejects it with a rationale). A group entity
+   graduates from `candidate` when a human confirms its identity or when two
+   independent sources corroborate it. Until then, incidents link to the
+   candidate group and the confidence model treats group identity as
+   unverified input.
 
 ## Consequences
 

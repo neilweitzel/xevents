@@ -84,6 +84,26 @@ Licensing, not engineering, is the binding constraint on xevents' data supply
 - Any new source goes through a license check before ingest; default to
   RESTRICTED until a human clears it.
 
+## Why RansomLook for the MVP (recorded 2026-09-20)
+
+The MVP pins one foundation source (decision item 3 above); the rationale
+was never written down. RansomLook, not ransomfeed.it, is first because:
+
+1. **Strongest licensing certainty.** CC BY 4.0 confirmed *in writing* by
+   the maintainers (ransomlook issue #590) covers website, API responses,
+   and datasets — including the per-post screenshots, which are the MVP's
+   evidence-capture path. No other free aggregator offers that in writing.
+2. **Simplest integration.** No-key public API with documented endpoints
+   (docs/source-spec-ransomlook.md, verified live 2026-09-20).
+3. **Self-auditable platform.** The full RansomLook platform is open source
+   (AGPL-3.0); its scraping and parsing behavior can be inspected, not just
+   trusted.
+4. **ransomfeed.it stays in the pool as the second source** — its
+   analyst-moderated country enrichment is the documented answer to
+   RansomLook's sparsest-metadata weakness (consequence 1 above), and its
+   commercial-reuse terms are clear. It is deferred, not rejected:
+   one source done well first (mvp-scope.md non-goal 2).
+
 ## Research basis
 
 - Landscape §1.1 (RansomLook: CC BY 4.0, no-key API), §1.2 (ransomfeed.it
