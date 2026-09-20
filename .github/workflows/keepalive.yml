@@ -1,0 +1,68 @@
+name: Keepalive
+
+# GitHub disables scheduled workflows in a public repository after 60 days
+# with no repository activity. Under healthy operation "Refresh" commits
+# regularly, so that clock never gets close to expiring and this workflow
+# does nothing.
+#
+# The failure it exists for is the compounding one. "Refresh" only commits
+# when the pipeline succeeds, so a pipeline that is failing — a parser
+# regression, an upstream format change — stops committing entirely. If
+# nobody notices for 60 days, GitHub disables the cron and the project goes
+# from "broken and retrying" to "broken and not even trying", which is far
+# harder to spot and needs a manual re-enable.
+#
+# So this commits a timestamp only when the repository has actually gone
+# quiet. Threshold is 14 days against GitHub's 60, which leaves four
+# further weekly attempts before the deadline if one of them fails.
+
+on:
+  schedule:
+    # Sunday 03:41 UTC. Off the hour, and well away from the :23 refresh.
+    - cron: "41 3 * * 0"
+  workflow_dispatch:
+    inputs:
+      force:
+        description: "Commit even if the repository is not quiet yet"
+        type: boolean
+        default: false
+
+# Never race the refresh for the push. This workflow is not urgent — if a
+# refresh is mid-flight, waiting is strictly better than fighting it.
+concurrency:
+  group: repo-push
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+env:
+  QUIET_DAYS: 14
+
+jobs:
+  keepalive:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Commit timestamp if quiet
+        run: |
+          set -euo pipefail
+          if [ "${{ inputs.force }}" != "true" ]; then
+            LAST=$(git log -1 --format=%ct)
+            NOW=$(date +%s)
+            QUIET_DAYS_SINCE=$(( (NOW - LAST) / 86400 ))
+            if [ "$QUIET_DAYS_SINCE" -lt "$QUIET_DAYS" ]; then
+              echo "repository active (${QUIET_DAYS_SINCE}d since last commit); nothing to do"
+              exit 0
+            fi
+          fi
+          git config user.name "xevents-pipeline"
+          git config user.email "xevents-pipeline@users.noreply.github.com"
+          date -u +%Y-%m-%dT%H:%M:%SZ > .keepalive
+          git add .keepalive
+          git commit -m "keepalive: scheduled workflows still needed" || exit 0
+          git pull --rebase origin main
+          git push origin main
