@@ -52,9 +52,9 @@ ALPHV; Royal→BlackSuit; Hunters International→World Leaks) mean a listing ca
 
 - Polling cadence is a cost/accuracy tradeoff: too sparse and removal
   timestamps are useless; too aggressive and we burn rate limits and Tor
-  circuits. Start with the aggregator cadences as reference (RansomLook:
-  operators recommend every 2 hours; ransomfeed.it: 60-minute scrape) and tune
-  from the data.
+  circuits. Cadence is UNDECIDED (open-decisions.md #5) — proposals are
+  every 2 hours (RansomLook operator guidance) and every 6 hours
+  (decision-brief Q3). Tune from the data once set.
 - Diffing needs a stable listing identity (group + victim + URL). Groups that
   rotate URLs or rename victims will produce false removals — the alias table
   (ADR 0005) and group-identity tracking are the mitigation.

@@ -1,7 +1,7 @@
 # xevents — MVP scope
 
 **Status:** PROPOSAL, 2026-09-18. Nothing in this file is approved until the
-user signs off. The four items in `docs/open-decisions.md` also gate parts of
+user signs off. The items in `docs/open-decisions.md` also gate parts of
 this scope; wherever this document touches one, it says so.
 
 ## What the MVP proves
@@ -37,7 +37,9 @@ redesign.
   SHA-256 content-addressed, redaction step before storage.
 - **Acceptance:** every observation has ≥1 evidence artifact; artifact hashes
   verify against stored bytes; a redaction note exists per artifact
-  (null only when nothing was redacted).
+  (null only when nothing was redacted). Archive-seeded observations under
+  item 8, if accepted, carry source metadata and provenance as evidence in
+  place of screenshots, which cannot exist for historical listings.
 
 ### 3. Entity resolution (MVP subset)
 
@@ -125,6 +127,7 @@ Lifting any non-goal requires a new ADR **and** the user's explicit approval
 |---|---|---|---|
 | 1 | Tor crawler / primary DLS collection | Largest engineering investment; MVP proves the loop on a clean aggregator first | Post-MVP ADR, when RansomLook metadata gaps block a user-approved analytic |
 | 2 | Any second ingest source — including breach-disclosure sources (EDGAR, state AGs, HHS OCR) and KEV | One source done well beats three done thinly; the pipeline is source-agnostic by design | Post-MVP ADR per source, after the MVP-done checklist passes |
+| 2a | (Carve-out, not a lift) Frozen, dead-source archives — the ransomwatch 2020–2025 baseline proposed in item 8 | An archive adds no ongoing ingest complexity and is tracked as its own proposal (open-decisions.md #6), not as a second live source | Decided under open-decisions.md #6 |
 | 3 | Cross-source claim reconciliation | Requires ≥2 sources; MVP reconciliation is within-source only | When non-goal 2 is lifted |
 | 4 | Public research/analytics surface — trend dashboards, lag analytics, sector patterns, vendor concentration, victim counts | Analytics over a thin corpus mislead; the operational surface is the MVP output | Post-MVP ADR, gated on a corpus size/quality bar set by the user |
 | 5 | Sector/vertical classification (NAICS mapping, Wikidata enrichment, OpenFIGI corroboration) | Serves the research surface (non-goal 4), not the core loop | With non-goal 4 |
@@ -146,5 +149,5 @@ Lifting any non-goal requires a new ADR **and** the user's explicit approval
 - [ ] Operational query surface + JSON export live, with claim-framing and
       attribution
 - [ ] ransomwatch baseline loaded (if proposal 8 accepted)
-- [ ] Open decisions #1–#4 resolved by the user
+- [ ] Open decisions resolved by the user
 - [ ] GLEIF license text verified; RansomLook terms re-verified at build time
