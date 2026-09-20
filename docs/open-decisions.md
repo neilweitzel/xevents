@@ -16,14 +16,49 @@ decides differently.
 
 ## 2. ransomware.live manual cross-checks
 
-- **Assumed in docs (PROPOSAL, ADR 0002):** manual, query-level cross-checks
-  of individual facts are acceptable; bulk derivation, storage at scale,
-  republication, and any build/run-time dependency are not.
+- **Assumed in docs (PROPOSAL, ADR 0002):** no contact at all — no queries,
+  manual or automated. A carve-out for minimal, documented, single-fact
+  manual lookups (never automated, never at bulk) exists only if the user
+  approves it; bulk derivation, storage at scale, republication, and any
+  build/run-time dependency are excluded under every option.
 - **Question:** Is even manual query-level use too close to the line, or
   acceptable under the documented constraints (minimal, documented, never
   automated at bulk)?
 - **Unblocks:** ADR 0002 finalization. (If the answer is "no contact at all,"
-  the carve-out paragraph in ADR 0002 is deleted.)
+  nothing changes; if a carve-out is approved, the rule becomes: minimal,
+  documented, never automated at bulk.)
+
+## 5. Polling cadence
+
+- **Assumed in docs (UNSET):** the poller runs on a schedule, but the
+  interval is unset. Proposals on the table: every 2 hours (RansomLook
+  operator guidance, cited in ADR 0007) and every 6 hours (decision-brief
+  Q3, ≈18h de-listing detection latency).
+- **Question:** What is the MVP polling interval for RansomLook?
+- **Unblocks:** ADR 0007 finalization; open decision #3 (the N-missed-polls
+  threshold is calibrated against cadence); MVP scope item 6.
+
+## 6. ransomwatch historical baseline
+
+- **Assumed in docs (PROPOSAL, docs/mvp-scope.md item 8):** the frozen
+  ransomwatch 2020–2025 archive (Unlicense) is loaded as observations to
+  seed history; no live polling of the dead source.
+- **Question:** Accept the baseline proposal, reject it, or defer it to
+  post-MVP?
+- **Unblocks:** MVP scope item 8; the archive independence-class question
+  (data-model.md).
+
+## 7. Operational surface form and audience
+
+- **Assumed in docs (UNSET):** MVP scope item 7 describes what the surface
+  shows, not what it is (local web UI, CLI, static export, hosted app — all
+  unexamined) nor who it serves (project lead only, or public).
+- **Question:** Is the MVP surface a local-only tool or a public surface?
+  What form does it take?
+- **Unblocks:** the build plan for scope item 7; ADR 0003's pre-public-surface
+  gate (the written lawful-basis / public-interest research memo is required
+  before any public serving — "no memo, no public surface"); auth/hosting
+  decisions.
 
 ## 3. De-listing detection threshold
 

@@ -13,7 +13,7 @@ established fact.
 - [docs/mvp-scope.md](docs/mvp-scope.md) — **the approved build target:**
   tightly-scoped MVP definition with acceptance criteria and an explicit
   non-goals list. If it's not here, it's not approved work.
-- [docs/open-decisions.md](docs/open-decisions.md) — four decisions only the
+- [docs/open-decisions.md](docs/open-decisions.md) — open decisions only the
   user can make. Undecided; do not resolve by assumption.
 - [docs/adr/](docs/adr/) — Architecture Decision Records (all `proposed`,
   pending user redline):

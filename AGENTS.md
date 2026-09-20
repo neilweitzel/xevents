@@ -28,7 +28,7 @@ rules; `docs/` is the theory, `research/landscape-report.md` is the evidence.
   `proposed (pending user redline)`.
 - A new feature proposal must cite which MVP acceptance criterion it serves.
   If it serves none, reject it or park it as a post-MVP ADR proposal.
-- The four items in `docs/open-decisions.md` are undecided. Never resolve
+- The items in `docs/open-decisions.md` are undecided. Never resolve
   them by assumption, and flag any work that depends on a particular answer.
 
 ## What xevents is NOT

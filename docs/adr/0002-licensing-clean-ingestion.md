@@ -64,10 +64,10 @@ Licensing, not engineering, is the binding constraint on xevents' data supply
    discovery, site volatility, and rebrand/successor-group tracking from the
    start — this is the project's biggest engineering investment and its
    biggest legal protection, in one.
-4. **Attribution registry.** Every CC BY 4.0 source (RansomLook, HIBP catalog)
+5. **Attribution registry.** Every CC BY 4.0 source (RansomLook, HIBP catalog)
    gets visible attribution; the source registry records license text and
    attribution requirements per source.
-5. **Enrichment from RESTRICTED sources** (ransomware.live PRO, ecrime.ch) is
+6. **Enrichment from RESTRICTED sources** (ransomware.live PRO, ecrime.ch) is
    a future option gated on written permission or a paid tier — not a design
    dependency today.
 
