@@ -63,13 +63,37 @@ on both `xevents` and `xevents-internal`.
   - Manual commits to protected branches allowed only from the project
     lead's account.
   - Boundary-authored commits allowed only when signed by the app
-    installation and only against paths in `data/aggregates/`,
-    `evidence-manifest.jsonl`, and the coverage-boundary statement file.
-    Any path outside that set fails the branch-protection check.
-- The private repo's boundary workflow is the only workflow with access
-  to the app's private key. Other private-repo workflows (ingest, review,
-  internal aggregation) run under `GITHUB_TOKEN` scoped to the private
-  repo alone.
+    installation and only against paths in the **boundary write set**
+    (below). Any path outside that set fails the branch-protection check.
+
+### Boundary write set
+
+The initial tight rule. Boundary-authored commits may write to:
+
+- `data/aggregates/` — the JSONL aggregate files (view 1 and view 2)
+- `evidence-manifest.jsonl` — the append-only manifest of source hashes
+- The coverage-boundary statement file (path pinned in
+  `docs/dashboard-spec.md`)
+
+Nothing else. The boundary cannot touch docs, ADRs, workflow files,
+`AGENTS.md`, or any other path. A boundary commit that attempts to write
+outside this set fails the branch-protection check; the workflow logs the
+attempted paths and quarantines the batch as a severity-1 incident
+(ADR 0010 §3).
+
+**The write set is expected to be amended as the workflow is built.**
+When the workflow legitimately needs a new path (e.g. a build timestamp
+file, a search index shard directory), the addition is a small amendment
+to this ADR — not a new ADR, and not a suspension of the rule. The
+discipline is: the write set stays as narrow as the workflow's actual
+needs, and every widening is explicit.
+
+### Private-repo workflow isolation
+
+The private repo's boundary workflow is the only workflow with access to
+the app's private key. Other private-repo workflows (ingest, review,
+internal aggregation) run under `GITHUB_TOKEN` scoped to the private repo
+alone.
 
 ### Rotation
 
