@@ -184,3 +184,45 @@ call get added here; nothing here is ever resolved by assumption.
 - **Residual noted on the methodology page:** monthly-minus-visible-weeks
   differencing can imply a suppressed week's count. Accepted; not worth
   complementary suppression in v1.
+
+## 14. Two-view public surface (view 1 sector exposure, view 2 exploitation detail)
+
+- **DECIDED 2026-09-21 by the user:** the public surface is two views
+  rendered from the same corpus, deliberately not cross-indexed. See
+  ADR 0011.
+  - **View 1 — sector exposure:** answers "how big of a target is my
+    vertical, and what shape are the attacks taking?" for a CISO / board
+    audience. Coarse `attack_class` vocabulary
+    (`docs/attack-class-vocabulary.md`); no CVEs, no vendor names.
+  - **View 2 — exploitation detail:** answers "what should my team fix
+    or harden this week?" for operational engineers. Specific
+    exploitation vocabulary (`docs/exploitation-vocabulary.md`); CVEs,
+    CISA KEV badge, vendor advisories, mitigation references. No sector
+    breakdown per entry unless the count comfortably clears the
+    small-cell floor.
+- **Rationale:** a single surface conflating both audiences either
+  dilutes the operational signal or muddies the sector picture. The two
+  audiences ask different questions at different levels of abstraction.
+  Non-cross-indexing is the mechanical control that prevents
+  re-identification via cross-reference of view 1 and view 2 cells.
+- **Naming policy amendment (same session):** the policy now carries two
+  principles instead of one. Principle 1 (no identity information) is
+  unchanged. Principle 2 (actionable information belongs on the public
+  surface) is new. The divider is the blue-team-on-Friday test in
+  `docs/naming-policy.md`.
+- **Supersedes:** the single-surface framing in
+  `docs/dashboard-spec.md` (2026-09-20 version). The 2026-09-20 language
+  about `attack_vector` and `malware_class` on the public surface is
+  superseded — those fields remain in the data model as internal-only
+  after this decision.
+- **Unblocks:** ADR 0011 (this decision, written up); the vocabulary
+  files; the dashboard-spec split; the data-model additions.
+- **Still open (deferred to their own decisions):**
+  - ADR 0012 — aggregation-boundary transport (GitHub App tentatively
+    selected in-session; ADR not yet written).
+  - ADR 0013 — G5 name-scan gate specification.
+  - Ransomwatch archive deferral (in-session ruling; not yet written as
+    a superseding entry against decision #6).
+  - Forward-going burn-in rule (in-session ruling; needs ADR 0010 §5
+    amendment).
+  - Two-person rule (in-session discussion pending your decision).
