@@ -168,8 +168,15 @@ One source's claim, seen once. **Immutable.** The system of record (ADR 0001).
 | `entity_id` | uuid FK → entity, nullable | resolved entity; null = unresolved |
 | `claim_summary` | text | one-paragraph normalized statement of the claim |
 | `sector` | text | NAICS 2-digit spine (versioned taxonomy); `unclassified` when the evidence does not support a classification — never a guess. The sector is what the **public** surface publishes (open-decisions.md #8) |
-| `attack_vector` | enum | versioned: `phishing_social_engineering` \| `public_facing_app_exploit` \| `credential_stuffing_bruteforce` \| `usb_removable_media` \| `supply_chain` \| `insider` \| `ransomware_deployment` \| `cryptomining_payload` \| `other` \| `unknown` |
-| `malware_class` | enum | generic capability classes only, never brand names (docs/naming-policy.md): `ransomware` \| `cryptominer` \| `wiper` \| `stealer_exfiltrator` \| `rat_backdoor` \| `rootkit_bootkit` \| `unknown` |
+| `attack_vector` | enum | **internal-only after ADR 0011.** Retained for private-corpus continuity and internal analytics. The public surface now uses `attack_class` (view 1) and the exploitation-detail fields (view 2). Versioned: `phishing_social_engineering` \| `public_facing_app_exploit` \| `credential_stuffing_bruteforce` \| `usb_removable_media` \| `supply_chain` \| `insider` \| `ransomware_deployment` \| `cryptomining_payload` \| `other` \| `unknown` |
+| `malware_class` | enum | **internal-only after ADR 0011.** Retained for internal analytics; never published under the naming policy. Values: `ransomware` \| `cryptominer` \| `wiper` \| `stealer_exfiltrator` \| `rat_backdoor` \| `rootkit_bootkit` \| `unknown` |
+| `attack_class` | enum | **View 1 vocabulary (ADR 0011).** Coarse public-surface classification. Controlled by `docs/attack-class-vocabulary.md`: `ransomware` \| `data_extortion` \| `phishing_compromise` \| `social_engineering` \| `credential_abuse` \| `supply_chain` \| `exploitation_public_facing` \| `insider` \| `unspecified`. One value per observation. |
+| `cve_ids` | jsonb | **View 2 vocabulary (ADR 0011).** Array of CVE identifiers named in the source or a linked advisory. Format `CVE-YYYY-NNNNN`. Empty array when none. |
+| `cisa_kev_present` | boolean | **View 2.** True if any `cve_ids` entry is in the CISA KEV catalog at extraction time. Snapshot version recorded in `pipeline_version`. |
+| `vendor_advisories` | jsonb | **View 2.** Array of vendor advisory URLs. Each URL's destination page is scanned against the denylist at publish time (naming-policy.md, ADR 0013). |
+| `mitigation_refs` | jsonb | **View 2.** Array of mitigation reference URLs (patch notes, hardening guides, sector CERT bulletins). Same publish-time destination scan. |
+| `appliance_class` | enum nullable | **View 2.** Controlled by `docs/exploitation-vocabulary.md`: `ssl_vpn` \| `edge_firewall` \| `managed_file_transfer` \| `remote_access` \| `email_gateway` \| `identity_provider` \| `application_server` \| `network_appliance` \| `unspecified`. Null when no appliance is implicated. |
+| `misconfiguration_class` | jsonb | **View 2.** Array (zero or more) from controlled enum: `exposed_service` \| `weak_authentication` \| `unpatched_public_facing` \| `misconfigured_permissions` \| `unauthenticated_api` \| `legacy_protocol`. |
 | `victim_acknowledged` | enum | `acknowledged` \| `unacknowledged` — sourced strictly to the victim's own public disclosure (SEC 8-K Item 1.05, company press statement, state AG breach notice, HHS OCR entry). Orthogonal to confidence (open-decisions.md #9). **Binary:** every incident is `unacknowledged` until a cited victim disclosure confirms it, at which point it becomes `acknowledged`. No intermediate states, no inference from silence — the scale of unacknowledged claims is itself a research finding. Default: `unacknowledged`. |
 | `data_classes_claimed` | jsonb | array of `{class, status}`; class from the controlled taxonomy (email, name, postal_address, phone, dob, national_id, financial_account, payment_card, health_info, credentials, government_id, biometric, other); status `claimed` (as the source asserts) or `victim_confirmed` (only when the victim's own public disclosure confirms it). Never published as breach contents (open-decisions.md #10) |
 | `raw_payload` | jsonb | the source's raw record, verbatim |
@@ -449,18 +456,37 @@ self-describing even separated from the site:
   (CC BY 4.0 attribution chain for derived content)
 - the published coverage-boundary statement
 
-Per aggregate (sector × time window):
+Two aggregate exports (ADR 0011). They do not cross-reference.
+
+**View 1 aggregate (sector × time window):**
 
 - `sector`, `window_start`, `window_end`
 - `claim_count`, `confidence_breakdown` (counts per band),
   `victim_acknowledged_breakdown` (acknowledged / unacknowledged counts)
-- `vector_breakdown`, `malware_class_breakdown`, `data_classes_claimed`
-  (claimed vs victim_confirmed counts)
+- `attack_class_breakdown` (counts per view 1 enum value)
+- `data_classes_claimed` (claimed vs victim_confirmed counts)
 - `corrections[]` — correction-ledger rows touching the underlying
   observations, in event order (no names)
 - `manifest_refs[]` — evidence-manifest ids backing the aggregate
 - `attribution[]` — per-source attribution strings (source registry),
   satisfying CC BY 4.0 for RansomLook-derived content
+
+**View 2 aggregate (technique × time window):**
+
+- `technique_key` — either a CVE identifier, an `appliance_class` value,
+  or a `misconfiguration_class` value
+- `technique_kind` — `cve` \| `appliance` \| `misconfiguration`
+- `window_start`, `window_end`
+- `observation_count`
+- `cisa_kev` — boolean if `technique_kind == cve`
+- `vendor_advisories[]`, `mitigation_refs[]` — deduped URLs referenced by
+  the underlying observations; each verified against the destination-scan
+  gate at publish time
+- `sector_distribution` — present ONLY when the entry's total count is
+  large enough that every included sector cell independently clears the
+  small-cell floor (open-decisions.md #13). Otherwise omitted, not
+  suppressed-with-note. See ADR 0011 non-cross-index rule.
+- `manifest_refs[]`, `attribution[]` — as above
 
 ## Interoperability notes
 
