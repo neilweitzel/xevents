@@ -55,11 +55,13 @@ a gate quarantines the batch instead of publishing.
 
 **Publication gates** (per aggregation batch, before push to public):
 
-- **G5 — name-scan gate.** Every organization and actor name seen in the
-  raw batch forms a denylist; the outgoing aggregate is asserted to contain
-  zero matches (case-insensitive, normalized). Failure → quarantine the
-  batch. This is the mechanical enforcement of the naming policy
-  (docs/naming-policy.md).
+- **G5 — name-scan gate.** The mechanical enforcement of the naming
+  policy (docs/naming-policy.md). Every organization, actor, malware
+  family, and named-person string in the source window forms a denylist;
+  every rendered public output is scanned against it (JSONL values and
+  URL destinations) under normalized substring, token, domain-form, and
+  slug match rules, including homoglyph folding. Failure → quarantine
+  the batch as a severity-1 incident. Full specification in ADR 0013.
 - **G6 — framing gate.** Every public text field is asserted to carry
   claim-framing ("claimed by", "listed by", band label, victim-acknowledged
   status). Unframed text fails the build.
