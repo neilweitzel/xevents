@@ -86,11 +86,12 @@ Ingest cadence and publication cadence are decoupled
   schedule and publishes sector × week aggregates, the 12-week heat strip,
   and the JSON export.
 - **"Insufficient data" is per-cell.** A sector × week cell below the
-  small-cell threshold (open-decisions.md #13, pending) renders as
-  "insufficient data"; its claims remain counted in the monthly rollup,
-  sector totals, and all-sector aggregates. The surface as a whole always
-  publishes — there is no global data gate that would make the site flicker
-  between alive and dead.
+  small-cell threshold (open-decisions.md #13: k=5 minimum claims,
+  tunable) renders as "insufficient data"; its claims remain counted in
+  the monthly rollup, sector totals, and all-sector aggregates. The
+  surface as a whole always publishes — there is no global data gate that
+  would make the site flicker between alive and dead. Thin data stays
+  internal until there is enough to publish.
 - **Review never blocks the schedule.** A weekly publish includes only
   reviewed observations. Unreviewed observations are excluded from the
   aggregates but counted in a visible "N observations pending review"

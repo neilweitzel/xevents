@@ -168,13 +168,19 @@ call get added here; nothing here is ever resolved by assumption.
   (freshness SLOs: public aggregates stale after 2 weeks, internal
   rollups stale after 2 days).
 
-## 13. Small-cell disclosure rule (OPEN)
+## 13. Small-cell disclosure rule
 
-- **Question for the user:** weekly sector × week cells in thin sectors
-  (1–2 claims) plus source links are effectively victim pointers. Options:
-  **A.** suppress weekly cells under k=5, roll up to monthly (recommended);
-  **B.** adaptive granularity (weekly for high-volume sectors,
-  monthly/quarterly for thin ones); **C.** publish as-is with the honest
-  re-identification caveat. Noise injection rejected (contradicts
-  evidence-first). Differencing residual (monthly minus visible weeks can
-  imply a suppressed week) accepted under A, noted on the methodology page.
+- **DECIDED 2026-09-21 by the user** (via the publication-cadence
+  workaround): a public aggregate cell is published only when its
+  underlying claim count is sufficient; otherwise the cell renders
+  "insufficient data." Thin data stays internal and remains counted in
+  coarser rollups (weekly → monthly → sector totals → all-sector). The
+  surface never publishes a cell that is effectively a victim pointer.
+- **Mechanical default (tunable, not philosophical):** k=5 minimum claims
+  per published cell, applied uniformly to every public breakdown
+  (counts, vector/malware-class splits, acknowledged overlay, data
+  classes). Adjust in redline if desired; the principle above is the
+  decision.
+- **Residual noted on the methodology page:** monthly-minus-visible-weeks
+  differencing can imply a suppressed week's count. Accepted; not worth
+  complementary suppression in v1.

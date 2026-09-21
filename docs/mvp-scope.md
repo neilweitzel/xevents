@@ -159,8 +159,8 @@ redesign.
   known blind spots — see data-model.md).
 - **Cadence (open-decisions.md #12):** ingest fast (decision #5),
   internal aggregation daily, public publication weekly. "Insufficient
-  data" is per sector × week cell (small-cell rule, decision #13 pending),
-  never a global publish gate. Each weekly publish includes only reviewed
+  data" is per sector × week cell (small-cell rule, decision #13: k=5
+  minimum, tunable), never a global publish gate. Each weekly publish includes only reviewed
   observations, with unreviewed counts shown. The surface stays dark until
   burn-in completes.
 - **Launch gate:** the written lawful-basis / public-interest research memo
