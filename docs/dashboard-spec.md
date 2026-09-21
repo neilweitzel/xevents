@@ -42,8 +42,7 @@ what the data is. This spec describes the surface; docs/mvp-scope.md item
   breakdown stacked (unverified/low/moderate/high/disputed).
 - **Vector breakdown** and **malware-class breakdown** for the selected
   window.
-- **Victim-acknowledged overlay:** acknowledged / not_acknowledged /
-  unknown counts — the reader sees how much of the sector's volume is
+- **Victim-acknowledged overlay:** acknowledged / unacknowledged counts — the reader sees how much of the sector's volume is
   victim-confirmed vs. claim-only.
 - **Claimed breach data classes** for the window (claimed vs.
   victim_confirmed), with the "as claimed, not verified" framing.

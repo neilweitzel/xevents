@@ -102,9 +102,9 @@ The band model is unchanged (`unverified` / `low` / `moderate` / `high` /
 `disputed`; one independence class caps at `low`; no percentages). Additions:
 
 - **Victim-acknowledged status** is a separate axis alongside the band
-  (open-decisions.md #9): `acknowledged` / `not_acknowledged` / `unknown`,
-  sourced strictly to the victim's own public disclosure. Band and
-  acknowledgment are published together on every aggregate.
+  (open-decisions.md #9, amended binary 2026-09-21): `acknowledged` /
+  `unacknowledged` — unacknowledged until a cited victim disclosure
+  confirms the incident; no intermediate states.
 - **What the bands describe:** internal incidents (private). The public
   aggregates publish the *breakdown* (counts per band), never a
   per-incident band that could function as a pseudonymous pointer.

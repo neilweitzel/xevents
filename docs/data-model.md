@@ -170,7 +170,7 @@ One source's claim, seen once. **Immutable.** The system of record (ADR 0001).
 | `sector` | text | NAICS 2-digit spine (versioned taxonomy); `unclassified` when the evidence does not support a classification — never a guess. The sector is what the **public** surface publishes (open-decisions.md #8) |
 | `attack_vector` | enum | versioned: `phishing_social_engineering` \| `public_facing_app_exploit` \| `credential_stuffing_bruteforce` \| `usb_removable_media` \| `supply_chain` \| `insider` \| `ransomware_deployment` \| `cryptomining_payload` \| `other` \| `unknown` |
 | `malware_class` | enum | generic capability classes only, never brand names (docs/naming-policy.md): `ransomware` \| `cryptominer` \| `wiper` \| `stealer_exfiltrator` \| `rat_backdoor` \| `rootkit_bootkit` \| `unknown` |
-| `victim_acknowledged` | enum | `acknowledged` \| `not_acknowledged` \| `unknown` — sourced strictly to the victim's own public disclosure (SEC 8-K Item 1.05, company press statement, state AG breach notice, HHS OCR entry). Orthogonal to confidence (open-decisions.md #9). **Semantics are positive-only:** `acknowledged` requires a cited victim disclosure confirming the incident; `not_acknowledged` requires a cited victim statement denying or finding no evidence of the incident. Absence of any disclosure is `unknown` — never `not_acknowledged` (absence is not evidence, AGENTS.md doctrine 3). Default: `unknown`. |
+| `victim_acknowledged` | enum | `acknowledged` \| `unacknowledged` — sourced strictly to the victim's own public disclosure (SEC 8-K Item 1.05, company press statement, state AG breach notice, HHS OCR entry). Orthogonal to confidence (open-decisions.md #9). **Binary:** every incident is `unacknowledged` until a cited victim disclosure confirms it, at which point it becomes `acknowledged`. No intermediate states, no inference from silence — the scale of unacknowledged claims is itself a research finding. Default: `unacknowledged`. |
 | `data_classes_claimed` | jsonb | array of `{class, status}`; class from the controlled taxonomy (email, name, postal_address, phone, dob, national_id, financial_account, payment_card, health_info, credentials, government_id, biometric, other); status `claimed` (as the source asserts) or `victim_confirmed` (only when the victim's own public disclosure confirms it). Never published as breach contents (open-decisions.md #10) |
 | `raw_payload` | jsonb | the source's raw record, verbatim |
 | `pipeline_version` | text | ingest pipeline version that wrote this row |
@@ -453,8 +453,7 @@ Per aggregate (sector × time window):
 
 - `sector`, `window_start`, `window_end`
 - `claim_count`, `confidence_breakdown` (counts per band),
-  `victim_acknowledged_breakdown` (acknowledged / not_acknowledged /
-  unknown counts)
+  `victim_acknowledged_breakdown` (acknowledged / unacknowledged counts)
 - `vector_breakdown`, `malware_class_breakdown`, `data_classes_claimed`
   (claimed vs victim_confirmed counts)
 - `corrections[]` — correction-ledger rows touching the underlying

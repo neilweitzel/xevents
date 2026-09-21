@@ -113,7 +113,8 @@ redesign.
   incident with ≥1 observation (ADR 0006). Assessments superseded, never
   edited. Weights are internal model inputs; the band is the published output.
 - **Victim-acknowledged status** (open-decisions.md #9) rides alongside the
-  band: `acknowledged` / `not_acknowledged` / `unknown`, sourced strictly to
+  band: `acknowledged` / `unacknowledged` (binary — unacknowledged until a
+  cited victim disclosure confirms the incident), sourced strictly to
   the victim's own public disclosure. No percentage scores anywhere.
 - **Honest single-source behavior:** with one independence class in play,
   most incidents assess `unverified` or `low`. The model must not manufacture

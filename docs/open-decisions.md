@@ -90,12 +90,17 @@ call get added here; nothing here is ever resolved by assumption.
 
 - **DECIDED 2026-09-21 by the user:** alongside the confidence bands
   (decision #1), each incident carries a **victim-acknowledged** status —
-  `acknowledged` / `not_acknowledged` / `unknown` — sourced strictly to the
+  binary: `acknowledged` / `unacknowledged` — sourced strictly to the
   victim's own public disclosure (SEC 8-K Item 1.05, company press
-  statement, state AG breach notice, HHS OCR portal entry). This is a
-  verifiable fact from public records, kept orthogonal to confidence in the
+  statement, state AG breach notice, HHS OCR portal entry). Every incident
+  is `unacknowledged` until a cited victim disclosure confirms it. This is
+  a verifiable fact from public records, kept orthogonal to confidence in the
   *claim*. No percentage scores anywhere: bands plus acknowledged-status,
   no manufactured precision.
+- **Amended 2026-09-21 by the user:** the original three-state proposal
+  (`acknowledged` / `not_acknowledged` / `unknown`) is replaced with the
+  binary above — unacknowledged until acknowledged, no intermediate states.
+  The scale of unacknowledged claims is itself a research finding.
 - **Unblocks:** data-model.md (observation/incident fields); dashboard spec.
 
 ## 10. Breach-content characterization (never publication)
