@@ -256,3 +256,40 @@ call get added here; nothing here is ever resolved by assumption.
   - Forward-going burn-in rule (in-session ruling; needs ADR 0010 §5
     amendment).
   - Two-person rule (in-session discussion pending your decision).
+
+## 16. G5 name-scan gate specification (ADR 0013)
+
+- **DECIDED 2026-09-21 by the user (in-session):** the G5 gate is now
+  fully specified. See ADR 0013.
+- **Summary:**
+  - **Scan targets:** every rendered public JSONL value plus every URL
+    destination (fetched at scan time) in the outgoing batch.
+  - **Denylist:** regenerated per run from the current private-repo
+    state — `subject_raw` values, entity aliases, threat-actor names,
+    malware families — plus a static supplementary denylist and a
+    documented allowlist for confirmed false positives.
+  - **Normalization:** Unicode NFKC, homoglyph folding (versioned
+    table), Unicode-aware case folding, whitespace collapse, primary
+    plus corporate-suffix-stripped secondary comparison.
+  - **Match rules:** substring at word boundaries, token, domain
+    label, slug. Any match is a hard fail.
+  - **Fail-closed:** any operational error (denylist read failure,
+    URL fetch failure, corpus mismatch) quarantines the batch. G5
+    never falls back to a cached or empty denylist.
+  - **Public G5 metric:** every weekly publish reports total matches
+    and last-match date on the coverage-boundary statement — silence
+    would be less credible than the count.
+  - **Explicit non-defenses:** unseen names, image-content OCR,
+    semantic re-identification via context, allowlist collusion.
+- **Amends:** ADR 0010 §1 G5 (replaces the one-sentence description
+  with a pointer to ADR 0013).
+- **Unblocks:** the private repo's initial file layout (denylist and
+  allowlist paths); the boundary workflow code when authorized; the
+  G5 test corpus.
+- **Still open:**
+  - Ransomwatch archive deferral (needs superseding entry against
+    decision #6).
+  - Forward-going burn-in rule (needs ADR 0010 §5 amendment).
+  - Two-person rule (in-session discussion pending your decision;
+    interacts with ADR 0013's allowlist rule).
+  - Private repo AGENTS.md + file-layout doc.
