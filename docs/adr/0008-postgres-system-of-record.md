@@ -53,3 +53,9 @@ PostgreSQL instance the pipeline writes to.
 - The build plan must include Postgres provisioning (local dev and wherever
   the surface runs) and a backup/restore procedure for DB + artifact store
   before any public serving.
+
+## Pivot note, 2026-09-21 (user decisions #8–#11)
+
+No change. This ADR was superseded by ADR 0009 on 2026-09-20 and remains
+superseded. The pivot (sector aggregation, two repos) applies to ADR 0009,
+not to this record.

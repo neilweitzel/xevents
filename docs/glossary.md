@@ -24,7 +24,10 @@ meaning.
 - **incident** — A resolved, mutable record grouping related observations
   about the same real-world event, with typed membership links, a status
   (`candidate`/`active`/`contested`/`retracted`), and a versioned confidence
-  assessment. Incident IDs are stable across re-resolution. (ADR 0001)
+  assessment. Incident IDs are stable across re-resolution. **Pivot
+  (2026-09-21):** incidents are now an *internal* construct — the unit of
+  audit and confidence assessment in `xevents-internal`. The public unit
+  is the sector aggregate. (ADR 0001)
 - **incident membership** — A typed, immutable link between one observation
   and one incident: `supports`, `duplicates`, `refutes`, `corrects`, each
   with a rationale. A changed judgment is a new row, never an edit.
@@ -33,7 +36,9 @@ meaning.
   subsidiary, a municipality, a threat group, a vendor, a CVE. Resolved
   probabilistically from observation-level strings; carries a resolution
   confidence and model version. Merges and splits are correction events.
-  (ADR 0005)
+  **Pivot (2026-09-21):** entities and aliases live in `xevents-internal`
+  only — they never cross the aggregation boundary to the public surface
+  (docs/naming-policy.md). (ADR 0005)
 - **alias** — A name variant tied to an entity with provenance (legal name,
   DBA, domain, abbreviation, **misnaming**). Misnamings are recorded as
   aliases, never silently fixed. Threat-group rebrands are aliases too
@@ -46,16 +51,16 @@ meaning.
   observation. Immutable; a re-capture is a new artifact, never an
   overwrite.
 - **correction** — An append-only event revising the record: `correction`,
-  `denial`, `removal`, `retraction`, `dispute_opened`, `dispute_resolved`.
-  Corrections attach to observations, incidents, entities, or aliases; they
-  never rewrite history. The correction ledger is a first-class public
-  output. (ADR 0004)
-- **confidence** — A band (`unverified`/`low`/`moderate`/`high`/`disputed` —
-  set PROPOSED, pending open decision #1) assigned to an incident or
-  observation by a versioned model, always accompanied by a human-readable
-  rationale, the contributing independence classes, and an inputs hash.
-  Assessments are superseded, never edited. Model weights are internal
-  inputs; the band is the published output. (ADR 0006)
+  `denial`, `removal`, `retraction`, `dispute_opened`, `dispute_resolved`,
+  `administrative_note`. Corrections attach to observations, incidents,
+  entities, or aliases; they never rewrite history. The correction ledger
+  is a first-class public output. (ADR 0004)
+- **confidence** — A band (`unverified`/`low`/`moderate`/`high`/`disputed`)
+  assigned to an incident or observation by a versioned model, always
+  accompanied by a human-readable rationale, the contributing independence
+  classes, and an inputs hash. Assessments are superseded, never edited.
+  Model weights are internal inputs; the band is the published output.
+  (ADR 0006; decided: open-decisions.md #1)
 - **independence class** — A grouping of sources by shared provenance
   (`tor_primary`, `aggregator_ransomlook`, `regulatory_filing`, …).
   Confidence counts each class once: echoed claims are one vote, not many.
@@ -103,16 +108,18 @@ meaning.
 - **vendor** — A third-party product or service provider implicated in an
   incident (`entity_kind=vendor`). The basis for vendor-concentration
   analysis: which vendors' products appear across incidents.
-- **sector** — An industry classification of a victim entity, carried on the
-  NAICS spine (`entity.naics_code`). Sector mapping (NAICS/Wikidata/OpenFIGI
-  enrichment) is post-MVP (docs/mvp-scope.md, non-goal 5).
+- **sector** — An industry classification of an observation's victim,
+  carried on the NAICS 2-digit spine. The MVP's public classification:
+  every observation carries a sector or an honest `unclassified` — never a
+  guess (mvp-scope.md item 3; docs/naming-policy.md).
 - **coverage boundary** — The honestly documented limit of what xevents
-  resolves well (public companies, LEI holders, notable firms) versus what
-  it systematically misses (SMEs without LEIs, Wikidata entries, or SEC
-  filings; non-Tor extortion channels; municipalities/schools/hospitals
-  without identifiers). Published as a versioned public statement; fed by
+  classifies and sees well (sectors identifiable from listing text; the
+  RansomLook coverage window) versus what it systematically misses
+  (victims whose sector is uninferable from the listing; non-Tor
+  extortion channels; sources outside RansomLook's scrape reach).
+  Published as a versioned public statement; fed by
   `source.known_limitations`. A documented limitation, not a hidden one.
-  (ADR 0005; docs/mvp-scope.md item 7)
+  (docs/mvp-scope.md item 7)
 - **review task** — A unit of human review: an ambiguous entity match, an
   unresolvable subject, a contested correction. Queued, worked, and resolved
   with a recorded outcome — the queue itself is auditable. In MVP the
@@ -142,22 +149,23 @@ meaning.
 - **newly reported victim** — A victim entity whose incident has the most
   recent `first_observed_at` in the corpus. A corpus query, not a push
   feature in MVP (push/alerting is non-goal 9).
-- **vertical exposure** — Sector-pattern analysis over the incident corpus
-  (e.g. disclosure patterns by sector). Long-term analytic; post-MVP
-  (docs/mvp-scope.md, non-goal 4).
+- **vertical exposure** — Sector-pattern analysis over the aggregate corpus
+  (e.g. which verticals are hit, how, with what means). Core MVP output
+  (docs/mvp-scope.md item 7; open-decisions.md #8).
 - **vendor concentration** — Analysis of which vendors' products recur across
   incidents. Long-term analytic; post-MVP (docs/mvp-scope.md, non-goal 4).
 
 ## Surfaces and process
 
-- **operational surface** — The MVP's read/query layer: incident list and
-  detail, correction-ledger view, JSON export. Serves the evidence trail,
-  not analytics. (docs/mvp-scope.md item 7)
-- **research surface (long-term)** — The public analytics layer: trend
-  queries over the incident corpus (new victims, sector patterns, lag,
-  vuln mentions, vendor concentration, vertical exposure). Explicitly
-  post-MVP (docs/mvp-scope.md, non-goal 4). Not built, not promised, until
-  its own ADR.
+- **operational surface** — Superseded term (2026-09-21 pivot). The
+  2026-09-20 design's read/query layer of incident list and detail. Use
+  **research surface** for the current design.
+- **research surface** — The MVP's public layer: the xfeeds-style sector
+  dashboard (activity bands, sector detail, methodology, correction ledger,
+  evidence-manifest browser, JSON aggregate export). Specified in
+  docs/dashboard-spec.md; scope-gated in docs/mvp-scope.md item 7. The
+  2026-09-20 "long-term, post-MVP" designation is lifted by user decision
+  #8 (open-decisions.md).
 - **model version** — A registered version of any versioned component
   (ingest pipeline, entity resolution, incident resolution, confidence
   model), recording its parameters — including the independence-class set —

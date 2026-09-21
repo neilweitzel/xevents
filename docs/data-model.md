@@ -23,7 +23,7 @@ written against this schema; field names are proposals for redline.
   superseding ADR 0008). Tables below are *logical*; their physical form is
   append-only JSONL under `data/` (see "Physical mapping (static-first)").
 
-## Physical mapping (static-first)
+## Physical mapping (static-first, two-repo)
 
 The logical schema above is implemented without a database server. Mapping:
 
@@ -36,7 +36,39 @@ The logical schema above is implemented without a database server. Mapping:
 | `uuid` | lowercase canonical string |
 | `numeric` (weights) | JSON number; never published (see export contract) |
 
-File layout (all committed to `main` by the pipeline):
+**Two repositories** (open-decisions.md #11). The trust boundary is the
+aggregation boundary:
+
+| repo | visibility | contents | write pattern |
+|---|---|---|---|
+| `xevents-internal` (private) | owner-only | `data/observations.jsonl`, `data/correction_events.jsonl`, `data/confidence_assessments.jsonl`, `data/poll_runs.jsonl`, `data/listing_state.json`, entity/alias/incident registries, `review_tasks.jsonl`, `evidence_artifacts.jsonl`, `sources.jsonl`, `model_versions.jsonl`, `evidence/<sha256>` raw bytes | append-only (registries as documented); raw bytes write-once |
+| `xevents` (public) | public | `data/aggregates/*.jsonl` (sector × time-window aggregates — **no organization or actor names, ever**), `evidence-manifest.jsonl`, `site/` (generated) | aggregates recomputed per run and committed; manifest append-only |
+
+The public build never reads the private repo. Aggregation runs privately;
+only the aggregate output crosses to public, after the name-scan gate
+(ADR 0010 §1, G5) asserts zero organization/actor names in the outgoing
+batch. No internal identifiers appear in public outputs — the only
+cross-boundary references are content hashes from the evidence manifest.
+
+### Evidence manifest (public)
+
+`evidence-manifest.jsonl` in the public repo is the audit commitment for
+every internal observation: one row per observation, append-only.
+
+| field | notes |
+|---|---|
+| `manifest_id` | uuid, public identifier for this manifest row |
+| `observed_at` | when xevents recorded the observation |
+| `source_name` | e.g. `ransomlook_api` |
+| `payload_sha256` | SHA-256 of the raw source payload bytes — the verifiable commitment: anyone holding their own copy of the source record can hash it and compare |
+| `source_ref` | name-free source reference (numeric post id, API path) **only if it carries no organization or actor name**; otherwise omitted, with the omission noted |
+| `retrieved_at` | when the payload was fetched |
+
+The manifest proves *that we retrieved what we claim we retrieved* without
+republishing names. Drill-down to victim-level detail happens via links
+back to the sources, not via the manifest.
+
+File layout (private repo, committed to `main` by the pipeline):
 
 | path | contents | write pattern |
 |---|---|---|
@@ -44,14 +76,21 @@ File layout (all committed to `main` by the pipeline):
 | `data/correction_events.jsonl` | append-only ledger | append-only |
 | `data/confidence_assessments.jsonl` | superseded, never edited | append-only |
 | `data/poll_runs.jsonl` | run manifests (replaces the `poll_run` table) | append-only |
-| `data/listing_state.json` | `source_item_key` → last-seen map (replaces the `listing_state` table) | rewritten atomically per run |
+| `data/listing_state.json` | `source_item_key` → last-seen map (replaces the `listing_state` table). **Pivot note:** governs *internal* observations only — when an internal listing observation transitions to `removed_confirmed` (open-decisions.md #11) | rewritten atomically per run |
 | `data/entities.jsonl`, `data/aliases.jsonl`, `data/incidents.jsonl`, `data/incident_membership.jsonl`, `data/review_tasks.jsonl`, `data/evidence_artifacts.jsonl`, `data/sources.jsonl`, `data/model_versions.jsonl` | registries | append-only (registries), rewritten only where the logical table is mutable (`source`) |
-| `evidence/<sha256>` | raw artifact bytes, content-addressed | write-once |
+| `evidence/<sha256>` | raw artifact bytes, content-addressed (private — may contain names) | write-once |
+
+File layout (public repo):
+
+| path | contents | write pattern |
+|---|---|---|
+| `data/aggregates/*.jsonl` | sector × time-window aggregates | recomputed per run, committed |
+| `evidence-manifest.jsonl` | audit commitments (hashes + provenance) | append-only |
 | `site/` | generated HTML + JSON snapshots for Pages | regenerated per run |
 
 Immutability is enforced by convention + CI (a test asserts that a pipeline
 run never rewrites a line in an append-only file), and is publicly auditable
-via git history. A SQLite file may be built at pipeline time as a
+via git history for the public repo. A SQLite file may be built at pipeline time as a
 *derived* convenience artifact; it is never authoritative.
 
 ## Entities
@@ -128,6 +167,11 @@ One source's claim, seen once. **Immutable.** The system of record (ADR 0001).
 | `subject_raw` | text | entity string exactly as the source gave it (e.g. "Thames Water") |
 | `entity_id` | uuid FK → entity, nullable | resolved entity; null = unresolved |
 | `claim_summary` | text | one-paragraph normalized statement of the claim |
+| `sector` | text | NAICS 2-digit spine (versioned taxonomy); `unclassified` when the evidence does not support a classification — never a guess. The sector is what the **public** surface publishes (open-decisions.md #8) |
+| `attack_vector` | enum | versioned: `phishing_social_engineering` \| `public_facing_app_exploit` \| `credential_stuffing_bruteforce` \| `usb_removable_media` \| `supply_chain` \| `insider` \| `ransomware_deployment` \| `cryptomining_payload` \| `other` \| `unknown` |
+| `malware_class` | enum | generic capability classes only, never brand names (docs/naming-policy.md): `ransomware` \| `cryptominer` \| `wiper` \| `stealer_exfiltrator` \| `rat_backdoor` \| `rootkit_bootkit` \| `unknown` |
+| `victim_acknowledged` | enum | `acknowledged` \| `not_acknowledged` \| `unknown` — sourced strictly to the victim's own public disclosure (SEC 8-K Item 1.05, company press statement, state AG breach notice, HHS OCR entry). Orthogonal to confidence (open-decisions.md #9). **Semantics are positive-only:** `acknowledged` requires a cited victim disclosure confirming the incident; `not_acknowledged` requires a cited victim statement denying or finding no evidence of the incident. Absence of any disclosure is `unknown` — never `not_acknowledged` (absence is not evidence, AGENTS.md doctrine 3). Default: `unknown`. |
+| `data_classes_claimed` | jsonb | array of `{class, status}`; class from the controlled taxonomy (email, name, postal_address, phone, dob, national_id, financial_account, payment_card, health_info, credentials, government_id, biometric, other); status `claimed` (as the source asserts) or `victim_confirmed` (only when the victim's own public disclosure confirms it). Never published as breach contents (open-decisions.md #10) |
 | `raw_payload` | jsonb | the source's raw record, verbatim |
 | `pipeline_version` | text | ingest pipeline version that wrote this row |
 | `created_at` | timestamptz | == `observed_at` in practice; kept for audit |
@@ -276,10 +320,11 @@ First-class correction history (ADR 0004). **Append-only.**
 | `id` | uuid PK | |
 | `target_kind` | enum | `observation` \| `incident` \| `entity` \| `alias` \| `incident_membership` |
 | `target_id` | uuid | |
-| `event_type` | enum | `correction` \| `denial` \| `removal` \| `retraction` \| `dispute_opened` \| `dispute_resolved` |
+| `event_type` | enum | `correction` \| `denial` \| `removal` \| `retraction` \| `dispute_opened` \| `dispute_resolved` \| `administrative_note` (retention actions, severity-1 responses, and other non-claim lifecycle events; carries action/authority/reason in `note`) |
 | `asserted_by` | text | who asserted it: source name, victim org, "xevents-review", … |
 | `source_id` | uuid FK → source, nullable | |
 | `observed_at` | timestamptz | when xevents recorded the correction |
+| `source_asserted_at` | timestamptz nullable | when the *source* claims the corrected event occurred, if it says; null when it doesn't — the two-clock doctrine applies to corrections too |
 | `note` | text | what changed and why |
 | `created_at` | timestamptz | |
 
@@ -350,7 +395,7 @@ edited.**
 ## Coverage boundary (published statement)
 
 The coverage boundary (glossary) is not a table — it is a **versioned public
-statement** rendered on the operational surface, fed by
+statement** rendered on the public surface, fed by
 `source.known_limitations`. Required contents, all of them:
 
 1. Entity classes resolved well vs systematically missed (public companies /
@@ -384,30 +429,37 @@ The schema reserves the pattern; the ingest does not exist yet
 
 ## JSON export contract
 
-The MVP's operational surface (mvp-scope.md item 7) offers JSON export of
-incident records. The export is a fixed contract — consumers pin against it,
-so fields are added, never renamed or removed, without a contract version
-bump. **Excluded by construction:** internal confidence weights
+The MVP's public surface (mvp-scope.md item 7) offers JSON export of the
+**sector aggregates**. The export is a fixed contract — consumers pin
+against it, so fields are added, never renamed or removed, without a
+contract version bump. **Excluded by construction:** organization and actor
+names (docs/naming-policy.md), internal confidence weights
 (`supporting_weight`, `refuting_weight`), reviewer identities
-(`resolved_by` → published as "xevents-review" only), and any redacted
-bytes. The export root carries `exported_at`, `contract_version`, and the
-published coverage-boundary statement (see above), so a downloaded file is
-self-describing.
+(`resolved_by` → published as "xevents-review" only), internal identifiers,
+and any redacted bytes.
 
-Per incident:
+The export root carries the framing, so a downloaded file is
+self-describing even separated from the site:
 
-- `id`, `status`, `title`, `summary`
-- `primary_entity` — resolved entity (id, name, kind) or null with the raw
-  subject string preserved as `subject_raw`
-- `first_observed_at`, `last_updated_at`
-- `confidence` — `band`, `rationale`, `model_version`, `inputs_hash`,
-  `independence_classes` (contributing classes only; echoes collapsed)
-- `observations[]` — id, source name, `claim_type`, `subject_raw`,
-  `observed_at`, `source_claimed_at`, `confidence` (observation-level band +
-  rationale), evidence artifact hashes and kinds (bytes only by separate
-  retrieval; redaction notes included)
-- `corrections[]` — the append-only ledger rows touching this incident or
-  its observations, in event order
+- `dataset`: `xevents` sector-aggregated incident-claim research data
+- `framing`: "Public claims about cyber incidents, aggregated by sector.
+  Confidence bands describe corroboration of claims, not verification of
+  breaches. No organization or threat-actor names are published."
+- `methodology_url`, `exported_at`, `contract_version`, `license`
+  (CC BY 4.0 attribution chain for derived content)
+- the published coverage-boundary statement
+
+Per aggregate (sector × time window):
+
+- `sector`, `window_start`, `window_end`
+- `claim_count`, `confidence_breakdown` (counts per band),
+  `victim_acknowledged_breakdown` (acknowledged / not_acknowledged /
+  unknown counts)
+- `vector_breakdown`, `malware_class_breakdown`, `data_classes_claimed`
+  (claimed vs victim_confirmed counts)
+- `corrections[]` — correction-ledger rows touching the underlying
+  observations, in event order (no names)
+- `manifest_refs[]` — evidence-manifest ids backing the aggregate
 - `attribution[]` — per-source attribution strings (source registry),
   satisfying CC BY 4.0 for RansomLook-derived content
 

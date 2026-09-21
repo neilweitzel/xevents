@@ -68,3 +68,25 @@ claim, or a removal creates a new observation.
   ransomware.live T&C §7).
 - Landscape §3.1: VCDB analyst-encoding pipeline as closest conceptual match
   (manual; tracks analyst encoding, not source-claim retraction).
+
+## Pivot note, 2026-09-21 (user decisions #8–#11)
+
+The immutable-observation doctrine is unchanged. What changed is where the
+records live and who sees them:
+
+- **Incident records are now an internal construct.** Observation →
+  incident resolution still happens (typed `incident_membership`, rationales,
+  relist-after-removal as a linked candidate), but incidents, titles,
+  summaries, and entity references live in `xevents-internal` and never
+  cross the aggregation boundary (docs/naming-policy.md).
+- **The public unit is the sector × time-window aggregate,** computed over
+  internal incidents and published with claim-framing, confidence
+  breakdowns, and victim-acknowledged breakdowns.
+- **Public entity resolution is replaced by sector classification**
+  (mvp-scope.md item 3). Internal entity linkage continues privately for
+  audit and re-derivation.
+- Corrections now include the `administrative_note` event type; every ledger
+  entry that affects an aggregate propagates as aggregate recomputation on
+  the public surface (ADR 0009 pivot note).
+
+Status remains `proposed (pending user redline)`.

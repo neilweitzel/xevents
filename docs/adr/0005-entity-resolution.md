@@ -118,3 +118,26 @@ This is a documented coverage boundary, not a bug to hide.
 - UNVERIFIED: GLEIF redistribution license text; GLEIF ~60 req/min as an
   official limit (observed, not confirmed); canonical machine-readable
   Fortune 500 endpoint and license terms (candidate, not relied upon).
+
+## Pivot note, 2026-09-21 (user decisions #8–#11)
+
+This ADR's organization-name resolution pipeline (SEC/GLEIF/Wikidata →
+alias table → review queue) served the retired named-ledger design. It is
+**superseded for the MVP's public surface** by sector classification
+(mvp-scope.md item 3, open-decisions.md #8):
+
+- **Public need:** NAICS 2-digit sector per observation (`unclassified`
+  when unsupported — never a guess). Novel taxonomy values are a 100%-
+  review class (ADR 0010).
+- **Internal identity linkage** (private `entities`/`aliases` registries)
+  continues for audit, dedup, and re-derivation — the internal records
+  still need to know which observations describe the same organization.
+  That linkage never crosses the aggregation boundary (docs/naming-policy.md).
+- **GLEIF license gate:** only operative if GLEIF data is ever used,
+  publicly or privately. It is no longer an MVP launch blocker.
+- Organization-name enrichment (Wikidata, OpenFIGI) remains deferred —
+  post-MVP, gated on a decision to reintroduce named resolution, which
+  would itself require a new ADR.
+
+Status remains `proposed (pending user redline)`; this ADR's public-surface
+pipeline is superseded-in-part, internal linkage retained.

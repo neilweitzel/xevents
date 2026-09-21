@@ -95,3 +95,21 @@ from EDGAR alone.
 - Landscape §2.1 (EDGAR: 4-day clock from unobservable materiality
   determination).
 - xfeeds project precedent: independence-class corroboration scoring.
+
+## Pivot note, 2026-09-21 (user decisions #8–#11)
+
+The band model is unchanged (`unverified` / `low` / `moderate` / `high` /
+`disputed`; one independence class caps at `low`; no percentages). Additions:
+
+- **Victim-acknowledged status** is a separate axis alongside the band
+  (open-decisions.md #9): `acknowledged` / `not_acknowledged` / `unknown`,
+  sourced strictly to the victim's own public disclosure. Band and
+  acknowledgment are published together on every aggregate.
+- **What the bands describe:** internal incidents (private). The public
+  aggregates publish the *breakdown* (counts per band), never a
+  per-incident band that could function as a pseudonymous pointer.
+- Assessments are still superseded, never edited; weights stay internal.
+- The honest single-source behavior (§4 above) is unchanged — and is now
+  also visible to readers as aggregate-level band distributions.
+
+Status remains `proposed (pending user redline)`.

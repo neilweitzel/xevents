@@ -8,36 +8,51 @@ rules; `docs/` is the theory, `research/landscape-report.md` is the evidence.
 - An evidence-first incident-intelligence application that records, preserves, and
   reconciles **public** claims about cyber incidents, starting with ransomware
   victim listings and breach disclosures.
-- Every claim stays attached to its source, timestamp, entity details, supporting
-  evidence, confidence, and correction history.
-- Observations resolve into cautious, explainable incident records.
+- Every claim stays attached to its source, timestamp, sector classification,
+  supporting evidence, confidence, and correction history.
+- Observations resolve into cautious, explainable incident records (internal);
+  the public surface shows **sector-aggregated research** — which verticals
+  are hit, how, with what means — never organization or threat-actor names
+  (open-decisions.md #8; docs/naming-policy.md).
+- **Two repositories.** `neilweitzel/xevents` (public): the application, the
+  research output, the docs, the evidence manifest. `neilweitzel/xevents-internal`
+  (private): raw observations at full fidelity, raw evidence, ingest logs,
+  review decisions. The aggregation boundary between them is the trust
+  boundary (open-decisions.md #11; ADR 0010 §1). The public build never reads
+  the private repo. Treat `xevents-internal` like a credential store: no
+  public references, no public forks, no names in public issues or PRs.
 - Long-term goal: a public research surface for defensible trend analysis —
-  new victims, disclosure patterns by sector, compromise-to-disclosure lag,
-  exploited-vuln mentions, vendor concentration, vertical exposure.
+  sector attack patterns, disclosure patterns by sector,
+  compromise-to-disclosure lag, exploited-vuln mentions, vendor concentration.
 - **The MVP is defined in `docs/mvp-scope.md`: one licensing-clean source
-  (RansomLook) end to end.** The research surface, all other sources, and
-  everything in the non-goals table are explicitly post-MVP. If it is not in
-  the MVP scope doc, it is not approved work.
+  (RansomLook) end to end, sector-aggregated.** If it is not in the MVP scope
+  doc, it is not approved work.
 
 ## Scope discipline
 
 - The only approved build target is `docs/mvp-scope.md`.
 - Lifting any non-goal, adding any source, or changing any `proposed` ADR
   requires a **new ADR and the user's explicit approval**. An ADR without
-  user approval is a proposal, not a decision — all seven ADRs are currently
+  user approval is a proposal, not a decision — all ADRs are currently
   `proposed (pending user redline)`.
 - A new feature proposal must cite which MVP acceptance criterion it serves.
   If it serves none, reject it or park it as a post-MVP ADR proposal.
-- The items in `docs/open-decisions.md` are undecided. Never resolve
-  them by assumption, and flag any work that depends on a particular answer.
+- The items in `docs/open-decisions.md` record user rulings. Never resolve
+  an open question by assumption, and flag any work that depends on a
+  particular answer. Decisions #8–#11 (2026-09-21) reshaped the MVP toward
+  sector aggregation; work predating them must be checked against the pivot.
 
 ## What xevents is NOT
 
 - Not a breach verification service. We do not confirm intrusions; we record
   claims about them.
+- Not a named-victim ledger. The public surface names no organizations —
+  ransomware is a shaming business and we do not do its publicity work.
+- Not a threat-actor billboard. No actor brand names on the public surface.
 - Not a leak-data mirror. We never acquire, host, or redistribute stolen content
   or personal data. We index publicly visible listing metadata and screenshots
-  only.
+  only (raw evidence lives in the private repo; the public manifest carries
+  hashes, not bytes).
 - Not a second ransomware.live. We do not derive bulk datasets from
   terms-restricted aggregators (see Licensing below).
 - Not an indicator platform. MISP/OpenCTI cover IoCs; xevents covers incidents
@@ -46,7 +61,9 @@ rules; `docs/` is the theory, `research/landscape-report.md` is the evidence.
 ## The doctrine (non-negotiable)
 
 1. **Observations are immutable.** Once written, an observation never changes.
-   If it was wrong, append a correction event.
+   If it was wrong, append a correction event. (Narrow exception: severity-1
+   personal-data/secret publication may rewrite public history, logged —
+   ADR 0010 §3.)
 2. **Echoes are not votes.** Repeated or re-aggregated claims do not corroborate
    each other. Confidence counts independence classes, not raw source count.
    (xfeeds heritage: independence classes over file counts.)
@@ -56,6 +73,9 @@ rules; `docs/` is the theory, `research/landscape-report.md` is the evidence.
    Never present an attacker's listing as an established breach.
 5. **Corrections are load-bearing.** The retraction ledger is a first-class
    output, not an afterthought.
+6. **Names stay private.** No organization or threat-actor name crosses the
+   aggregation boundary. The name-scan gate (ADR 0010 §1, G5) enforces this
+   mechanically; the naming policy (docs/naming-policy.md) defines it.
 
 ## Source-of-truth rules
 
@@ -101,16 +121,25 @@ Authoritative reasoning: ADR 0002. This section is the rules.
 
 Authoritative reasoning: ADR 0003. This section is the rules.
 
-- **Capture at ingest.** Every observation gets its evidence then and there:
-  timestamped screenshot + raw HTML/metadata at minimum; WARC where feasible.
-- **Content-addressed storage.** Evidence artifacts are stored by SHA-256; the
-  hash is recorded on the observation.
-- **No stolen content, no personal data.** Redact or exclude personal data
-  (names, emails, phone numbers in ransom notes or screenshots) before storage.
-  Index metadata, not payloads.
-- **Retention is documented and applied.** Evidence for retracted or false
-  claims is retained alongside its correction — deletion would destroy the audit
-  trail.
+- **Capture at ingest, into the private repo.** Every observation gets its
+  evidence then and there: raw API response (byte-faithful), source
+  screenshot, fetch metadata — stored content-addressed (SHA-256) under
+  `evidence/` in `xevents-internal`.
+- **The public gets hashes, not bytes.** The evidence manifest
+  (`evidence-manifest.jsonl`, public repo) carries hashes + provenance per
+  observation. Raw name-bearing evidence never enters the public repo
+  (docs/evidence-storage.md).
+- **No stolen content, no personal data on the public surface.** The
+  automated PII screen (ADR 0010, G2) runs at capture; the naming policy
+  (docs/naming-policy.md) plus the name-scan gate (ADR 0010, G5) keep the
+  public corpus name-free by construction.
+- **Breach contents are never published.** Explicit non-goal
+  (open-decisions.md #10). Characterize claimed data classes; do not
+  acquire or redistribute payloads.
+- **Retention is documented and applied** (docs/retention-policy.md):
+  git history is the retention mechanism; the ledger is forever.
+  Evidence for retracted or false claims is retained alongside its
+  correction — deletion would destroy the audit trail.
 - If a source's ToS forbids archival copying, do not archive it. Record the ToS
   constraint as an observation and fall back to linking with a fetched-at
   timestamp.
@@ -186,6 +215,10 @@ Authoritative reasoning: ADR 0003. This section is the rules.
   terms before building; terms change.
 
 ## Automation (xfeeds pattern — ADR 0009)
+
+> Phase note: the automation below is **build-phase design**, not current
+> state. The repo is documentation-only until the project lead authorizes
+> execution; no workflows exist on `main` today.
 
 xevents runs like xfeeds: fully automated on GitHub Actions + Pages.
 

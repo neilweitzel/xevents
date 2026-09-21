@@ -117,3 +117,25 @@ was never written down. RansomLook, not ransomfeed.it, is first because:
   third-party docs, not primary); ransomfeed.it exact API endpoints;
   RansomLook v1.9.0 "2,000 onion sites" claim. Verify before building ingest
   against them.
+
+## Pivot note, 2026-09-21 (user decisions #8–#11)
+
+The licensing doctrine is unchanged: RansomLook (CC BY 4.0) remains the
+MVP's one source; ransomware.live remains excluded without written
+permission. The pivot changes where licensed content lives:
+
+- **Two-repo split.** Raw payloads and screenshots are ingested into
+  `xevents-internal` (private) — archival of CC BY 4.0 material for
+  research audit is permitted. The public repo (`xevents`) carries only
+  derived, name-free sector aggregates plus the evidence manifest (hashes +
+  provenance), with attribution strings satisfying CC BY 4.0 wherever
+  RansomLook-derived content appears.
+- **Attribution travels with the aggregate**, including into the JSON
+  export (data-model.md export contract). An aggregate separated from the
+  site must still attribute its sources.
+- The naming policy (docs/naming-policy.md) is now the primary
+  minimization measure; the lawful-basis memo template
+  (docs/lawful-basis-memo-template.md) is rewritten around the two-repo
+  split.
+
+Status remains `proposed (pending user redline)`.

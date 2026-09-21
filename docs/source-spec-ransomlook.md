@@ -72,3 +72,11 @@ Each item is a JSON object with exactly these fields:
 - Audit-team and private entries are noise the poller must filter; any
   change to those conventions upstream must surface as a poller-version
   bump, not a silent behavior change.
+- **No public full-index endpoint** (verified 2026-09-21 against the
+  operator's documented API surface). Unaffected public endpoints are
+  `recent`/`last`/`period` queries plus `group` and `search` lookups;
+  `/api/export/{db}` requires an operator-issued API key and is not a
+  runtime dependency. The de-listing rule (open-decisions.md #3/#11) is
+  therefore implemented as the operational equivalent: three consecutive
+  missed polls **plus** absence from a rolling `/recent` window **plus** a
+  negative direct `/search` for the item — never a single missed poll.

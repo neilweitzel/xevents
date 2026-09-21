@@ -1,7 +1,12 @@
 # xevents — Decision brief: four open questions
 
 - Date: 2026-09-18
-- Status: for redline — nothing here is decided until the project lead rules.
+- Status: **resolved 2026-09-20** — the project lead ruled on all four
+  questions ("Yes approve all"). This brief is now a historical record of
+  what was proposed and why. The rulings are recorded in
+  [open-decisions.md](open-decisions.md); subsequent user
+  decisions #8–#11 (2026-09-21) further reshaped the project and are
+  recorded there.
 
 ## How to use this document
 

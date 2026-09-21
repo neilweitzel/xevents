@@ -4,13 +4,21 @@
 user signs off. The items in `docs/open-decisions.md` also gate parts of
 this scope; wherever this document touches one, it says so.
 
+**Pivot note, 2026-09-21 (open-decisions.md #8–#11):** the public surface
+is sector-aggregated — no organization names, no threat-actor brand names.
+The unit of the public page is the sector × time-window aggregate, built
+from internal full-fidelity observations held in the private
+`xevents-internal` repo. Non-goals 4 (research surface) and 5 (sector
+classification) are lifted into MVP scope by user decision. The status
+above is unchanged: still PROPOSAL pending the user's redline.
+
 ## What the MVP proves
 
 That the core loop works end to end on real data, at the highest quality bar:
 
-**ingest → immutable observation + captured evidence → entity resolution →
-incident resolution → explainable confidence → correction handling →
-queryable output.**
+**ingest → immutable observation (private) + captured evidence → sector
+classification → explainable confidence + victim-acknowledged status →
+correction handling → name-free aggregates → public research surface.**
 
 One source, done well, before any second source is added. The pipeline is
 designed source-agnostic so a second source is a new poller + parser, not a
@@ -53,43 +61,44 @@ redesign.
   item 8, if accepted, carry source metadata and provenance as evidence in
   place of screenshots, which cannot exist for historical listings.
 
-### 3. Entity resolution (MVP subset)
+### 3. Sector classification (MVP subset; entity resolution narrowed by pivot)
 
-- Pipeline: local normalization → SEC tickers/CIK → GLEIF → local alias
-  table → human-review queue (ADR 0005). The reviewer is the project lead;
-  the queue is triaged before MVP sign-off.
-- Every enrichment step recorded as an observation (`claim_type=enrichment`).
-  Misnamings become aliases, never silent fixes.
-- **Deferred to post-MVP:** Wikidata enrichment, NAICS sector mapping,
-  OpenFIGI corroboration (see non-goals 5).
-- **Launch gate:** the GLEIF redistribution license text is UNVERIFIED in
-  research — it must be verified before building on GLEIF data, not after.
-- **Acceptance:** every resolution attempt is evidenced as an observation;
-  unresolvable subjects keep `entity_id` null with the raw string preserved;
-  the review queue is empty or explicitly deferred; the coverage-boundary
-  statement is published (see 7).
+- **Pivot note:** public entity resolution is replaced by **sector
+  classification**. Internal observations keep `subject_raw` verbatim and
+  a private entity record (for audit and re-derivation); the public
+  pipeline classifies each observation into the NAICS 2-digit sector spine
+  (`unclassified` when the evidence does not support it — never a guess).
+  Organization-name resolution (SEC/GLEIF/Wikidata) is deferred; it served
+  the named-ledger design this pivot retires.
+- Pipeline: local normalization → sector heuristics from listing text →
+  human-review queue for first-seen and low-confidence classifications
+  (ADR 0010: novel taxonomy values are a 100%-review class).
+- Every classification step recorded as an observation
+  (`claim_type=enrichment`). Misclassifications become corrections, never
+  silent fixes.
+- **Acceptance:** every observation carries a sector or an honest
+  `unclassified`; the review queue is empty or explicitly deferred; the
+  coverage-boundary statement is published (see 7).
 
-### 4. Observation → incident resolution (within-source)
+### 4. Observation → incident resolution (within-source, internal)
 
 - Repeat listings and re-observations group into incidents via typed
   `incident_membership` rows with human-readable rationales (ADR 0001).
-  Incident IDs stable; resolution model version recorded in the
-  `model_version` registry (data-model.md).
+  **Pivot note:** incidents are an *internal* construct now — the unit of
+  audit and confidence assessment, not the unit of the public page. The
+  public page shows sector aggregates computed over incidents; incident
+  titles, summaries, and entity references never cross the aggregation
+  boundary (docs/naming-policy.md).
 - **Grouping rule (MVP).** Observations group into one incident when they
   share the normalized threat-group string and resolve to the same victim
   entity (or the same unresolvable `subject_raw` string). Grouping rationale
-  is generated from the rule plus the specific evidence (e.g. "same
-  normalized group 'qilin', same resolved entity ACME Corp (CIK 000123);
-  3 observations, 2026-09-10…2026-09-18"); ambiguous cases go to the review
-  queue instead of auto-grouping.
+  is generated from the rule plus the specific evidence; ambiguous cases go
+  to the review queue instead of auto-grouping.
 - **Relist after removal.** A relist following a `removed_confirmed`
   listing state opens a **new candidate incident**, linked to the prior
   incident in the rationale. Re-compromise is a distinct event until
   evidenced otherwise; the reviewer confirms or merges. (ADR 0007: removal
   ≠ retraction.)
-- **Victim rename mid-stream.** A changed `subject_raw` for the same
-  underlying org becomes an `alias` row with provenance; the incident keeps
-  its ID and the membership rationale notes the rename.
 - **Explicitly:** with one source there is no cross-source reconciliation.
   MVP "reconciliation" means dedup, repeat-listing grouping, and correction
   handling — not multi-vantage corroboration. Cross-source reconciliation is
@@ -98,51 +107,61 @@ redesign.
   incident; a relist-after-removal opens a linked candidate incident; every
   membership link carries a rationale a non-author can follow.
 
-### 5. Explainable confidence
+### 5. Explainable confidence + victim-acknowledged status
 
 - Band + rationale + contributing independence classes + inputs hash on every
   incident with ≥1 observation (ADR 0006). Assessments superseded, never
   edited. Weights are internal model inputs; the band is the published output.
+- **Victim-acknowledged status** (open-decisions.md #9) rides alongside the
+  band: `acknowledged` / `not_acknowledged` / `unknown`, sourced strictly to
+  the victim's own public disclosure. No percentage scores anywhere.
 - **Honest single-source behavior:** with one independence class in play,
   most incidents assess `unverified` or `low`. The model must not manufacture
   confidence out of repetition.
-- Band set pending open decision #1.
 - **Acceptance:** any incident's band traces to its observations, classes,
-  and rationale with no manual reconstruction.
+  and rationale with no manual reconstruction; any `acknowledged` status
+  traces to the cited victim disclosure.
 
 ### 6. Correction ledger + dispute channel + de-listing detection
 
 - Append-only correction events (`correction`/`denial`/`removal`/`retraction`/
-  `dispute_opened`/`dispute_resolved`); claim-framing mandatory on all
-  outputs (ADR 0004). Dispute handling is manual in MVP.
+  `dispute_opened`/`dispute_resolved`/`administrative_note`); claim-framing
+  mandatory on all outputs (ADR 0004). Dispute handling is manual in MVP;
+  the slim process is docs/dispute-process.md (sector-classification
+  corrections, internal-record inquiries, provenance challenges).
 - De-listing detection: re-poll + diff against `listing_state`; removal
   observations feed incident review but **never auto-retract** (ADR 0007).
-  Detection threshold pending open decision #3. Dispute SLA pending open
-  decision #4.
-- **Acceptance:** a simulated victim denial and a simulated de-listing both
-  propagate end to end — observation → correction event → re-resolution →
-  superseded assessment — with the full history visible and nothing deleted.
+  **Pivot note:** the de-listing threshold (open-decisions.md #3, as
+  operationalized in #11) governs *internal* observations; removals
+  propagate to the public surface as aggregate recomputation plus ledger
+  entries — there is no public victim entry to de-list.
+- **Acceptance:** a simulated sector misclassification and a simulated
+  de-listing both propagate end to end — observation → correction event →
+  re-resolution → recomputed aggregate — with the full history visible and
+  nothing deleted.
 
-### 7. Minimal read/query surface ("operational surface")
+### 7. Public research surface (xfeeds-style dashboard)
 
-- **Form (decided 2026-09-20, ADR 0009):** a public static site on GitHub
-  Pages, generated by the pipeline from `data/` into `site/` and deployed
-  as a Pages artifact. No server, no database, no auth in the MVP.
-- Incident list with filters (entity, threat group, date range, confidence
-  band, status); incident detail (observations, evidence, corrections,
-  confidence rationale); correction-ledger view; JSON export of incidents +
-  observations.
+- **Form (decided 2026-09-20, ADR 0009; reshaped 2026-09-21, decisions
+  #8/#11):** a public static site on GitHub Pages: sector activity bands,
+  sector detail pages (vector/malware-class/victim-acknowledged
+  breakdowns), methodology, correction ledger, evidence-manifest browser,
+  JSON aggregate export. Full page spec: docs/dashboard-spec.md.
+- The surface serves the four honest MVP practitioner jobs (sector trend
+  research; vector/method analysis; disclosure-lag research where both
+  endpoints are evidenced; offline dataset analysis) and disclaims the
+  rest (victim lookup, victim notification, alerting, attribution
+  verdicts, breach verification) — see docs/dashboard-spec.md.
 - Attribution strings rendered wherever CC BY 4.0-derived content appears.
   The coverage-boundary statement is published on the surface (required
   contents: entity classes resolved well vs missed, source coverage windows,
   known blind spots — see data-model.md).
-- This is the **operational surface**, not the research surface (glossary).
-  No trend analytics in MVP.
 - **Launch gate:** the written lawful-basis / public-interest research memo
-  (ADR 0003) must exist and be reviewed before the surface serves data
-  publicly. No memo, no public surface.
+  (docs/lawful-basis-memo-template.md) must exist and be reviewed before
+  the surface serves data publicly. No memo, no public surface.
 - **Acceptance:** everything above reachable without manual DB queries;
-  exported JSON re-derives from the observation log alone.
+  exported JSON re-derives from the observation log alone; the name-scan
+  gate (ADR 0010 G5) passes on every published batch.
 
 ### 8. Historical baseline (proposal)
 
@@ -172,8 +191,8 @@ Lifting any non-goal requires a new ADR **and** the user's explicit approval
 | 2 | Any second ingest source — including breach-disclosure sources (EDGAR, state AGs, HHS OCR) and KEV | One source done well beats three done thinly; the pipeline is source-agnostic by design | Post-MVP ADR per source, after the MVP-done checklist passes |
 | 2a | (Carve-out, not a lift) Frozen, dead-source archives — the ransomwatch 2020–2025 baseline proposed in item 8 | An archive adds no ongoing ingest complexity and is tracked as its own proposal (open-decisions.md #6), not as a second live source | Decided under open-decisions.md #6 |
 | 3 | Cross-source claim reconciliation | Requires ≥2 sources; MVP reconciliation is within-source only | When non-goal 2 is lifted |
-| 4 | Public research/analytics surface — trend dashboards, lag analytics, sector patterns, vendor concentration, victim counts | Analytics over a thin corpus mislead; the operational surface is the MVP output | Post-MVP ADR, gated on a corpus size/quality bar set by the user |
-| 5 | Sector/vertical classification (NAICS mapping, Wikidata enrichment, OpenFIGI corroboration) | Serves the research surface (non-goal 4), not the core loop | With non-goal 4 |
+| 4 | ~~Public research/analytics surface — trend dashboards, lag analytics, sector patterns, vendor concentration, victim counts~~ | **LIFTED into MVP scope by user decision 2026-09-21 (open-decisions.md #8).** The sector-aggregated research surface *is* the MVP output; victim counts are published as sector aggregates, never named entries. Analytics over a thin corpus still mislead — the launch corpus bar is set in docs/dashboard-spec.md and ADR 0010 §5 (burn-in). | Lifted |
+| 5 | ~~Sector/vertical classification (NAICS mapping, Wikidata enrichment, OpenFIGI corroboration)~~ | **LIFTED into MVP scope by user decision 2026-09-21 (open-decisions.md #8)** as NAICS 2-digit sector classification (item 3). Wikidata/OpenFIGI organization enrichment stays deferred — it served the retired named-ledger design. | Lifted (partial) |
 | 6 | CVE→incident linkage analytics | Needs KEV ingest (non-goal 2) plus an incident corpus; the schema already reserves `entity_kind=cve` and `claim_type=vuln_exploit_claim` | With non-goal 2, via its own ADR |
 | 7 | STIX 2.1 export / OpenCTI connector | Interoperability, not core value | Post-MVP ADR on user request |
 | 8 | Automated dispute handling | Volume doesn't justify it; manual keeps quality highest | Post-MVP, on dispute volume |
@@ -184,13 +203,17 @@ Lifting any non-goal requires a new ADR **and** the user's explicit approval
 ## MVP-done checklist
 
 - [ ] Poller + idempotent ingest + evidence capture running on RansomLook
-- [ ] Entity resolution with evidenced steps; review queue triaged; coverage
-      boundary published
+      (private repo)
+- [ ] Sector classification with evidenced steps; review queue triaged;
+      coverage boundary published
 - [ ] Incidents resolving with rationales; confidence assessments explainable
-      end to end
+      end to end; victim-acknowledged statuses sourced
 - [ ] Correction + de-listing propagation demonstrated on simulated inputs
-- [ ] Operational query surface + JSON export live, with claim-framing and
-      attribution
+      (aggregate recomputation + ledger)
+- [ ] Public research surface + JSON aggregate export live, with claim-framing,
+      attribution, and the name-scan gate passing
+- [ ] Evidence manifest published and retrieval workflow verified end to end
 - [ ] ransomwatch baseline loaded (if proposal 8 accepted)
 - [ ] Open decisions resolved by the user
-- [ ] GLEIF license text verified; RansomLook terms re-verified at build time
+- [ ] Lawful-basis memo written and reviewed (launch gate)
+- [ ] RansomLook terms re-verified at build time

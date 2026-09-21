@@ -42,11 +42,15 @@ redistribution of stolen content or personal data.
    the artifact matches what was captured.
 3. **Redact before storage.** No stolen content, no personal data. Names,
    emails, phone numbers, and other personal data visible in screenshots or
-   HTML are redacted or excluded before the artifact is stored. Index metadata,
-   not payloads. **Pre-public-surface gate:** a written lawful-basis /
+   metadata. Personal data incidentally present in raw bytes is flagged at
+   capture by the automated screen (ADR 0010, G2) with a redaction note
+   traveling on the observation; raw bytes are stored as-retrieved in the
+   private repo for audit, and public derivatives are name-free by the G5
+   gate. Index metadata, not payloads, on the public surface.
+   **Pre-public-surface gate:** a written lawful-basis /
    public-interest research justification (GDPR posture per landscape §6.3),
    with pseudonymization and minimization applied throughout, must exist and
-   be reviewed before the operational surface serves data publicly. No memo,
+   be reviewed before the public surface serves data publicly. No memo,
    no public surface.
 4. **Retention preserves the audit trail.** Evidence for retracted or false
    claims is retained alongside its correction events — silent deletion would
@@ -75,3 +79,23 @@ redistribution of stolen content or personal data.
 - Landscape §6.3 (GDPR posture; ransomware.live/GalaxyWarden
   metadata-and-screenshots-only model; no known lawsuits against trackers —
   UNVERIFIED, absence of search results, not proof).
+
+## Pivot note, 2026-09-21 (user decisions #8–#11)
+
+Capture-at-ingest is unchanged. The storage destination is split:
+
+- **Raw artifacts → `xevents-internal` (private):** `evidence/<sha256>`
+  holds screenshots, raw payloads, fetch metadata — name-bearing by
+  necessity. Content-addressed, write-once.
+- **Public → `evidence-manifest.jsonl` in `xevents`:** one row per
+  observation, carrying hashes and provenance, name-free by the G5 gate.
+  The manifest is the public audit commitment (docs/evidence-storage.md).
+- The **separate public `xevents-evidence` repo** envisioned in the
+  2026-09-20 draft is superseded (open-decisions.md #11) — never created,
+  explicitly rejected. The manifest lives in the public repo; raw evidence
+  lives in the private repo. There is no third repo.
+- The practitioner retrieval workflow (manifest page on the dashboard:
+  hash the source record yourself, compare) is specified in
+  docs/dashboard-spec.md.
+
+Status remains `proposed (pending user redline)`.
