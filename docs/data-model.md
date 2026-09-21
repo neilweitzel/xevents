@@ -181,6 +181,7 @@ One source's claim, seen once. **Immutable.** The system of record (ADR 0001).
 | `data_classes_claimed` | jsonb | array of `{class, status}`; class from the controlled taxonomy (email, name, postal_address, phone, dob, national_id, financial_account, payment_card, health_info, credentials, government_id, biometric, other); status `claimed` (as the source asserts) or `victim_confirmed` (only when the victim's own public disclosure confirms it). Never published as breach contents (open-decisions.md #10) |
 | `raw_payload` | jsonb | the source's raw record, verbatim |
 | `pipeline_version` | text | ingest pipeline version that wrote this row |
+| `load_kind` | enum | `live_ingest` (the default, forward-going ingest) \| `backfill_load` (RansomLook first-run historical backfill, ADR 0010 §2). Backfilled observations are held internal-only and do not contribute to the 500-observation burn-in count (open-decisions.md #17). |
 | `created_at` | timestamptz | == `observed_at` in practice; kept for audit |
 
 Relationships: one observation → many `evidence_artifact`; one observation →
