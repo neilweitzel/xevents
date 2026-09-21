@@ -32,8 +32,8 @@ review decisions). The public build never reads the private repo. See
   dispute/correction handling.
 - [docs/lawful-basis-memo-template.md](docs/lawful-basis-memo-template.md) —
   the launch-gate memo template. Unwritten; no memo, no public surface.
-- [docs/adr/](docs/adr/) — Architecture Decision Records (all `proposed`,
-  pending user redline):
+- [docs/adr/](docs/adr/) — Architecture Decision Records (accepted
+  2026-09-21 on user redline of PR #8, except 0008 superseded by 0009):
   - 0001 — immutable observations vs cautiously-resolved incident records
   - 0002 — licensing-clean ingestion architecture
   - 0003 — capture-at-ingest evidence preservation

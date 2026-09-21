@@ -1,6 +1,6 @@
 # ADR 0001: Immutable observations, cautiously-resolved incident records
 
-- Status: proposed (pending user redline)
+- Status: accepted (2026-09-21, user redline on PR #8)
 - Date: 2026-09-18
 - Deciders: project lead
 
@@ -89,4 +89,4 @@ records live and who sees them:
   entry that affects an aggregate propagates as aggregate recomputation on
   the public surface (ADR 0009 pivot note).
 
-Status remains `proposed (pending user redline)`.
+Status: accepted (2026-09-21, user redline on PR #8).

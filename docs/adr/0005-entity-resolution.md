@@ -1,6 +1,6 @@
 # ADR 0005: Entity-resolution strategy
 
-- Status: proposed (pending user redline)
+- Status: accepted (2026-09-21, user redline on PR #8)
 - Date: 2026-09-18
 - Deciders: project lead
 
@@ -139,5 +139,5 @@ alias table → review queue) served the retired named-ledger design. It is
   post-MVP, gated on a decision to reintroduce named resolution, which
   would itself require a new ADR.
 
-Status remains `proposed (pending user redline)`; this ADR's public-surface
+Status: accepted (2026-09-21, user redline on PR #8); this ADR's public-surface
 pipeline is superseded-in-part, internal linkage retained.

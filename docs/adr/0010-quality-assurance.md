@@ -1,6 +1,6 @@
 # ADR 0010: Quality assurance, review, and testing controls
 
-- Status: proposed (pending user redline)
+- Status: accepted (2026-09-21, user redline on PR #8)
 - Date: 2026-09-21
 - Deciders: project lead
 

@@ -1,6 +1,6 @@
 # ADR 0002: Licensing-clean ingestion architecture
 
-- Status: proposed (pending user redline)
+- Status: accepted (2026-09-21, user redline on PR #8)
 - Date: 2026-09-18
 - Deciders: project lead
 
@@ -44,12 +44,12 @@ Licensing, not engineering, is the binding constraint on xevents' data supply
    archive, plus our own primary collection.
 2. **ransomware.live is explicitly excluded as a dependency.** No storage of
    its data at scale, no republication, no build-time or run-time dependency.
-   **UNDECIDED (open-decisions.md #2):** whether manual, query-level
-   cross-checks of individual facts are acceptable. Until the user decides,
-   treat any contact as prohibited: no queries, manual or automated. (If the
-   user approves the carve-out, the rule becomes: minimal, documented, never
-   automated at bulk — verifying a single fact ≠ extracting the database,
-   but the line is gray.)
+   **DECIDED (open-decisions.md #2, 2026-09-20):** no contact by default —
+   no queries, manual or automated. A carve-out for minimal, documented,
+   single-fact manual lookups (never automated, never at bulk) requires
+   separate explicit approval; bulk derivation, storage at scale,
+   republication, and any build/run-time dependency are excluded under
+   every option.
 3. **MVP pins exactly one foundation source: RansomLook.** The full
    foundation-source list above is the approved *pool*; MVP builds on one
    (docs/mvp-scope.md). Adding a second source is a scope change: new ADR +
@@ -138,4 +138,4 @@ permission. The pivot changes where licensed content lives:
   (docs/lawful-basis-memo-template.md) is rewritten around the two-repo
   split.
 
-Status remains `proposed (pending user redline)`.
+Status: accepted (2026-09-21, user redline on PR #8).

@@ -31,10 +31,11 @@ rules; `docs/` is the theory, `research/landscape-report.md` is the evidence.
 ## Scope discipline
 
 - The only approved build target is `docs/mvp-scope.md`.
-- Lifting any non-goal, adding any source, or changing any `proposed` ADR
+- Lifting any non-goal, adding any source, or changing any `accepted` ADR
   requires a **new ADR and the user's explicit approval**. An ADR without
-  user approval is a proposal, not a decision — all ADRs are currently
-  `proposed (pending user redline)`.
+  user approval is a proposal, not a decision — ADRs 0001–0007, 0009, 0010
+  were accepted 2026-09-21 on the user's redline of PR #8; 0008 is
+  superseded by 0009.
 - A new feature proposal must cite which MVP acceptance criterion it serves.
   If it serves none, reject it or park it as a post-MVP ADR proposal.
 - The items in `docs/open-decisions.md` record user rulings. Never resolve
@@ -99,9 +100,10 @@ Authoritative reasoning: ADR 0002. This section is the rules.
   FREELY USABLE / PAID / RESTRICTED. **Build the stored and published dataset
   only on FREELY USABLE sources.**
 - **ransomware.live is excluded as a dependency.** No storage of its data at
-  scale, no republication, no build-time or run-time dependency. Whether even
-  manual query-level cross-checks are acceptable is **UNDECIDED**
-  (docs/open-decisions.md #2) — until decided, no contact at all.
+  scale, no republication, no build-time or run-time dependency. **DECIDED
+  (docs/open-decisions.md #2, 2026-09-20):** no contact by default — no
+  queries, manual or automated. A carve-out for minimal, documented,
+  single-fact manual lookups requires separate explicit approval.
 - **MVP builds on exactly one source: RansomLook** (CC BY 4.0). Attribution
   is mandatory; keep a per-source attribution record in the source registry.
   Adding a second source needs a new ADR + user approval.

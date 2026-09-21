@@ -55,8 +55,10 @@ Each item is a JSON object with exactly these fields:
    the full available history (verify the endpoint first). Backfilled rows
    get `observed_at` = backfill time; `source_claimed_at` = `discovered`.
    The two clocks keep backfill provenance honest.
-6. **Cadence:** UNDECIDED (open-decisions.md #5) — proposals are every
-   2 hours (operator guidance) and every 6 hours (decision-brief Q3).
+6. **Cadence (DECIDED open-decisions.md #5, 2026-09-20):** 2-hour trigger
+   with a 6-hour effective-cadence guard (the 2-hour trigger follows
+   RansomLook operator guidance; the guard holds the effective interval
+   at 6 hours).
 7. **Failure handling:** every run writes a `poll_run` row; partial failures
    (item-level parse faults) are counted in `items_errored` and logged, not
    fatal to the run.

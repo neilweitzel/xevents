@@ -1,16 +1,16 @@
 # xevents — MVP scope
 
-**Status:** PROPOSAL, 2026-09-18. Nothing in this file is approved until the
-user signs off. The items in `docs/open-decisions.md` also gate parts of
-this scope; wherever this document touches one, it says so.
+**Status:** ACCEPTED 2026-09-21 (user redline on PR #8). The items in
+`docs/open-decisions.md` also gate parts of this scope; wherever this
+document touches one, it says so.
 
 **Pivot note, 2026-09-21 (open-decisions.md #8–#11):** the public surface
 is sector-aggregated — no organization names, no threat-actor brand names.
 The unit of the public page is the sector × time-window aggregate, built
 from internal full-fidelity observations held in the private
 `xevents-internal` repo. Non-goals 4 (research surface) and 5 (sector
-classification) are lifted into MVP scope by user decision. The status
-above is unchanged: still PROPOSAL pending the user's redline.
+classification) are lifted into MVP scope by user decision. Accepted
+2026-09-21 on the user's redline of PR #8.
 
 ## What the MVP proves
 

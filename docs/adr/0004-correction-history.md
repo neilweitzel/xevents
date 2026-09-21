@@ -1,6 +1,6 @@
 # ADR 0004: Corrections, denials, removals, retractions as first-class history
 
-- Status: proposed (pending user redline)
+- Status: accepted (2026-09-21, user redline on PR #8)
 - Date: 2026-09-18
 - Deciders: project lead
 
@@ -48,8 +48,11 @@ itself establish … whether the organization was actually compromised."
 5. **The dispute/correction channel ships from day one**, before the public
    research surface. Published process, documented handling, named contact.
    This is a credibility prerequisite, not a post-launch feature. Handling is
-   manual in MVP (docs/mvp-scope.md, non-goal 8). **UNDECIDED
-   (open-decisions.md #4):** whether v1 docs state a response-time SLA.
+   manual in MVP (docs/mvp-scope.md, non-goal 8). **DECIDED (open-decisions.md
+   #4, 2026-09-20):** acknowledge within two business days (one business day
+   for wrongful-listing claims); initial assessment within ten business days.
+   The published dispute/correction process ships from day one with manual
+   handling.
 
 ## Consequences
 
@@ -89,4 +92,4 @@ The append-only correction doctrine is unchanged. Two additions:
   challenges — the sector-appropriate replacement for named-victim
   takedown disputes.
 
-Status remains `proposed (pending user redline)`.
+Status: accepted (2026-09-21, user redline on PR #8).

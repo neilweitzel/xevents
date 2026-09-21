@@ -1,6 +1,6 @@
 # ADR 0006: Explainable, independence-aware confidence model
 
-- Status: proposed (pending user redline)
+- Status: accepted (2026-09-21, user redline on PR #8)
 - Date: 2026-09-18
 - Deciders: project lead
 
@@ -30,7 +30,7 @@ from EDGAR alone.
 ## Decision
 
 1. **Confidence is a band with a rationale, not a bare number.**
-   Bands (PROPOSAL — pending open-decisions.md #1):
+   Bands (DECIDED open-decisions.md #1, 2026-09-20):
    `unverified` / `low` / `moderate` / `high` / `disputed`.
    (Avoids the xfeeds-era ambiguity between band labels and numeric scores:
    the band *is* the output; the rationale is the explanation.) Model
@@ -112,4 +112,4 @@ The band model is unchanged (`unverified` / `low` / `moderate` / `high` /
 - The honest single-source behavior (§4 above) is unchanged — and is now
   also visible to readers as aggregate-level band distributions.
 
-Status remains `proposed (pending user redline)`.
+Status: accepted (2026-09-21, user redline on PR #8).

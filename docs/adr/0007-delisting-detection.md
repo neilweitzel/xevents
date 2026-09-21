@@ -1,6 +1,6 @@
 # ADR 0007: De-listing / removal detection via re-polling and diffing
 
-- Status: proposed (pending user redline)
+- Status: accepted (2026-09-21, user redline on PR #8)
 - Date: 2026-09-18
 - Deciders: project lead
 
@@ -35,12 +35,14 @@ ALPHV; Royal→BlackSuit; Hunters International→World Leaks) mean a listing ca
    auto-retract** the incident. The rationale records the ambiguity: payment,
    false claim, or takedown.
 3. **Distinguish true de-listings from scraper failures.** A single missed
-   poll is not a removal. The threshold is parameterized — **UNSET, pending
-   open-decisions.md #3** (N consecutive misses and/or confirmation across
-   independent pollers). The chosen parameter is recorded in the
-   observation's pipeline version and in `listing_state`. Until decided, no
-   removal observation may be auto-emitted: flag candidates for human
-   review instead.
+   poll is not a removal. The threshold is **DECIDED (open-decisions.md #3,
+   2026-09-20):** three consecutive missed polls, plus absence from a
+   rolling `/recent` window and a negative direct `/search` for the item
+   (the operational equivalent of a full-index comparison — RansomLook
+   exposes no public full-index endpoint). The chosen parameter is recorded
+   in the observation's pipeline version and in `listing_state`. Until the
+   threshold is met, no removal observation may be auto-emitted: flag
+   candidates for human review instead.
 4. **Track group-identity chains as observations** (rebrands, seizures,
    successor groups) so removals are not misread across identities — a victim
    "removed" from BlackSuit's site the week Royal rebranded is not the same
@@ -52,9 +54,8 @@ ALPHV; Royal→BlackSuit; Hunters International→World Leaks) mean a listing ca
 
 - Polling cadence is a cost/accuracy tradeoff: too sparse and removal
   timestamps are useless; too aggressive and we burn rate limits and Tor
-  circuits. Cadence is UNDECIDED (open-decisions.md #5) — proposals are
-  every 2 hours (RansomLook operator guidance) and every 6 hours
-  (decision-brief Q3). Tune from the data once set.
+  circuits. Cadence is DECIDED (open-decisions.md #5, 2026-09-20): 2-hour
+  trigger with a 6-hour effective-cadence guard. Tune from the data once set.
 - Diffing needs a stable listing identity (group + victim + URL). Groups that
   rotate URLs or rename victims will produce false removals — the alias table
   (ADR 0005) and group-identity tracking are the mitigation.
@@ -93,4 +94,4 @@ docs/source-spec-ransomlook.md). What changed is the blast radius:
 - The de-listing threshold is unchanged by the pivot (open-decisions.md
   #3 stands; #11 operationalizes it).
 
-Status remains `proposed (pending user redline)`.
+Status: accepted (2026-09-21, user redline on PR #8).

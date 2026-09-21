@@ -1,6 +1,6 @@
 # ADR 0009: Static-first architecture — GitHub Actions + Pages, git as the system of record
 
-- Status: proposed (pending user redline)
+- Status: accepted (2026-09-21, user redline on PR #8)
 - Date: 2026-09-20
 - Deciders: project lead
 - Supersedes: ADR 0008 (PostgreSQL as the system of record)
@@ -115,4 +115,4 @@ pipeline-generated site). Two changes of substance:
   the public tree contains no organization/actor-name patterns. Rollback is
   per the runbook (docs/dashboard-spec.md, operations appendix).
 
-Status remains `proposed (pending user redline)`.
+Status: accepted (2026-09-21, user redline on PR #8).

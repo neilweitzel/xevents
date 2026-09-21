@@ -124,6 +124,19 @@ meaning.
   unresolvable subject, a contested correction. Queued, worked, and resolved
   with a recorded outcome — the queue itself is auditable. In MVP the
   reviewer is the project lead. (ADR 0005; data-model.md)
+- **confidence band** — The published output of a confidence assessment:
+  `unverified` / `low` / `moderate` / `high` / `disputed`. A band plus a
+  rationale, the contributing independence classes, and an inputs hash —
+  never a numeric percentage. With one independence class in play the band
+  caps at `low`. Assessments are versioned and superseded, never edited.
+  (ADR 0006; open-decisions.md #1)
+- **victim-acknowledged** — A binary incident attribute, orthogonal to
+  confidence: `acknowledged` / `unacknowledged`. Every incident starts
+  `unacknowledged` and becomes `acknowledged` only when a cited victim
+  disclosure (SEC 8-K Item 1.05, company press statement, state AG breach
+  notice, HHS OCR entry) confirms it. No intermediate states, no inference
+  from silence — the scale of unacknowledged claims is itself a research
+  finding. (open-decisions.md #9; ADR 0006)
 
 ## Time and analytics
 
@@ -173,3 +186,11 @@ meaning.
 - **claim framing** — The mandatory practice that every public-facing
   rendering states whose claim it is. Never present an attacker's listing
   as an established breach. (ADR 0004)
+- **burn-in** — The pre-launch review period: the first 500 observations
+  are 100% human-reviewed before the public surface serves data. The
+  public surface stays dark until burn-in completes. (ADR 0010 §5;
+  open-decisions.md #12)
+- **name-scan gate** — The mechanical pre-publication check (ADR 0010, G5)
+  that scans every aggregate batch for organization or threat-actor names
+  before it crosses the aggregation boundary. A batch that fails the gate
+  does not publish. (docs/naming-policy.md)

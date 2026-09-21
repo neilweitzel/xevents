@@ -21,15 +21,30 @@ call get added here; nothing here is ever resolved by assumption.
   build/run-time dependency are excluded under every option.
 - **Unblocks:** ADR 0002 finalization.
 
+## 3. De-listing detection threshold
+
+- **DECIDED 2026-09-20 by the user:** three consecutive missed polls plus
+  absence from the source's current full index, parameterized per source.
+  Calibrated against the six-hour effective cadence (decision #5).
+- **Unblocks:** ADR 0007 finalization; MVP scope item 6.
+
+## 4. Dispute-channel response SLA for v1
+
+- **DECIDED 2026-09-20 by the user:** acknowledge within two business days
+  (one business day for wrongful-listing claims); initial assessment within
+  ten business days. The published dispute/correction process ships from
+  day one with manual handling.
+- **Unblocks:** ADR 0004 finalization; MVP scope item 6.
+
 ## 5. Polling cadence
 
 - **DECIDED 2026-09-20 by the user:** two-hour trigger with a six-hour
   effective-cadence guard (the pipeline's current default; the 2-hour
   trigger follows RansomLook operator guidance, the guard holds the
   effective interval at 6 hours).
-- **Unblocks:** ADR 0007 finalization; open decision #3 (the N-missed-polls
-  threshold is calibrated against the six-hour effective cadence);
-  MVP scope item 6.
+- **Unblocks:** ADR 0007 finalization; decision #3 (decided — the
+  N-missed-polls threshold is calibrated against the six-hour effective
+  cadence); MVP scope item 6.
 
 ## 6. ransomwatch historical baseline
 
@@ -50,21 +65,6 @@ call get added here; nothing here is ever resolved by assumption.
   research memo must exist and be reviewed before the surface serves data
   publicly. No memo, no public surface. This is a tracked deliverable, not
   a decision — it is still unwritten.
-
-## 3. De-listing detection threshold
-
-- **DECIDED 2026-09-20 by the user:** three consecutive missed polls plus
-  absence from the source's current full index, parameterized per source.
-  Calibrated against the six-hour effective cadence (decision #5).
-- **Unblocks:** ADR 0007 finalization; MVP scope item 6.
-
-## 4. Dispute-channel response SLA for v1
-
-- **DECIDED 2026-09-20 by the user:** acknowledge within two business days
-  (one business day for wrongful-listing claims); initial assessment within
-  ten business days. The published dispute/correction process ships from
-  day one with manual handling.
-- **Unblocks:** ADR 0004 finalization; MVP scope item 6.
 
 ## 8. Sector-aggregated public surface (no org or actor names)
 
@@ -154,8 +154,9 @@ call get added here; nothing here is ever resolved by assumption.
   windows (~100 claims) produce meaningful sector cells; the audience's
   jobs are slow-loop research, not intraday alerting.
 - **"Insufficient data" is per-cell, not global.** Thin sector × week
-  cells suppress individually (small-cell rule pending decision — see
-  #13 below); the surface as a whole always publishes. Gating the entire
+  cells suppress individually (small-cell rule, decision #13: k=5 minimum
+  claims per published cell, tunable); the surface as a whole always
+  publishes. Gating the entire
   publish on a global threshold would make the site flicker between alive
   and dead for no analytic gain.
 - **Review never blocks the schedule.** Each weekly publish includes only
