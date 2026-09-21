@@ -107,7 +107,57 @@ reviewer id, timestamp, decision, and sample class.
 **Approval rule.** Single named-reviewer sign-off for routine items.
 **Two-person rule** for: publishing anything G2/G3 flagged (redaction
 override), any `disputed`-band aggregate, and any naming-policy edge case
-(§4 of docs/naming-policy.md).
+(§4 of docs/naming-policy.md), *including any addition to the G5
+allowlist (ADR 0013 §2).*
+
+**Solo-operator interim (open-decisions.md #18).** While the project has
+only one named reviewer, the two-person rule splits by case. Two of the
+three cases fall back to disciplined single-reviewer review; the third
+stays hard-blocked with no bypass.
+
+- **G2/G3 flag override (redaction override) — single-reviewer with
+  discipline.** Rationale: the harm mode is "published something we
+  shouldn't have," which is recoverable via the correction ledger
+  (§4). The interim controls:
+  - A 24-hour cooling-off period between the flag timestamp and the
+    override decision.
+  - A written second-look note: the reviewer re-reads their own
+    justification after the cooling-off period and either confirms or
+    reverses. Both entries are recorded.
+  - Automatically restores to two-person the moment a second reviewer
+    is named in the reviewer registry.
+- **`disputed`-band aggregate publication — single-reviewer with
+  discipline.** Same controls as G2/G3 override. Same rationale: the
+  correction path is well-defined.
+- **Naming-policy edge cases, including G5 allowlist entries —
+  hard-blocked, no bypass.** Rationale: an allowlist entry is a
+  deliberate bypass of the load-bearing name-scan control (ADR 0013).
+  A solo operator adding allowlist entries reduces G5's guarantee to
+  "the operator's judgment on any given day," which is the exact
+  collusion path ADR 0013 §7 named as an explicit non-defense.
+  - Until a second named reviewer exists, the G5 allowlist stays
+    empty.
+  - Any false positive G5 fires on becomes a quarantined batch.
+    Quarantined batches wait for a second reviewer to resolve or are
+    dropped; there is no single-reviewer path.
+  - When a second reviewer is named, this case reverts to the standard
+    two-person rule with no ADR amendment required — the interim
+    describes only the constrained state.
+
+**Surface-pause tripwire.** If more than 3 single-reviewer G2/G3 or
+`disputed`-band overrides occur in a rolling 7-day window, the public
+surface pauses on the next scheduled publish. Resuming requires either
+(a) a second named reviewer signing off on the accumulated overrides,
+or (b) a new ADR amendment. Rationale: the interim is meant to unblock,
+not to become the steady state; sustained reliance is the signal that a
+second reviewer is now a hard requirement.
+
+**Reviewer registry.** The list of named reviewers lives in
+`xevents-internal` (path to be pinned in the private repo's file-layout
+doc). Adding or removing a reviewer is itself a two-person action once a
+second reviewer exists; while solo, adding the first additional reviewer
+is single-reviewer with a written justification (bootstrapping
+exception — the alternative is a permanent deadlock).
 
 ### 3. Failure handling
 

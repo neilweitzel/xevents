@@ -86,6 +86,11 @@ whose primary function is identifying a criminal enterprise is not.
 Genuinely ambiguous cases (dual-use tools, commercial tooling abused by
 actors) go to the human review queue under the two-person rule (ADR 0010);
 the reviewer records the call and the reasoning, which becomes precedent.
+ADR 0010 §2 additionally classifies naming-policy edge cases — including
+any addition to the G5 allowlist (ADR 0013 §2) — as **hard-blocked under
+the solo-operator interim**: until a second named reviewer exists, the
+allowlist stays empty and quarantined batches wait rather than be
+resolved single-handedly (open-decisions.md #18).
 
 ## What this does not hide
 

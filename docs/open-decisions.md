@@ -346,3 +346,40 @@ call get added here; nothing here is ever resolved by assumption.
     interacts with ADR 0013's allowlist rule).
   - Private repo AGENTS.md + file-layout doc.
   - Second-wave publication decision (deferred to loader implementation).
+
+## 18. Two-person rule under solo operation
+
+- **DECIDED 2026-09-21 by the user (in-session):** the two-person rule
+  splits by case while the project has only one named reviewer. The
+  split preserves the load-bearing name-scan guarantee while unblocking
+  the two cases where the correction ledger already provides adequate
+  recovery.
+- **Cases 1 and 2 (G2/G3 flag override; `disputed`-band aggregate
+  publication):** single-reviewer with discipline. 24-hour cooling-off,
+  written second-look note after cooling-off, auto-restores to
+  two-person when a second reviewer is named.
+- **Case 3 (naming-policy edge cases, including G5 allowlist entries):**
+  hard-blocked, no bypass. Until a second named reviewer exists, the
+  G5 allowlist stays empty; batches G5 fires on stay quarantined or are
+  dropped. Rationale: ADR 0013 §7 named "allowlist collusion" as an
+  explicit non-defense; the interim must not silently defeat that.
+- **Surface-pause tripwire:** more than 3 single-reviewer overrides in a
+  rolling 7-day window pauses the public surface on the next publish;
+  resuming requires either a second reviewer signing off on the
+  accumulated overrides or a new ADR amendment.
+- **Reviewer registry:** lives in `xevents-internal`; exact path pinned
+  in the private repo's file-layout doc. Adding the first additional
+  reviewer is single-reviewer with a written justification
+  (bootstrapping exception — the alternative is a permanent deadlock);
+  every subsequent change is two-person.
+- **Amends:** ADR 0010 §2 (approval rule); docs/naming-policy.md §4
+  (allowlist cross-reference).
+- **Downstream unblocks:**
+  - ADR 0013 §2 allowlist behavior under solo operation is now
+    specified (currently: empty, hard-blocked).
+  - The private repo's file-layout doc gets a definite requirement
+    (reviewer registry path).
+- **Still open:**
+  - Private repo AGENTS.md + file-layout doc.
+  - Second-wave publication of backfilled aggregates (deferred to
+    loader implementation).
