@@ -71,3 +71,26 @@ ALPHV; Royal→BlackSuit; Hunters International→World Leaks) mean a listing ca
   85+ active groups, ~8,000 claimed victims in 2025).
 - Landscape §5.2 (Coveware: 23% of victims paid in Q3 2025 — removals are a
   measurable, policy-relevant signal).
+
+## Pivot note, 2026-09-21 (user decisions #8–#11)
+
+The detection mechanics are unchanged (three consecutive missed polls plus
+the operational full-index equivalent — rolling `/recent` window plus
+negative direct `/search`; never a single missed poll — see
+docs/source-spec-ransomlook.md). What changed is the blast radius:
+
+- **De-listing now governs internal observations only.** `listing_state`
+  and `removed_confirmed` live in `xevents-internal`. There is no public
+  victim entry to de-list — nothing about this pivot weakens the
+  detection; it shrinks what a removal affects.
+- **Propagation:** a confirmed removal becomes an internal `removal`
+  observation and a correction-ledger entry; the affected public
+  aggregates are recomputed and the removal is visible on the sector
+  detail page's ledger section. Removal ≠ retraction still holds: the
+  observation history is retained, the aggregate carries the
+  `removed_confirmed` contribution in its breakdown, and the ledger says
+  so.
+- The de-listing threshold is unchanged by the pivot (open-decisions.md
+  #3 stands; #11 operationalizes it).
+
+Status remains `proposed (pending user redline)`.

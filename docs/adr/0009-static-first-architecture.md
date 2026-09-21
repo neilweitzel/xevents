@@ -40,10 +40,12 @@ disable.
    scheduler drops slots), `cancel-in-progress` concurrency, full-history
    checkout with rebase-retry on push, self-deploying Pages, keepalive
    workflow.
-4. **The operational surface is a static site on GitHub Pages**, generated
-   by the pipeline from `data/` into `site/` and deployed as a Pages
-   artifact. The JSON export contract (data-model.md) is the published data
-   format — the site is rendered from it, not beside it.
+4. **The public surface is a static site on GitHub Pages**, generated
+   by the pipeline from aggregates into `site/` and deployed as a Pages
+   artifact. The aggregate JSON export contract (data-model.md) is the
+   published data format — the site is rendered from it, not beside it.
+   (Pivot 2026-09-21: sector aggregates per docs/dashboard-spec.md, built
+   across the two-repo boundary per the note below.)
 5. **Human review lives in GitHub Issues.** The `review_task` table becomes
    issues opened by the pipeline with review checklists (xfeeds
    `source-review.yml` precedent); resolutions are recorded as issue
@@ -91,3 +93,26 @@ disable.
   `source-review.yml` (issues as review prompts), `keepalive.yml` (14-day
   quiet threshold vs GitHub's 60-day disable), `pyproject.toml` (ruff 100,
   mypy strict). All verified via the GitHub API 2026-09-20.
+
+## Pivot note, 2026-09-21 (user decisions #8–#11)
+
+The static-first architecture is unchanged (no servers, no database,
+pipeline-generated site). Two changes of substance:
+
+- **What the site serves:** sector-aggregated research per
+  docs/dashboard-spec.md — sector overview (activity bands), sector detail
+  (vector/malware-class/victim-acknowledged breakdowns, ledger), methodology,
+  correction ledger, evidence-manifest browser, JSON aggregate export. No
+  incident detail pages exist; the claim-page indexing question from the
+  2026-09-20 review is resolved by the pivot (dashboard-spec.md).
+- **The two-repo build boundary.** The pipeline runs in two stages with a
+  deliberate gap: stage 1 (private) ingests, classifies, and aggregates in
+  `xevents-internal`; stage 2 (public) builds `site/` in `xevents` from
+  aggregate artifacts that crossed the boundary **only after the G5
+  name-scan gate passes** (ADR 0010 §1). The public build never reads the
+  private repo — not as a convention, as an enforcement point: stage 2's
+  inputs are the aggregate files that crossed the boundary, and CI verifies
+  the public tree contains no organization/actor-name patterns. Rollback is
+  per the runbook (docs/dashboard-spec.md, operations appendix).
+
+Status remains `proposed (pending user redline)`.

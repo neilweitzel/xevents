@@ -65,3 +65,116 @@ call get added here; nothing here is ever resolved by assumption.
   ten business days. The published dispute/correction process ships from
   day one with manual handling.
 - **Unblocks:** ADR 0004 finalization; MVP scope item 6.
+
+## 8. Sector-aggregated public surface (no org or actor names)
+
+- **DECIDED 2026-09-21 by the user:** the public xevents surface publishes
+  **sectors, attack vectors/methods, and generic malware classes — never
+  organization names and never threat-actor brand names.** Rationale: a
+  named-victim ledger amplifies extortion pressure (ransomware is a shaming
+  business); sector-level research keeps the analytic value (which
+  verticals are hit, how, by what means) while refusing to be the shaming
+  amplifier. Naming threat actors is likewise refused: no free advertising
+  for criminal brands. Victim-level detail remains available via links
+  back to the sources; xevents does not republish it.
+- **Consequences:** entity resolution (ADR 0005) shrinks to sector
+  classification + internal record-keeping; the public dispute surface
+  shrinks to sector-classification corrections and internal-record
+  inquiries; de-listing (decision #3) is reinterpreted below; non-goals 4
+  (research surface) and 5 (sector classification) in docs/mvp-scope.md are
+  **lifted into MVP scope** by this decision.
+- **Unblocks:** docs/naming-policy.md; dashboard spec; ADR 0010 §5
+  (name-scan gate).
+
+## 9. Victim-acknowledged status axis
+
+- **DECIDED 2026-09-21 by the user:** alongside the confidence bands
+  (decision #1), each incident carries a **victim-acknowledged** status —
+  binary: `acknowledged` / `unacknowledged` — sourced strictly to the
+  victim's own public disclosure (SEC 8-K Item 1.05, company press
+  statement, state AG breach notice, HHS OCR portal entry). Every incident
+  is `unacknowledged` until a cited victim disclosure confirms it. This is
+  a verifiable fact from public records, kept orthogonal to confidence in the
+  *claim*. No percentage scores anywhere: bands plus acknowledged-status,
+  no manufactured precision.
+- **Amended 2026-09-21 by the user:** the original three-state proposal
+  (`acknowledged` / `not_acknowledged` / `unknown`) is replaced with the
+  binary above — unacknowledged until acknowledged, no intermediate states.
+  The scale of unacknowledged claims is itself a research finding.
+- **Unblocks:** data-model.md (observation/incident fields); dashboard spec.
+
+## 10. Breach-content characterization (never publication)
+
+- **DECIDED 2026-09-21 by the user:** under no circumstance does xevents
+  publish breach contents (stolen data, dumps, samples). This is an
+  explicit non-goal. Instead, observations carry a controlled
+  **data-class taxonomy** (email, name, postal address, phone, date of
+  birth, national/SSN identifier, financial account, payment card, health
+  information, credentials, government ID, biometric, other), each tagged
+  `claimed` (as the source asserts) or `victim_confirmed` (only when the
+  victim's own public disclosure confirms that class was exposed). Classes
+  inherit the claim's confidence band; they do not get their own scores.
+- **Unblocks:** data-model.md; docs/naming-policy.md.
+
+## 11. Two-repo architecture (public + private)
+
+- **DECIDED 2026-09-21 by the user:** two repositories, not three.
+  `neilweitzel/xevents` (public) carries the application, the research
+  output, the docs, and the **evidence manifest** (hashes + provenance,
+  name-free). `neilweitzel/xevents-internal` (private) holds raw
+  observations at full fidelity (org/actor names as claimed), raw evidence,
+  ingest logs, and review decisions. The separate public evidence repo is
+  dropped: a hash manifest is small text and lives in the public repo.
+- **The aggregation boundary is the trust boundary.** The public build
+  never reads the private repo. Aggregation runs privately; only the
+  aggregate output crosses to public, after a name-scan gate asserts zero
+  organization/actor names in the outgoing batch (ADR 0010). Raw
+  name-bearing evidence never enters the public repo.
+- **Reinterpretation of decision #3:** the de-listing threshold (three
+  consecutive missed polls + absence evidence) now governs **internal**
+  observations — when an internal listing observation transitions to
+  `removed_confirmed`. The public surface shows aggregates, so there is no
+  public victim entry to de-list; removals propagate as aggregate
+  recomputation plus correction-ledger entries. The "current full index"
+  condition is implemented as the operational equivalent: absence from a
+  rolling `/recent` window plus a negative direct `/search` for the item
+  (verified 2026-09-21: RansomLook exposes no public full-index endpoint;
+  `/api/export/{db}` requires an operator-issued API key).
+- **Unblocks:** docs/evidence-storage.md rewrite; ADR 0010 §5; retention
+  rewrite.
+
+## 12. Publication cadence (weekly public, daily internal)
+
+- **DECIDED 2026-09-21 by the user:** ingest cadence and publication
+  cadence are decoupled. **Ingest stays fast** (decision #5: 2h trigger /
+  6h guard) — speed serves de-listing detection, not readers. **Internal
+  aggregation runs daily** (feeds the review queue). **The public surface
+  publishes weekly.** Rationale: ~14 items/day across ~20 sectors makes
+  daily public cells unpublishable under the small-cell rule; weekly
+  windows (~100 claims) produce meaningful sector cells; the audience's
+  jobs are slow-loop research, not intraday alerting.
+- **"Insufficient data" is per-cell, not global.** Thin sector × week
+  cells suppress individually (small-cell rule pending decision — see
+  #13 below); the surface as a whole always publishes. Gating the entire
+  publish on a global threshold would make the site flicker between alive
+  and dead for no analytic gain.
+- **Review never blocks the schedule.** Each weekly publish includes only
+  reviewed observations; unreviewed ones are excluded but counted with a
+  visible "pending review" line.
+- **Launch gate:** the public surface stays dark until burn-in completes
+  (first 500 observations reviewed, ADR 0010 §5) — the "enough data to
+  publish" threshold.
+- **Unblocks:** dashboard-spec.md (cadence section); ADR 0010 §4
+  (freshness SLOs: public aggregates stale after 2 weeks, internal
+  rollups stale after 2 days).
+
+## 13. Small-cell disclosure rule (OPEN)
+
+- **Question for the user:** weekly sector × week cells in thin sectors
+  (1–2 claims) plus source links are effectively victim pointers. Options:
+  **A.** suppress weekly cells under k=5, roll up to monthly (recommended);
+  **B.** adaptive granularity (weekly for high-volume sectors,
+  monthly/quarterly for thin ones); **C.** publish as-is with the honest
+  re-identification caveat. Noise injection rejected (contradicts
+  evidence-first). Differencing residual (monthly minus visible weeks can
+  imply a suppressed week) accepted under A, noted on the methodology page.

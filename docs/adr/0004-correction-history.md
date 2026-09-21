@@ -69,3 +69,24 @@ itself establish … whether the organization was actually compromised."
   against trackers — UNVERIFIED).
 - Landscape §2.2 (Maine AG offline June 12, 2026 after hoax filings) and §7.5
   (false claims and hoax injection as a load-bearing design driver).
+
+## Pivot note, 2026-09-21 (user decisions #8–#11)
+
+The append-only correction doctrine is unchanged. Two additions:
+
+- **New event type:** `administrative_note` (deletions, retention
+  transitions, rollbacks, name-bearing-ref omissions). The ledger stays
+  the credibility asset; the public correction-ledger page shows these
+  entries alongside corrections.
+- **Propagation semantics under aggregation:** a correction, denial,
+  removal, retraction, or dispute resolution that affects observations
+  propagates to the public surface as **aggregate recomputation** (the
+  aggregate's confidence/acknowledged breakdowns change) **plus** a ledger
+  entry on the sector detail page. The correction is visible where the
+  numbers are, not buried. (data-model.md, docs/dashboard-spec.md)
+- The slim dispute process (docs/dispute-process.md) now covers
+  sector-classification errors, internal-record inquiries, and provenance
+  challenges — the sector-appropriate replacement for named-victim
+  takedown disputes.
+
+Status remains `proposed (pending user redline)`.
