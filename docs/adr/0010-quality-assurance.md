@@ -73,13 +73,31 @@ a gate quarantines the batch instead of publishing.
 
 100% human review for:
 
-- all observations during **burn-in** (first 500 published observations or
-  first 30 days of publication, whichever is longer);
+- all **forward-going observations** during burn-in (first 500 published
+  observations produced by live ingest, or first 30 days of publication,
+  whichever is longer). Burn-in counts forward-going observations only
+  — backfilled observations do not contribute to the burn-in count and
+  are not subject to 100% burn-in review (see backfill rule below);
 - every item flagged by G2 or G3;
 - every first-seen sector/vector/malware-class value (novel taxonomy
   assignments are where misclassification hides);
 - every `victim_acknowledged` transition to `acknowledged` (the status is
   high-trust; its evidence bar must be).
+
+**Backfill rule (open-decisions.md #17).** The RansomLook first-run
+historical backfill enters `xevents-internal` under a `backfill_load`
+provenance marker. Backfilled observations:
+
+- Do not count toward the 500-observation burn-in threshold.
+- Are not subject to 100% burn-in review.
+- Are reviewed at the same 10% risk-stratified sampling rate as
+  post-burn-in steady-state observations, with 100% review still
+  applied to first-seen taxonomy values within the backfill.
+- Are held internal-only until the forward-going burn-in completes.
+  Public aggregates do not include backfilled observations until burn-in
+  is signed off; whether backfilled aggregates publish in a second wave
+  after burn-in is a separate downstream decision (see open-decisions.md
+  #17).
 
 After burn-in: **risk-stratified random sampling at 10%**, reviewed
 quarterly for calibration (if the miss rate in the sample exceeds 2%, the

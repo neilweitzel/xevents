@@ -39,6 +39,20 @@ call get added here; nothing here is ever resolved by assumption.
   proposal; amend on review if defer was intended.)
 - **Unblocks:** MVP scope item 8; the archive independence-class question
   (data-model.md).
+- **SUPERSEDED 2026-09-21 by the user (in-session):** the ransomwatch
+  archive is deferred. xevents is a live and recent research surface; the
+  frozen 2020–2025 archive stays available as a data sample for separate
+  research write-ups, but does not enter the pipeline or contribute to
+  any published aggregate. This ruling dissolves the archive
+  independence-class question (no `aggregator_ransomwatch_archive`
+  class is introduced in v1) and simplifies the burn-in interaction
+  (see decision #17 below). The earlier accept ruling is preserved on
+  record per the correction-ledger doctrine; this superseding entry is
+  the operative decision.
+- **Downstream changes** (this PR):
+  - `docs/mvp-scope.md` item 8 flipped from proposal to deferred.
+  - Non-goals table row 2a annotated as deferred.
+  - MVP-done checklist ransomwatch line removed.
 
 ## 7. Operational surface form and audience
 
@@ -293,3 +307,42 @@ call get added here; nothing here is ever resolved by assumption.
   - Two-person rule (in-session discussion pending your decision;
     interacts with ADR 0013's allowlist rule).
   - Private repo AGENTS.md + file-layout doc.
+
+## 17. Forward-going burn-in rule; RansomLook backfill scope
+
+- **DECIDED 2026-09-21 by the user (in-session):** burn-in counts
+  forward-going observations only. Backfilled observations enter
+  `xevents-internal` under a `load_kind = backfill_load` marker and:
+  - Do not contribute to the 500-observation burn-in threshold.
+  - Are not subject to 100% burn-in review.
+  - Are reviewed at the same 10% risk-stratified sampling rate as
+    post-burn-in steady-state observations.
+  - Are held internal-only until forward-going burn-in completes.
+- **RansomLook first-run backfill window:** default proposal is 12 months,
+  balancing "honest live/recent floor" against internal-review load. The
+  window is a downstream implementation decision — this ruling establishes
+  the rule that the window's observations are backfill-loaded, not the
+  window itself. If the eventual choice extends past 12 months, no ADR
+  amendment is required; the rule holds.
+- **Second-wave publication of backfilled aggregates** — whether the
+  backfilled range publishes to view 1 and view 2 in a second wave after
+  burn-in completes — is DEFERRED. Two internally-consistent positions:
+  - **Internal-only** (default position): backfill hydrates the private
+    corpus for entity resolution and internal analytics; public
+    aggregates start empty and fill forward from launch. Cleanest reading
+    of the doctrine.
+  - **Publish retroactively after burn-in:** backfilled aggregates
+    publish in a second wave, clearly labeled as retroactive. Larger
+    launch corpus at the cost of an "and also this batch we loaded once"
+    caveat.
+  - This choice is a launch-time decision, not a doctrine decision;
+    revisit when the backfill loader is built.
+- **Amends:** ADR 0010 §2 (burn-in / sampling regime).
+- **Downstream changes** (this PR):
+  - Data model gains `load_kind` enum on the observation record.
+  - ADR 0010 §2 backfill rule added.
+- **Still open:**
+  - Two-person rule (in-session discussion pending your decision;
+    interacts with ADR 0013's allowlist rule).
+  - Private repo AGENTS.md + file-layout doc.
+  - Second-wave publication decision (deferred to loader implementation).

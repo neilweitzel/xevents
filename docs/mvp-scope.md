@@ -171,21 +171,19 @@ redesign.
   gate (ADR 0010 G5) passes on every published batch; a weekly publish
   completes with the pending-review line accurate.
 
-### 8. Historical baseline (proposal)
+### 8. Historical baseline (DEFERRED)
 
-- Load the frozen ransomwatch 2020–2025 archive (Unlicense) as observations
-  to seed history. No live polling of a dead source.
-- Archive observations carry provenance marked `ransomwatch_archive` and
-  source metadata as evidence in place of screenshots (item 2 acceptance
-  carve-out). If accepted, the confidence model gains the independence
-  class `aggregator_ransomwatch_archive` (a frozen archive is its own
-  class — it cannot echo and cannot be re-polled); adding it is a model
-  change recorded in the `model_version` registry (ADR 0006).
-- **Archive location/format/loader are UNVERIFIED** — the loader spec must
-  be written and verified against the actual archive (joshhighet/ransomwatch
-  repository) before this proposal can be accepted.
-- **Acceptance:** archive items queryable with provenance marked
-  `ransomwatch_archive`.
+- **DEFERRED 2026-09-21** by user ruling superseding open-decisions.md #6.
+  xevents is a live and recent research surface; the frozen ransomwatch
+  2020–2025 archive is not loaded into the pipeline and does not feed any
+  published aggregate.
+- The archive remains available as a data sample for separate research
+  write-ups (its Unlicense terms permit that use); such write-ups cite
+  the archive directly and are not part of the xevents corpus.
+- Consequence: no `aggregator_ransomwatch_archive` independence class is
+  introduced in v1; ADR 0006's independence-class set is unchanged.
+- Reconsideration: post-MVP ADR, if a specific research use case for the
+  archive as pipeline input is identified.
 
 ## Non-goals (explicit)
 
@@ -197,7 +195,7 @@ Lifting any non-goal requires a new ADR **and** the user's explicit approval
 |---|---|---|---|
 | 1 | Tor crawler / primary DLS collection | Largest engineering investment; MVP proves the loop on a clean aggregator first | Post-MVP ADR, when RansomLook metadata gaps block a user-approved analytic |
 | 2 | Any second ingest source — including breach-disclosure sources (EDGAR, state AGs, HHS OCR) and KEV | One source done well beats three done thinly; the pipeline is source-agnostic by design | Post-MVP ADR per source, after the MVP-done checklist passes |
-| 2a | (Carve-out, not a lift) Frozen, dead-source archives — the ransomwatch 2020–2025 baseline proposed in item 8 | An archive adds no ongoing ingest complexity and is tracked as its own proposal (open-decisions.md #6), not as a second live source | Decided under open-decisions.md #6 |
+| 2a | ~~(Carve-out, not a lift) Frozen, dead-source archives — the ransomwatch 2020–2025 baseline proposed in item 8~~ **DEFERRED 2026-09-21** by ruling superseding open-decisions.md #6 | The archive is not loaded into the pipeline in v1; xevents is a live and recent surface | Post-MVP ADR if a specific research use case is identified |
 | 3 | Cross-source claim reconciliation | Requires ≥2 sources; MVP reconciliation is within-source only | When non-goal 2 is lifted |
 | 4 | ~~Public research/analytics surface — trend dashboards, lag analytics, sector patterns, vendor concentration, victim counts~~ | **LIFTED into MVP scope by user decision 2026-09-21 (open-decisions.md #8).** The sector-aggregated research surface *is* the MVP output; victim counts are published as sector aggregates, never named entries. Analytics over a thin corpus still mislead — the launch corpus bar is set in docs/dashboard-spec.md and ADR 0010 §5 (burn-in). | Lifted |
 | 5 | ~~Sector/vertical classification (NAICS mapping, Wikidata enrichment, OpenFIGI corroboration)~~ | **LIFTED into MVP scope by user decision 2026-09-21 (open-decisions.md #8)** as NAICS 2-digit sector classification (item 3). Wikidata/OpenFIGI organization enrichment stays deferred — it served the retired named-ledger design. | Lifted (partial) |
@@ -221,7 +219,7 @@ Lifting any non-goal requires a new ADR **and** the user's explicit approval
 - [ ] Public research surface + JSON aggregate export live, with claim-framing,
       attribution, and the name-scan gate passing
 - [ ] Evidence manifest published and retrieval workflow verified end to end
-- [ ] ransomwatch baseline loaded (if proposal 8 accepted)
+
 - [ ] Open decisions resolved by the user
 - [ ] Lawful-basis memo written and reviewed (launch gate)
 - [ ] RansomLook terms re-verified at build time
