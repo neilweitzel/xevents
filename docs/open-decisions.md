@@ -226,3 +226,33 @@ call get added here; nothing here is ever resolved by assumption.
   - Forward-going burn-in rule (in-session ruling; needs ADR 0010 §5
     amendment).
   - Two-person rule (in-session discussion pending your decision).
+
+## 15. Aggregation-boundary transport (GitHub App)
+
+- **DECIDED 2026-09-21 by the user (in-session):** the private-to-public
+  aggregate push uses a **GitHub App** (`xevents-boundary`) installed on
+  both `xevents` and `xevents-internal`, with minimum scopes and its
+  private key stored in `xevents-internal` secrets only. See ADR 0012.
+- **Rationale:** the boundary is the load-bearing control of the whole
+  design. A fine-grained PAT tied to the project lead's account gives
+  boundary bypass equal to the account's full GitHub reach; a GitHub App
+  is scoped to two repos, rotatable independently, and shows up as a
+  distinct principal (`xevents-boundary[bot]`) in the public repo's
+  commit log — the mechanical distinction between boundary commits and
+  manual operator commits.
+- **Fallback:** migration back to a fine-grained PAT is documented in
+  ADR 0012 as an accepted path if setup friction outweighs the audit
+  gain. Migration requires a new operations-log entry and an amendment
+  to ADR 0012's status section, not a new ADR.
+- **Unblocks:** ADR 0013 (G5 name-scan gate — the boundary workflow's
+  only gate); `docs/boundary-operations.md` (the app setup runbook,
+  authored when workflow code lands).
+- **Still open:**
+  - ADR 0013 — G5 specification.
+  - `docs/boundary-operations.md` — deferred until boundary workflow
+    code is authorized.
+  - Ransomwatch archive deferral (in-session ruling; needs a
+    superseding entry against decision #6).
+  - Forward-going burn-in rule (in-session ruling; needs ADR 0010 §5
+    amendment).
+  - Two-person rule (in-session discussion pending your decision).
