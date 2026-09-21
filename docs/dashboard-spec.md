@@ -72,6 +72,32 @@ what the data is. This spec describes the surface; docs/mvp-scope.md item
 - The aggregate export per the contract (data-model.md), with the
   framing root. Downloadable per sector and as a full snapshot.
 
+## Publication cadence
+
+Ingest cadence and publication cadence are decoupled
+(open-decisions.md #12):
+
+- **Ingest:** fast, per the source poller rules (decision #5: 2h trigger /
+  6h guard) — speed serves de-listing detection, not readers.
+- **Internal aggregation:** daily. Produces the sector × day rollups that
+  feed the review queue and the weekly public build. Internal rollups are
+  stale if older than 2 days (ADR 0010 §4).
+- **Public publication:** weekly. The public build runs on a fixed weekly
+  schedule and publishes sector × week aggregates, the 12-week heat strip,
+  and the JSON export.
+- **"Insufficient data" is per-cell.** A sector × week cell below the
+  small-cell threshold (open-decisions.md #13, pending) renders as
+  "insufficient data"; its claims remain counted in the monthly rollup,
+  sector totals, and all-sector aggregates. The surface as a whole always
+  publishes — there is no global data gate that would make the site flicker
+  between alive and dead.
+- **Review never blocks the schedule.** A weekly publish includes only
+  reviewed observations. Unreviewed observations are excluded from the
+  aggregates but counted in a visible "N observations pending review"
+  line on the sector overview page.
+- **Launch:** the public surface stays dark until burn-in completes
+  (first 500 observations reviewed, ADR 0010 §5).
+
 ## Practitioner evidence-retrieval workflow
 
 Documented on the manifest page and in the methodology:

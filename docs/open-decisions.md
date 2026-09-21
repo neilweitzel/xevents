@@ -142,3 +142,39 @@ call get added here; nothing here is ever resolved by assumption.
   `/api/export/{db}` requires an operator-issued API key).
 - **Unblocks:** docs/evidence-storage.md rewrite; ADR 0010 §5; retention
   rewrite.
+
+## 12. Publication cadence (weekly public, daily internal)
+
+- **DECIDED 2026-09-21 by the user:** ingest cadence and publication
+  cadence are decoupled. **Ingest stays fast** (decision #5: 2h trigger /
+  6h guard) — speed serves de-listing detection, not readers. **Internal
+  aggregation runs daily** (feeds the review queue). **The public surface
+  publishes weekly.** Rationale: ~14 items/day across ~20 sectors makes
+  daily public cells unpublishable under the small-cell rule; weekly
+  windows (~100 claims) produce meaningful sector cells; the audience's
+  jobs are slow-loop research, not intraday alerting.
+- **"Insufficient data" is per-cell, not global.** Thin sector × week
+  cells suppress individually (small-cell rule pending decision — see
+  #13 below); the surface as a whole always publishes. Gating the entire
+  publish on a global threshold would make the site flicker between alive
+  and dead for no analytic gain.
+- **Review never blocks the schedule.** Each weekly publish includes only
+  reviewed observations; unreviewed ones are excluded but counted with a
+  visible "pending review" line.
+- **Launch gate:** the public surface stays dark until burn-in completes
+  (first 500 observations reviewed, ADR 0010 §5) — the "enough data to
+  publish" threshold.
+- **Unblocks:** dashboard-spec.md (cadence section); ADR 0010 §4
+  (freshness SLOs: public aggregates stale after 2 weeks, internal
+  rollups stale after 2 days).
+
+## 13. Small-cell disclosure rule (OPEN)
+
+- **Question for the user:** weekly sector × week cells in thin sectors
+  (1–2 claims) plus source links are effectively victim pointers. Options:
+  **A.** suppress weekly cells under k=5, roll up to monthly (recommended);
+  **B.** adaptive granularity (weekly for high-volume sectors,
+  monthly/quarterly for thin ones); **C.** publish as-is with the honest
+  re-identification caveat. Noise injection rejected (contradicts
+  evidence-first). Differencing residual (monthly minus visible weeks can
+  imply a suppressed week) accepted under A, noted on the methodology page.

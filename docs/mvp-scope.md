@@ -157,12 +157,19 @@ redesign.
   The coverage-boundary statement is published on the surface (required
   contents: entity classes resolved well vs missed, source coverage windows,
   known blind spots — see data-model.md).
+- **Cadence (open-decisions.md #12):** ingest fast (decision #5),
+  internal aggregation daily, public publication weekly. "Insufficient
+  data" is per sector × week cell (small-cell rule, decision #13 pending),
+  never a global publish gate. Each weekly publish includes only reviewed
+  observations, with unreviewed counts shown. The surface stays dark until
+  burn-in completes.
 - **Launch gate:** the written lawful-basis / public-interest research memo
   (docs/lawful-basis-memo-template.md) must exist and be reviewed before
   the surface serves data publicly. No memo, no public surface.
 - **Acceptance:** everything above reachable without manual DB queries;
   exported JSON re-derives from the observation log alone; the name-scan
-  gate (ADR 0010 G5) passes on every published batch.
+  gate (ADR 0010 G5) passes on every published batch; a weekly publish
+  completes with the pending-review line accurate.
 
 ### 8. Historical baseline (proposal)
 

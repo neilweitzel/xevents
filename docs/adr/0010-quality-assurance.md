@@ -145,8 +145,11 @@ argument later about what "tested" meant:
   language in decided docs — this automates detection of the drift the
   2026-09-20 review found), glossary-term usage.
 - **Freshness SLOs (design; operative when execution is authorized):**
-  per-source staleness thresholds derived from the decided cadence; a
-  breach raises a review task, not a silent gap.
+  public aggregates are stale if older than 2 weeks (2× the weekly
+  publication cadence, open-decisions.md #12); internal daily rollups are
+  stale if older than 2 days; per-source ingest staleness follows the
+  poller rules (decision #5). A breach raises a review task, not a silent
+  gap.
 
 ### 5. Human-review queue design
 
