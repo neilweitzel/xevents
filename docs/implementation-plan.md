@@ -652,3 +652,87 @@ are out of consideration:
 - xevents-internal/docs/implementation-plan-private.md — companion
   plan for private-repo-only work (denylist maintenance, App key
   handling, evidence-storage internals)
+
+## M1 mechanism revision (post-audit, 2026-09-22)
+
+During M1 execution, a platform audit against GitHub's actual
+capabilities on `neilweitzel/xevents` (public repo, personal Free
+account) and `neilweitzel/xevents-internal` (private repo, personal
+Free account) established that two mechanisms this plan and ADR 0012
+depend on are not available on this infrastructure:
+
+- **File-path-restricted push enforcement on public repos.** GitHub
+  push rulesets are not available on public repositories on any plan,
+  and there is no roadmap to add support. Any AC that expects the
+  GitHub API to refuse a push to `xevents` based on the changed file
+  paths cannot be implemented as written.
+- **Actor-bypass lists in branch protection on personal-account
+  repos.** "Restrict who can push" and per-actor bypass are available
+  only on organization-owned repos. Any AC that expects branch
+  protection to distinguish App pushes from operator pushes at the
+  API layer cannot be implemented as written on this account.
+
+ADR 0014 supersedes ADR 0012 §Mechanics and §Identity and audit with
+an App-opened-PR transport that preserves the plan's load-bearing
+properties (machinery-first, boundary write set as tight rule,
+distinct-principal audit signal, G5 as sole gate) using mechanisms
+that do exist on this infrastructure (branch protection with required
+status checks). The following M1 acceptance criteria are revised in
+light of that supersession. Original AC text is preserved above; the
+revised interpretation below is what M1 execution actually satisfies.
+
+### AC1.3 revised
+
+**Original wording:** "The boundary-write-set-violation fixture is
+rejected by branch protection at the GitHub API layer: the App token
+push returns 4xx, no commit lands, the workflow exits non-zero."
+
+**Revised wording under ADR 0014:** The boundary-write-set-violation
+fixture is rejected by GitHub-side merge protection: the boundary
+workflow runs the fixture, opens a PR against `xevents` `main` whose
+diff includes a fourth path outside the boundary write set, the
+`boundary-write-set-in-diff` required status check fails, the merge
+API returns 4xx when the workflow attempts to merge, no commit lands
+on `main`, and the workflow exits non-zero. Enforcement is at the
+merge boundary rather than the push boundary; the net effect (no
+bytes cross the boundary on a defective batch) is identical.
+
+Alternative wording accepted: if the workflow's local
+boundary-write-set-in-diff step fires first and refuses to open the
+PR at all, the assertion is also satisfied — no PR, no merge, no
+commit. Both paths are proven by fixture 13; the M1 corpus run
+records which path fired.
+
+### AC1.8 revised
+
+**Original wording:** "Boundary-write-set assertion runs on every PR
+to either repo: a test loads ADR 0012 §Boundary write set, private
+AGENTS.md, and private `docs/file-layout.md`, parses the three-path
+list from each, and asserts all three lists are identical. Any drift
+fails CI on the PR and blocks merge."
+
+**Revised wording under ADR 0014:** unchanged. The tri-declaration
+invariant remains the source of truth. The required status check
+`boundary-write-set-in-diff` reads the write set from private
+`AGENTS.md` (the operational copy that CI ships with the run) and
+enforces it against every PR's changed file list.
+
+### Cross-cutting note on private-repo branch protection
+
+Any private-repo AC that references branch protection on
+`xevents-internal` (see the private plan) is satisfied by workflow-
+internal CI gating rather than GitHub-side branch protection, because
+Free-plan private repos do not support branch protection. The private
+plan carries the equivalent revision block.
+
+### Cascade effects on later milestones
+
+- **M2–M8:** the App's transport pattern is one PR per batch, not one
+  direct push per batch. Boundary-write-set expansions (which the
+  plan explicitly anticipates) are still small ADR amendments to the
+  boundary write set declaration, and the required status check reads
+  from that declaration.
+- **AC1.16 operator attestation** (branch protection screenshot) now
+  captures branch-protection settings on `main` plus the three
+  required status checks, per ADR 0014 §Mechanics.
+
