@@ -156,11 +156,14 @@ Any match (JSONL value or URL destination) is a **hard fail**:
     is corrected, the affected observations are re-processed. The
     matching denylist entry is added to the static supplementary
     denylist so it is caught even outside its source window.
-  - **False positive:** the specific match is added to a documented
-    allowlist (`xevents-internal/denylist/allowlist.jsonl`) with a
-    rationale, and the batch is re-scanned. Allowlist additions are a
-    two-person-rule item (subject to the two-person rule as amended
-    for MVP, TBD).
+  - **False positive:** *the allowlist path does not exist in v1*
+    (open-decisions.md #18, machinery-first doctrine). The fix is
+    upstream: refine the denylist entry (add a distinguishing token
+    or alias), correct the extraction that produced the ambiguous
+    string, or narrow the match rule if the false positive class is
+    common enough to warrant it. Upstream fixes enter the private
+    corpus, propagate to the next batch's denylist, and are recorded
+    on the correction ledger with the specific fix applied.
 
 ### 7. What G5 does not defend against
 
@@ -186,11 +189,15 @@ Documented explicitly so the control's limits are honest:
   may re-identify the victim without any name appearing in the
   aggregate itself. The URL destination scan (§5) is the mitigation;
   the residual risk is documented in the coverage-boundary statement.
-- **Collusion via allowlist.** The false-positive allowlist could in
-  principle be used to smuggle a name through. Two-person rule on
-  allowlist additions is the control; when the two-person rule is
-  narrowed for MVP (pending decision), allowlist additions carry an
-  additional cooling-off period.
+- **Collusion via allowlist.** *No longer applicable in v1*
+  (open-decisions.md #18). The G5 allowlist is immutable under solo
+  operation — no entries can be added — so there is no allowlist to
+  collude via. The trade is stricter than a reviewer-gated allowlist:
+  genuine false positives cost operator work to fix upstream rather
+  than being resolvable by a review sign-off. This is the intended
+  posture; it preserves G5's guarantee under single-operator
+  conditions rather than reducing it to "the operator's judgment on
+  any given day."
 - **Denylist regeneration failure.** If the denylist regeneration
   step fails (private-repo read error, corrupt data file), G5 fails
   closed: the batch is quarantined, no push. G5 does not fall back to
@@ -222,36 +229,43 @@ rules; a corpus mismatch fails the build.
 Every G5 run, pass or fail, produces a **G5 report** written to
 `xevents-internal/g5-reports/<batch-id>.json`:
 
-- Batch identifier, scan timestamp, denylist size and version, allowlist
-  size and version, homoglyph table version
+- Batch identifier, scan timestamp, denylist size and version,
+  homoglyph table version
 - Number of scan targets by type (aggregate rows, manifest rows, URLs)
 - Number of URL destinations fetched, failed to fetch, matched
 - Every match: matching denylist entry (redacted in the private repo
   copy — replaced with a hash), match rule (substring/token/domain/slug),
   scan target (file, row, field), and match position
 
-The report is retained per the retention policy. A public report
-(names redacted, counts only) is published to the coverage-boundary
-statement each week: "This week's batch produced N observations, 0
-G5 matches; last G5 match: <date>." Silence on matches would be less
-credible than the count.
+The report is retained per the retention policy.
+
+**Public per-gate accounting on the coverage-boundary statement.**
+Every weekly publish reports, on the public coverage-boundary
+statement: total G5 matches this batch, last-match date, and the
+per-gate counts for every publication gate (G2, G3, G5, G6, G7) —
+specifically batches quarantined per gate, batches dropped, and
+correction-ledger entries filed. Silence on any of these would be
+less credible than the counts (open-decisions.md #18, machinery-first
+doctrine).
 
 ## Consequences
 
 - G5 is now specifiable in code. The name-scan gate stops being a
   design constraint and starts being a testable component with a fixed
   contract.
-- The private repo grows two new small files: `denylist/static.jsonl`,
-  `denylist/homoglyphs.jsonl`, `denylist/allowlist.jsonl`. Structure
-  and initial content documented in `xevents-internal` (see private
-  repo AGENTS work, TBD).
+- The private repo grows two new small files: `denylist/static.jsonl`
+  and `denylist/homoglyphs.jsonl`. Structure and initial content
+  documented in `xevents-internal` (see private repo AGENTS work,
+  TBD). No allowlist file is created in v1 (open-decisions.md #18).
 - URL destination scanning introduces a runtime cost — every advisory
   URL in a batch is fetched at scan time. For view 2's expected URL
   volume (a few dozen unique URLs per weekly batch) this is
   negligible; if it grows past a few hundred, cache the destination
   hashes and re-verify on a longer cadence.
-- The false-positive allowlist is a two-person item and is subject to
-  the two-person rule as amended for MVP (pending decision, TBD).
+- The false-positive allowlist does not exist in v1
+  (open-decisions.md #18, machinery-first doctrine). False positives
+  are fixed upstream (denylist refinement, aliasing, extraction
+  correction); the fix is recorded on the correction ledger.
 - G5 fails closed on any operational error (denylist read failure,
   URL fetch failure, corpus mismatch). The default is "no push,"
   which is consistent with the doctrine's asymmetry — a delayed
@@ -301,5 +315,6 @@ credible than the count.
   that decides whether the boundary workflow uses its credential).
 - Amends ADR 0010 §1 G5 (replaces the one-sentence gate description
   with this specification).
-- Two-person-rule interaction (allowlist additions) is pending the
-  two-person-rule decision, TBD.
+- (Removed.) The two-person-rule interaction is resolved by
+  open-decisions.md #18 — the allowlist is immutable in v1, so no
+  approval-gate interaction remains.
