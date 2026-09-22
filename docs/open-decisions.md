@@ -438,3 +438,17 @@ added here; nothing here is ever resolved by assumption.
   unresolved correction-export contract. This does not mark WS6 or live M1
   acceptance criteria complete.
 - **Specification:** [WS6 boundary workflow separation](ws6-boundary-separation.md).
+
+## WS9 privacy-safe first increment (2026-09-22)
+
+- **Status:** implementation scope approved by the operator; merge and
+  required-check activation remain separately authorized.
+- **Decision:** private comparisons stay private. Public CI receives no
+  private-read credential or private checkout. Every boundary-data PR is
+  subject to the public G5 gate, including operator branches.
+- **Fail closed:** boundary publication remains blocked until a minimal,
+  verifiable public proof contract is separately approved and implemented.
+  No full private report is authorized for export.
+- **Sequence:** implement and audit the safe invariant core first; wire and
+  verify trusted producers in WS10 before requiring their check contexts.
+- **Specification:** [ADR 0015](adr/0015-private-invariant-verification.md).
