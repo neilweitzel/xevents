@@ -139,6 +139,11 @@ already been stress-tested.
      write to a fourth path (e.g., `docs/`). Expected: refused by
      branch protection before G5 even runs; the App token push
      rejected at the GitHub API layer.
+   - **Correction propagation:** a variant of the trivial-pass
+     fixture with an extra input — one `correction_event` (a
+     `dispute_opened` entry) is present in the private
+     correction-ledger. Expected: G5 passes; the pushed aggregate's
+     `corrections[]` contains the entry.
 5. **Machinery-invariants report** format defined and emitted per
    publish attempt: three-path boundary write set assertion, G5
    outcome, denylist size, denylist version, homoglyph table
@@ -159,17 +164,17 @@ verified run):**
 | AC1.2 | CI | Each of the eleven quarantine fixtures (exact-name, Cyrillic homoglyph, Greek homoglyph, mixed-script, alias, threat-actor, malware-family, URL-destination poisoning, URL unreachable, manifest-row leak, statement leak) produces a G5 report with `outcome: quarantine`, at least one match, the expected match rule, and no push to the public repo. |
 | AC1.3 | CI | The boundary-write-set-violation fixture is rejected by branch protection at the GitHub API layer: the App token push returns 4xx, no commit lands, the workflow exits non-zero. |
 | AC1.4 | CI | Every quarantine fixture appends exactly one correction-ledger entry with `event_type: administrative_note` whose `note` field records `authority: g5-machinery`, the failing fixture id, the match rule, and the denylist version (per docs/data-model.md `correction_event.event_type = administrative_note`). |
-| AC1.5 | CI | The correction-propagation fixture: a synthetic `correction_event` appended in the private repo prior to boundary run appears in the pushed aggregate's `corrections[]` array with the same fields. |
+| AC1.5 | CI | Correction-propagation fixture (fourteenth fixture, a variant of the trivial-pass fixture with an extra input): a synthetic `correction_event` appended in the private repo's correction-ledger before the boundary run appears in the pushed aggregate's `corrections[]` array with the same fields. G5 must still pass (the correction fields are pre-vetted vocabulary; free-text `note` is name-scanned like every other value). |
 | AC1.6 | CI | Every `g5-reports/<batch-id>.json` conforms to the ADR 0013 §9 schema: batch id, scan timestamp, denylist size, denylist version, homoglyph table version, scan-target counts, URL fetch outcomes, and every match record (denylist entry hash, match rule, scan target, match position). Schema-check runs on every emitted report. |
 | AC1.7 | CI | The `xevents-boundary` App scopes are exactly the minimum required by ADR 0012 §Mechanics (`contents:write` on both repos, `actions:write` on `xevents`, `metadata:read`, nothing else). A test enumerates the App's declared scopes and fails if any additional scope is present. |
-| AC1.8 | CI | Boundary-write-set assertion: a test loads ADR 0012 §Boundary write set, private AGENTS.md, and private `docs/file-layout.md`, parses the three-path list from each, and asserts all three lists are identical. Any drift fails CI. |
+| AC1.8 | CI | Boundary-write-set assertion runs on every PR to either repo: a test loads ADR 0012 §Boundary write set, private AGENTS.md, and private `docs/file-layout.md`, parses the three-path list from each, and asserts all three lists are identical. Any drift fails CI on the PR and blocks merge. |
 | AC1.9 | CI | Machinery-invariants report is emitted on every publish attempt (pass and quarantine both) and archived. A test asserts every run produces a report; a missing report fails CI. |
 | AC1.10 | CI | Fail-closed structure: a synthetic modification to the workflow that attempts to use the App token *before* the G5 step (moving G5 later) is refused by a workflow-lint test that asserts G5 completes before the token-using step. |
-| AC1.11 | CI | Denylist derivation determinism: the same private-repo state produces the same denylist bytes on two consecutive runs (denylist is not stored per ADR 0013 §2, but each run's derived denylist is captured in the G5 report and must match on identical inputs). |
-| AC1.12 | CI | URL-fetch caching: a fixture with the same advisory URL used across two runs demonstrates the URL is fetched once per run, hashed, and the hash recorded — providing the ground truth for the caching optimization deferred to post-M7. |
+| AC1.11 | CI | Denylist derivation determinism: the derivation function invoked twice on identical inputs produces byte-identical output (verified in-memory in the test). The G5 report captures `denylist_size` and `denylist_version` per ADR 0013 §9 (not the raw entries, which would leak); the test asserts both fields match across the two runs. |
+| AC1.12 | CI | URL-fetch instrumentation: a fixture where the same advisory URL appears twice in one batch causes the URL to be fetched exactly once within that batch (in-batch deduplication), with the fetched-destination hash recorded once in the G5 report. Cross-run caching is deferred to post-M8; this AC establishes the per-batch instrumentation the later optimization will build on. |
 | AC1.13 | CI | JSONL header-row convention (private `docs/file-layout.md`): every JSONL file the workflow reads or writes (`evidence-manifest.jsonl`, `denylist/*.jsonl`, `data/aggregates/*.jsonl`) carries the leading metadata header row; readers skip it. |
 | AC1.14 | CI | Nygard immutability check runs on every PR touching `docs/adr/` and asserts no accepted ADR body is modified without a supersession declaration. |
-| AC1.15 | CI | Docs QA (ADR 0010): no `TBD` or `UNDECIDED` markers in the repo reference an accepted ADR or a decided open-decisions.md entry. |
+| AC1.15 | CI | Docs QA per ADR 0010 §4: (a) cross-reference lint (every ADR and doc reference in the repo resolves to an existing file/section), (b) decision-consistency check (no `TBD` / `UNDECIDED` / "proposed" language in text that references an accepted ADR or a decided open-decisions.md entry), (c) glossary-term usage sweep. All three sub-checks run on every PR. |
 | AC1.16 | [operator-verified] | The App installation on both repos is confirmed via the GitHub UI; the App's private key is present only in `xevents-internal` secrets and not in `xevents`. **Operator-verified because App installation state and secret placement are external to CI.** |
 
 **Explicitly out of scope for M1:**
@@ -198,7 +203,9 @@ Still no real data.
 
 1. **Public repo build workflow**
    (`.github/workflows/build-site.yml`) that:
-   - Runs on push to `main` and on `workflow_dispatch`.
+   - Runs on `workflow_dispatch` only (invoked by the boundary
+     App after each successful push per ADR 0012 §Mechanics; also
+     invocable manually by the project lead).
    - Reads `data/aggregates/*.jsonl`, `evidence-manifest.jsonl`,
      and `coverage-boundary-statement.md` (whichever exist).
    - Emits `site/` (static HTML + JSON snapshots).
@@ -223,13 +230,13 @@ Still no real data.
 
 | AC | Enforcement | Description |
 |---|---|---|
-| AC2.1 | CI | `build-site.yml` runs to completion on push to `main`; `site/` is produced; Pages deploys successfully. |
+| AC2.1 | CI | `build-site.yml` runs to completion on `workflow_dispatch` (invoked by the boundary App per ADR 0012 §Mechanics); `site/` is produced; Pages deploys successfully. Manual dispatch by the project lead is also permitted. Push triggers are not enabled (a push does not trigger a rebuild; only the boundary's explicit dispatch does). |
 | AC2.2 | CI | Deterministic build: two runs on the same inputs produce byte-identical `site/`. |
 | AC2.3 | CI | Naming-policy sweep on the rendered `site/`: zero organization, actor, or malware names. (Trivially true against placeholder content — this AC establishes the check.) |
 | AC2.4 | CI | Every page contains the pre-launch banner and the naming-policy statement. |
-| AC2.5 | CI | The site consumes only the three boundary-writable files; a test asserts `build-site.yml` does not read any other paths. |
+| AC2.5 | CI | Data isolation: `build-site.yml` reads data only from the three boundary-writable paths (`data/aggregates/`, `evidence-manifest.jsonl`, `coverage-boundary-statement.md`); a test greps the workflow, its build script, and every template it invokes to assert no other `data/` path, no `evidence/` path, and no reference to `xevents-internal` is read. Templates, static assets, and docs (`docs/dashboard-spec.md`) may be read freely as they are checked-in build inputs, not data. |
 | AC2.6 | [operator-verified] | The public Pages URL loads. Every page renders the placeholder content correctly and displays the pre-launch banner. **Operator-verified because Pages URL reachability is external to CI.** |
-| AC2.7 | CI | An end-to-end drill: run the M1 boundary workflow with a trivial-pass fixture; the resulting push to the public repo triggers `build-site.yml`; the resulting deploy contains the expected placeholder rendering. |
+| AC2.7 | CI | End-to-end drill: run the M1 boundary workflow with a trivial-pass fixture. The boundary pushes the three files to `xevents` and then invokes `build-site.yml` via `workflow_dispatch` per ADR 0012 §Mechanics. The dispatched build produces the expected placeholder rendering. |
 | AC2.8 | CI | All M1 cross-cutting invariants (AC1.8, AC1.14, AC1.15) continue to pass. |
 
 **Explicitly out of scope for M2:** real observations; real aggregates;
@@ -293,7 +300,7 @@ commitment path is real.
 | AC3.1 | CI | Ingest workflow completes end-to-end against RansomLook's live API; produces at least one observation row, one evidence artifact under `evidence/`, and one evidence-manifest row with matching SHA-256s. |
 | AC3.2 | CI | Idempotency: two consecutive runs on unchanged upstream produce zero new observation rows and zero new evidence-manifest rows; `listing_state.last_seen_at` updates. |
 | AC3.3 | CI | Poll-run metadata (docs/data-model.md `poll_run`) is written on every run: start, end, source name, items fetched, items new, items skipped-as-duplicate, errors. |
-| AC3.4 | CI | Every observation carries `model_version` (ingest pipeline version) and `source_claimed_at` if the source provided it; the two-clock doctrine is verified per row. |
+| AC3.4 | CI | Two-clock doctrine per row (docs/data-model.md §observation, ADR 0010 §4): every observation carries a non-null `observed_at` (when xevents recorded the observation), a `retrieved_at` (when the payload was fetched), and either a `source_claimed_at` value the source supplied or an explicit null (never synthesized). `poller_version` (registered in `model_versions.jsonl`) is present on every row. |
 | AC3.5 | CI | G5 scans the real evidence-manifest before boundary publish and passes with zero matches. |
 | AC3.6 | CI | A synthetic observation whose `subject_raw` is a denylist entry causes G5 to match on the pre-publish scan and quarantine the batch. (Reuses the M1 fixture rig.) |
 | AC3.7 | CI | Public evidence-manifest browser page contains N real rows after M3 lands; every row has a valid SHA-256 and a name-free `source_ref`. |
@@ -361,7 +368,7 @@ organization/actor/malware names leak into any aggregate row.
 | AC4.3 | CI | Small-cell rule: a fixture that would produce a row below threshold is suppressed or rolled up; disposition recorded in `disclosure_action`. |
 | AC4.4 | CI | G5 scans every value in every view 1 aggregate row and passes with zero matches on real data. Sector, attack_class, and data_class_* fields are pre-vetted vocabulary; no free-text organization names are possible by construction. |
 | AC4.5 | CI | Aggregate immutability: recomputing an aggregate on an unchanged observation set produces byte-identical output; changes are auditable via git history. |
-| AC4.6 | CI | Correction propagation on real data: a synthetic `correction_event` results in the corresponding aggregate's `corrections[]` gaining the entry and the public sector page rendering it. |
+| AC4.6 | CI | Correction propagation on real data covers both event classes: (a) `dispute_opened` — the aggregate's `corrections[]` gains the entry, `claim_count` is unchanged, the public sector page renders the dispute; (b) `retraction` — the aggregate's `corrections[]` gains the entry, `claim_count` is decremented, the underlying observation is not deleted (append-only per ADR 0001); the public sector page shows both the pre-retraction and post-retraction `claim_count` via the correction. |
 | AC4.7 | CI | Attribution: every RansomLook-derived aggregate has the CC BY 4.0 attribution string; missing attribution fails CI. |
 | AC4.8 | CI | The public sector-exposure page renders all real aggregate rows; each page carries naming policy, two-clocks explanation, confidence-band methodology, coverage-boundary summary, and a correction-ledger link. |
 | AC4.9 | CI | Negative test: a synthetic observation whose `subject_raw` is a real organization name from the static denylist produces an aggregate that still G5-passes (raw doesn't cross), but the test also asserts the coverage-boundary statement correctly reports the suppression. |
@@ -413,7 +420,7 @@ leaves the boundary.
 
 | AC | Enforcement | Description |
 |---|---|---|
-| AC5.1 | CI | Independence-class counting: a fixture of observations from N distinct source classes (RansomLook plus one echo) produces the expected `supporting_weight` per class, echoes collapsed. |
+| AC5.1 | CI | Independence-class counting: a fixture of two observations — one from RansomLook, one from a synthetic echo source whose content is derivative of RansomLook — collapses the echo per ADR 0006 and yields exactly one contributing independence class in `confidence_assessment.independence_classes[]`. |
 | AC5.2 | CI | Every incident has a `confidence_assessment` row with `model_version`, `inputs_hash`, `independence_classes[]`, `band`, and non-empty `rationale`. |
 | AC5.3 | CI | Immutable confidence: a superseded assessment retains the old row and links via `superseded_by`; the old row remains queryable. |
 | AC5.4 | CI | Entity resolution: known-alias fixtures resolve to the correct `entity_id`; unknown subjects stay null with `subject_raw` preserved. |
