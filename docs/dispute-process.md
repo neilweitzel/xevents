@@ -75,8 +75,13 @@ document; the two must agree.
 ## Appeals
 
 One reconsideration, new evidence only, within 30 days of the outcome.
-The appeal is reviewed under the two-person rule (ADR 0010). After that,
-the decision stands and is recorded as final.
+Under solo operation (ADR 0010 §2, machinery-first doctrine;
+open-decisions.md #18), the appeal is reviewed by the operator with a
+mandatory 72-hour cooling-off period between submission and decision,
+and the reviewer records the outcome and reasoning on the correction
+ledger. After that, the decision stands and is recorded as final. If
+a second named reviewer is ever added to the project, this reverts to
+the standard two-person rule with no policy amendment required.
 
 ## Internal-record inquiries (class 2)
 

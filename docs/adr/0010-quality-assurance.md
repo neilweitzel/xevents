@@ -104,10 +104,40 @@ quarterly for calibration (if the miss rate in the sample exceeds 2%, the
 rate doubles until two consecutive clean quarters). Every review records
 reviewer id, timestamp, decision, and sample class.
 
-**Approval rule.** Single named-reviewer sign-off for routine items.
-**Two-person rule** for: publishing anything G2/G3 flagged (redaction
-override), any `disputed`-band aggregate, and any naming-policy edge case
-(§4 of docs/naming-policy.md).
+**Approval rule — machinery-first (open-decisions.md #18).** xevents is
+a single-operator project and does not import a multi-reviewer approval
+doctrine. The controls that would elsewhere be enforced by a second
+human are here enforced by the pipeline itself, with public accounting.
+
+- **Routine items:** the pipeline publishes automatically when all
+  gates pass. There is no per-item sign-off gate.
+- **G2/G3 flagged items (redaction override):** *not a supported
+  action*. If G2 or G3 flags an item, the item does not publish. The
+  operator's power is to investigate the flag, fix the underlying
+  input (extraction, classification, or upstream data), and re-run —
+  never to override the flag. Dropped batches are recorded on the
+  correction ledger with the gate that fired and the disposition.
+- **`disputed`-band aggregates:** publish automatically with the
+  `disputed` band label. The band is the honesty mechanism; no
+  override path exists because none is needed. The band label carries
+  the qualifier the reader must weigh.
+- **G5 allowlist (ADR 0013 §2):** immutable in v1. No entries can be
+  added under solo operation. If G5 fires on a genuine false
+  positive, the fix is upstream — denylist entry refinement, aliasing,
+  extraction discipline — not an allowlist entry. This removes the
+  "allowlist collusion" non-defense that ADR 0013 §7 previously
+  acknowledged.
+- **Naming-policy edge cases** (§4 of docs/naming-policy.md): batches
+  quarantine, upstream inputs are fixed, batches re-run. No
+  reviewer-precedent path in v1 (the precedent doctrine assumed a
+  reviewer culture that does not exist yet).
+
+**The operator's only power is to fix inputs and publicly document
+what was fixed.** Every quarantine, every dropped batch, every
+correction is recorded on the correction ledger (§4) and every
+weekly publish reports the per-gate counts on the coverage-boundary
+statement (ADR 0013 §9 as extended). Silence would be less credible
+than the counts.
 
 ### 3. Failure handling
 
@@ -197,9 +227,12 @@ schedules are created and no workflows are introduced by this ADR.
 - The pipeline is slower than a naive scraper by design. Review latency is
   a feature: it is the mechanism by which "highest quality" is true rather
   than aspirational.
-- The two-person rule and the scope-pause escalation put a hard ceiling on
-  throughput. If the corpus grows past what one reviewer can hold, the
-  answer is more reviewers or narrower scope — never silent auto-publish.
+- The machinery-first approval doctrine (§2) puts a hard ceiling on
+  published throughput. Batches that fail any gate quarantine and are
+  recorded; they do not publish. If the volume of quarantined batches
+  grows past what the operator can hold, the answer is narrower scope
+  or upstream input fixes — never silent auto-publish and never an
+  override path.
 - The severity-1 history-rewrite policy is the single exception to
   "history is never rewritten" (ADR 0001). It is narrow, logged, and
   requires the rewrite itself to be recorded — immutability yields to

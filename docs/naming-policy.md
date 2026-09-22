@@ -83,9 +83,15 @@ same string. The publication test is not the string — it is the function:
 **publish capabilities and methods; do not publish brands.** "Ransomware
 deployed via exploited public-facing application" is publishable. A name
 whose primary function is identifying a criminal enterprise is not.
-Genuinely ambiguous cases (dual-use tools, commercial tooling abused by
-actors) go to the human review queue under the two-person rule (ADR 0010);
-the reviewer records the call and the reasoning, which becomes precedent.
+Genuinely ambiguous cases (dual-use tools, commercial tooling abused
+by actors) result in batch quarantine, not human adjudication. The
+machinery-first doctrine (ADR 0010 §2, open-decisions.md #18)
+applies: the operator investigates the case, fixes the upstream input
+(refines the denylist entry, adjusts the extraction, or narrows the
+match rule), and re-runs. The correction ledger records the fix.
+Under solo operation there is no reviewer-precedent path; the
+precedent doctrine assumed a reviewer culture that does not exist
+in v1.
 
 ## What this does not hide
 

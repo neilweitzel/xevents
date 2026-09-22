@@ -346,3 +346,79 @@ call get added here; nothing here is ever resolved by assumption.
     interacts with ADR 0013's allowlist rule).
   - Private repo AGENTS.md + file-layout doc.
   - Second-wave publication decision (deferred to loader implementation).
+
+## 18. Approval doctrine — machinery-first under solo operation
+
+- **DECIDED 2026-09-21 by the user (in-session):** xevents does not
+  import a multi-reviewer approval doctrine while it is a single-
+  operator project. The controls that would elsewhere be enforced by a
+  second human are enforced by the pipeline itself, with public
+  accounting. The operator's only power is to fix inputs and publicly
+  document what was fixed.
+- **Superseded proposal:** an earlier in-session draft (retired PR #15)
+  proposed splitting the two-person rule by case with a solo-operator
+  interim (cooling-off + written second-look + surface-pause tripwire
+  + reviewer registry with bootstrapping exception). That proposal was
+  withdrawn because:
+  - The bootstrapping exception (adding the first additional reviewer
+    is single-reviewer with justification) is a two-step version of
+    the failure mode it was supposed to prevent.
+  - The surface-pause tripwire's threshold (3 in 7 days) was arbitrary
+    and gameable by a solo operator who is also the tripwire's only
+    administrator.
+  - The reviewer-registry model imports doctrine from multi-human
+    organizations; xevents is not one of those.
+- **The doctrine, concretely:**
+  - Routine items publish automatically when all gates pass. No
+    per-item sign-off gate.
+  - G2/G3 flagged items *do not publish*. Override is not a supported
+    action. The operator fixes upstream inputs and re-runs; dropped
+    batches are recorded on the correction ledger.
+  - `disputed`-band aggregates publish automatically with the
+    `disputed` band label. The band is the honesty mechanism.
+  - The G5 allowlist (ADR 0013 §2) is immutable in v1. No entries can
+    be added. Genuine false positives are fixed upstream (denylist
+    entry refinement, aliasing, extraction correction, match-rule
+    narrowing). This removes the "allowlist collusion" non-defense
+    that ADR 0013 §7 previously acknowledged.
+  - Naming-policy edge cases (docs/naming-policy.md §4) result in
+    batch quarantine, upstream fix, re-run. No reviewer-precedent
+    path in v1.
+  - Dispute appeals (docs/dispute-process.md) are decided by the
+    operator with a mandatory 72-hour cooling-off period and are
+    recorded on the correction ledger.
+- **Public per-gate accounting.** Every weekly publish reports, on the
+  public coverage-boundary statement: per-gate quarantine counts
+  (G2/G3/G5/G6/G7), batches dropped, and correction-ledger entries
+  filed. Silence would be less credible than the counts. This is the
+  mechanism by which "no override" is verifiable rather than
+  claimable.
+- **Trade-offs, acknowledged:**
+  - Stricter than a reviewer-gated approach. Genuine false positives
+    cost operator work to fix upstream rather than being resolvable
+    by review sign-off. This is the intended posture.
+  - Some legitimately-quarantined batches will be dropped rather than
+    published. The coverage-boundary statement records the drops
+    publicly; a weekly aggregate missing one batch is a footnote, not
+    a catastrophe.
+  - The `disputed` band label must be publishable-as-is. No hiding
+    behind "we'll review it." If the pipeline says disputed, the
+    public surface says disputed.
+- **Amends:**
+  - ADR 0010 §2 (approval rule rewritten as machinery-first).
+  - ADR 0013 §6, §7, §8, §9 (allowlist path removed; §9 per-gate
+    accounting extended; §7 collusion non-defense retired).
+  - docs/naming-policy.md §4 (edge cases route to quarantine, not
+    reviewer precedent).
+  - docs/dispute-process.md (appeals decision path amended for solo
+    operation).
+- **Reverts automatically:** if a second named reviewer is ever added
+  to the project, dispute appeals revert to the standard two-person
+  rule with no policy amendment required. A reviewer culture, if it
+  emerges, is layered on top of the machinery-first doctrine rather
+  than replacing it — the pipeline gates remain hard.
+- **Still open:**
+  - Private repo AGENTS.md + file-layout doc (pins the private-repo
+    file structure the machinery references).
+  - Second-wave publication of backfilled aggregates (deferred to
+    loader implementation).
