@@ -1,8 +1,8 @@
 # xevents — Decision log
 
-All seven decisions were ruled on by the user on 2026-09-20. Each section
-records the ruling and what it unblocks. New questions needing the user's
-call get added here; nothing here is ever resolved by assumption.
+Decisions in this log are ruled on by the user. Each section records the
+ruling and what it unblocks. New questions needing the user's call get
+added here; nothing here is ever resolved by assumption.
 
 ## 1. Confidence band granularity
 
@@ -20,6 +20,21 @@ call get added here; nothing here is ever resolved by assumption.
   approval; bulk derivation, storage at scale, republication, and any
   build/run-time dependency are excluded under every option.
 - **Unblocks:** ADR 0002 finalization.
+
+## 3. De-listing detection threshold
+
+- **DECIDED 2026-09-20 by the user:** three consecutive missed polls plus
+  absence from the source's current full index, parameterized per source.
+  Calibrated against the six-hour effective cadence (decision #5).
+- **Unblocks:** ADR 0007 finalization; MVP scope item 6.
+
+## 4. Dispute-channel response SLA for v1
+
+- **DECIDED 2026-09-20 by the user:** acknowledge within two business days
+  (one business day for wrongful-listing claims); initial assessment within
+  ten business days. The published dispute/correction process ships from
+  day one with manual handling.
+- **Unblocks:** ADR 0004 finalization; MVP scope item 6.
 
 ## 5. Polling cadence
 
@@ -64,21 +79,6 @@ call get added here; nothing here is ever resolved by assumption.
   research memo must exist and be reviewed before the surface serves data
   publicly. No memo, no public surface. This is a tracked deliverable, not
   a decision — it is still unwritten.
-
-## 3. De-listing detection threshold
-
-- **DECIDED 2026-09-20 by the user:** three consecutive missed polls plus
-  absence from the source's current full index, parameterized per source.
-  Calibrated against the six-hour effective cadence (decision #5).
-- **Unblocks:** ADR 0007 finalization; MVP scope item 6.
-
-## 4. Dispute-channel response SLA for v1
-
-- **DECIDED 2026-09-20 by the user:** acknowledge within two business days
-  (one business day for wrongful-listing claims); initial assessment within
-  ten business days. The published dispute/correction process ships from
-  day one with manual handling.
-- **Unblocks:** ADR 0004 finalization; MVP scope item 6.
 
 ## 8. Sector-aggregated public surface (no org or actor names)
 

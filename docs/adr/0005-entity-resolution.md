@@ -139,5 +139,6 @@ alias table → review queue) served the retired named-ledger design. It is
   post-MVP, gated on a decision to reintroduce named resolution, which
   would itself require a new ADR.
 
-Status: accepted; this ADR's public-surface
-pipeline is superseded-in-part, internal linkage retained.
+This ADR's public-surface pipeline is superseded-in-part by ADR 0011
+(sector-aggregated surface names no organizations); internal linkage
+retained under the new surface.
