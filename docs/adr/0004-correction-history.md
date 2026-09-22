@@ -1,6 +1,6 @@
 # ADR 0004: Corrections, denials, removals, retractions as first-class history
 
-- Status: proposed (pending user redline)
+- Status: accepted
 - Date: 2026-09-18
 - Deciders: project lead
 
@@ -88,5 +88,3 @@ The append-only correction doctrine is unchanged. Two additions:
   sector-classification errors, internal-record inquiries, and provenance
   challenges — the sector-appropriate replacement for named-victim
   takedown disputes.
-
-Status remains `proposed (pending user redline)`.

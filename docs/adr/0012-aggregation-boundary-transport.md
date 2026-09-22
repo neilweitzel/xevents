@@ -1,6 +1,6 @@
 # ADR 0012: Aggregation-boundary transport
 
-- Status: proposed (pending user redline)
+- Status: accepted
 - Date: 2026-09-21
 - Deciders: project lead
 

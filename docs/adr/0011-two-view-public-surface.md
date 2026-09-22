@@ -1,6 +1,6 @@
 # ADR 0011: Two-view public surface — sector exposure and exploitation detail
 
-- Status: proposed (pending user redline)
+- Status: accepted
 - Date: 2026-09-21
 - Deciders: project lead
 

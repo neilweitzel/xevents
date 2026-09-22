@@ -31,10 +31,14 @@ rules; `docs/` is the theory, `research/landscape-report.md` is the evidence.
 ## Scope discipline
 
 - The only approved build target is `docs/mvp-scope.md`.
-- Lifting any non-goal, adding any source, or changing any `proposed` ADR
+- Lifting any non-goal, adding any source, or changing any `accepted` ADR
   requires a **new ADR and the user's explicit approval**. An ADR without
-  user approval is a proposal, not a decision — all ADRs are currently
-  `proposed (pending user redline)`.
+  user approval is a proposal, not a decision. New ADRs land as
+  `proposed (pending user redline)` and remain there until the user
+  redlines them; per Nygard convention, an accepted ADR's body is
+  never edited — decisions that change are superseded by a new ADR.
+  The current accepted set is ADRs 0001–0007 and 0009–0013 (ADR 0008
+  is superseded by 0009).
 - A new feature proposal must cite which MVP acceptance criterion it serves.
   If it serves none, reject it or park it as a post-MVP ADR proposal.
 - The items in `docs/open-decisions.md` record user rulings. Never resolve
