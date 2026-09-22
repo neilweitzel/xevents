@@ -255,8 +255,9 @@ doctrine).
   contract.
 - The private repo grows two new small files: `denylist/static.jsonl`
   and `denylist/homoglyphs.jsonl`. Structure and initial content
-  documented in `xevents-internal` (see private repo AGENTS work,
-  TBD). No allowlist file is created in v1 (open-decisions.md #18).
+  documented in `xevents-internal` (see private repo AGENTS.md and
+  `docs/file-layout.md`). No allowlist file is created in v1
+  (open-decisions.md #18).
 - URL destination scanning introduces a runtime cost — every advisory
   URL in a batch is fetched at scan time. For view 2's expected URL
   volume (a few dozen unique URLs per weekly batch) this is
