@@ -9,7 +9,7 @@
 The whole xevents design rests on one control: the public build never
 reads the private repo. Raw name-bearing observations live in
 `xevents-internal`; only sector-aggregated and technique-aggregated outputs
-cross to public `xevents`, after the name-scan gate (G5, ADR 0013 TBD)
+cross to public `xevents`, after the name-scan gate (G5, ADR 0013)
 asserts zero name matches in the outgoing batch.
 
 Prior ADRs (0009 static-first, 0010 quality assurance, 0011 two-view
@@ -72,8 +72,10 @@ The initial tight rule. Boundary-authored commits may write to:
 
 - `data/aggregates/` — the JSONL aggregate files (view 1 and view 2)
 - `evidence-manifest.jsonl` — the append-only manifest of source hashes
-- The coverage-boundary statement file (path pinned in
-  `docs/dashboard-spec.md`)
+- `coverage-boundary-statement.md` at the repo root — the weekly
+  public coverage-boundary statement (rendered from
+  `source.known_limitations` per `docs/data-model.md`; described in
+  `docs/dashboard-spec.md` §3)
 
 Nothing else. The boundary cannot touch docs, ADRs, workflow files,
 `AGENTS.md`, or any other path. A boundary commit that attempts to write
@@ -110,7 +112,7 @@ alone.
   to the public repo. A G5 failure quarantines the batch and prevents
   the push; the app installation token is never used for a batch that has
   not passed G5.
-- G5 specification is ADR 0013 (TBD). This ADR does not specify G5; it
+- G5 specification is ADR 0013. This ADR does not specify G5; it
   specifies that G5 is the only gate that decides whether the boundary
   workflow uses its credential.
 

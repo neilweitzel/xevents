@@ -114,7 +114,7 @@ in v1.
 ## Enforcement
 
 - ADR 0010 G5 (name-scan gate): mechanical, per batch, pre-push.
-  Specification lives in ADR 0013 (TBD).
+  Specification lives in ADR 0013.
 - ADR 0010 docs QA: the decision-consistency check flags naming-policy
   violations in documentation the same way it flags stale decision
   language.

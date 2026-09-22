@@ -85,6 +85,6 @@ uninformative listings receive `unspecified`.
 
 ## G5 interaction
 
-The name-scan gate (ADR 0013, TBD) runs on the rendered view 1 output. This
+The name-scan gate (ADR 0013) runs on the rendered view 1 output. This
 vocabulary is denylist-safe by construction: no value in the enum is a
 name.
