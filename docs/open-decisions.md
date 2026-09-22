@@ -422,3 +422,19 @@ added here; nothing here is ever resolved by assumption.
     file structure the machinery references).
   - Second-wave publication of backfilled aggregates (deferred to
     loader implementation).
+
+## WS6 scanning and archival clarification (2026-09-22)
+
+- **Status:** implementation clarification approved for preparation; proposed
+  document pending user redline and merge. No live publishing authorized.
+- **Decision:** the private scanner may read its private inputs. The public
+  build remains public-only. Separate private archival may use a private native
+  workflow token under ADR 0012's retained workflow-isolation rule, without the
+  App key and without public writes.
+- **Sequence:** ship scan and archival first with publishing absent. Add App
+  transport only after its protection, reporting, and required-check contracts
+  can be verified. No missing dependency is treated as a pass.
+- **Unchanged:** three-path public write set, G5 hard gate, no override, and the
+  unresolved correction-export contract. This does not mark WS6 or live M1
+  acceptance criteria complete.
+- **Specification:** [WS6 boundary workflow separation](ws6-boundary-separation.md).
