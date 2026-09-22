@@ -105,9 +105,11 @@ Authoritative reasoning: ADR 0002. This section is the rules.
   FREELY USABLE / PAID / RESTRICTED. **Build the stored and published dataset
   only on FREELY USABLE sources.**
 - **ransomware.live is excluded as a dependency.** No storage of its data at
-  scale, no republication, no build-time or run-time dependency. Whether even
-  manual query-level cross-checks are acceptable is **UNDECIDED**
-  (docs/open-decisions.md #2) — until decided, no contact at all.
+  scale, no republication, no build-time or run-time dependency. Decision #2
+  in docs/open-decisions.md establishes **no contact by default**, including
+  manual queries. A minimal, documented, single-fact manual lookup requires
+  separate explicit approval; no such exception is granted by this guidance.
+  Automated bulk queries and bulk derivation remain excluded.
 - **MVP builds on exactly one source: RansomLook** (CC BY 4.0). Attribution
   is mandatory; keep a per-source attribution record in the source registry.
   Adding a second source needs a new ADR + user approval.

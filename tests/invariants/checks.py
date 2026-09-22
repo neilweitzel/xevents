@@ -254,6 +254,71 @@ def prose(body):
     return re.sub(r"<!--.*?-->", blank, body, flags=re.S)
 
 
+def semantic_units(body):
+    """Yield line-addressable prose blocks without joining unrelated list/table rows.
+
+    This is a bounded Markdown reader, not a CommonMark parser or policy oracle.
+    Wrapped list text stays with its item. Every nested item and table row starts
+    a new unit; adjacent prose remains together so wrapped decision references
+    still work. Reference existence is checked separately over the whole text.
+    """
+    start, lines = 1, []
+    for number, line in enumerate(body.splitlines(), 1):
+        boundary = re.match(r"^\s*(?:[-*+] |\d+[.)] |#{1,6} |\|)", line)
+        if not line.strip() or boundary:
+            if lines:
+                yield start, "\n".join(lines)
+                lines = []
+        if line.strip():
+            if not lines:
+                start = number
+            lines.append(line)
+    if lines:
+        yield start, "\n".join(lines)
+
+
+def decision_words(unit):
+    """Remove only explicit token examples and superseded/past-tense fragments.
+
+    Active prose in the same unit remains checked. Nothing here exempts paths,
+    ADR references, entire documents, or protected historical bodies.
+    """
+    token = (r'(?:"(?:TBD|UNDECIDED|proposed)"|“(?:TBD|UNDECIDED|proposed)”'
+             r'|`(?:TBD|UNDECIDED|proposed)`)')
+    words = re.sub(
+        rf"\bdecision-consistency check \(no\s+{token}"
+        rf"(?:\s*(?:,|/|\band\b)\s*(?:and\s+)?{token})*\s+language",
+        "decision-consistency check (no placeholder language", unit, flags=re.I)
+    words = re.sub(r"`[^`]*`", "", words)
+    # A strikeout by itself is not a disposition. Require an immediately
+    # following bold marker, optionally dated; unrelated/negated markers must
+    # not hide another struck claim in the same unit.
+    words = re.sub(
+        r"~~(?:(?!~~).)*~~(?=\s+\*\*(?:DEFERRED|SUPERSEDED|LIFTED)"
+        r"(?: \d{4}-\d{2}-\d{2})?\*\*)", "", words, flags=re.S)
+    # The exact past-tense phrase does not reopen a previously settled rule.
+    words = re.sub(r"\bwas a TBD\b", "was a settled question", words)
+    # Quoting an active policy does not excuse it. Only a detector description
+    # may quote these single-word tokens as its input vocabulary.
+    words = re.sub(
+        rf"\b(?:flags?|detects?|detecting)\s+{token}"
+        rf"(?:\s*(?:,|/|\band\b)\s*(?:and\s+)?{token})*",
+        "checks explicit tokens", words, flags=re.I)
+    return words
+
+
+def semantic_prose(body):
+    """Remove preamble status values, preserving line numbers and other claims."""
+    header, sep, tail = body.partition("\n## ")
+    # Support the metadata spellings already used in repository documents.
+    # Remove the declaration's value only, not the remainder of that line.
+    header = re.sub(
+        r"^(?:- )?(?:Status:|\*\*Status:\*\*|\*\*Status\*\*:)\s*"
+        r"(?:\*\*)?(?:proposed|accepted|draft|superseded(?:-in-part)?)\b(?:\*\*)?",
+        "", header, flags=re.M | re.I)
+    return header + sep + tail
+
+
 def docs_audit(tree, reference_tree=None):
     """Deterministic diagnostics, not a semantic truth oracle or debt allowlist."""
     references = {**(reference_tree or {}), **tree}
@@ -315,13 +380,8 @@ def docs_audit(tree, reference_tree=None):
                                               fnmatch.fnmatchcase(p, c.rstrip("/") + "/*")
                                               for p in references) for c in normalized):
                 finding(path, "unresolved_reference", ref, refs[ref])
-        header, sep, tail = body.partition("\n## ")
-        header = re.sub(r"^(?:- )?Status:[^\n]*", "", header, flags=re.M)
-        semantic = header + sep + tail
-        for match in re.finditer(r"\S(?:[^\n]|\n(?!\s*\n))*", semantic):
-            paragraph = match.group(0)
-            # Ignore code literals (e.g. a test documenting the token `TBD`).
-            words = re.sub(r"`[^`]*`", "", paragraph)
+        for line, unit in semantic_units(semantic_prose(body)):
+            words = decision_words(unit)
             if not re.search(r"\b(?:TBD|UNDECIDED|proposed|to be decided)\b", words, re.I):
                 continue
             ids = re.findall(r"\bADR\s+(\d{4})\b", words)
@@ -331,7 +391,7 @@ def docs_audit(tree, reference_tree=None):
             if accepted or set(rulings) & decided:
                 finding(path, "possible_decision_language_drift",
                         ",".join(sorted(set(accepted)) + sorted(set(rulings) & decided)),
-                        semantic[:match.start()].count("\n") + 1)
+                        line)
     glossary_path = "docs/glossary.md"
     require(glossary_path in references, "glossary_missing")
     glossary = text(references, glossary_path)
