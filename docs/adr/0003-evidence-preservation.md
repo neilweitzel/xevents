@@ -1,6 +1,6 @@
 # ADR 0003: Capture-at-ingest evidence preservation
 
-- Status: proposed (pending user redline)
+- Status: accepted
 - Date: 2026-09-18
 - Deciders: project lead
 
@@ -97,5 +97,3 @@ Capture-at-ingest is unchanged. The storage destination is split:
 - The practitioner retrieval workflow (manifest page on the dashboard:
   hash the source record yourself, compare) is specified in
   docs/dashboard-spec.md.
-
-Status remains `proposed (pending user redline)`.

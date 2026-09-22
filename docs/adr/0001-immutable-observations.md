@@ -1,6 +1,6 @@
 # ADR 0001: Immutable observations, cautiously-resolved incident records
 
-- Status: proposed (pending user redline)
+- Status: accepted
 - Date: 2026-09-18
 - Deciders: project lead
 
@@ -88,5 +88,3 @@ records live and who sees them:
 - Corrections now include the `administrative_note` event type; every ledger
   entry that affects an aggregate propagates as aggregate recomputation on
   the public surface (ADR 0009 pivot note).
-
-Status remains `proposed (pending user redline)`.

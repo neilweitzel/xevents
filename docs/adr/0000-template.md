@@ -3,8 +3,11 @@
 Copy this file to `NNNN-short-title.md` for each new decision.
 
 Scope rule (AGENTS.md: Scope discipline): an ADR that lifts an MVP non-goal,
-adds a source, or changes a `proposed` ADR requires the user's explicit
-approval. Until approved, its status stays `proposed`.
+adds a source, or supersedes an `accepted` ADR requires the user's explicit
+approval. New ADRs land as `proposed (pending user redline)` and remain
+there until the user redlines them; once accepted, per Nygard convention
+an ADR's body is not edited — decisions that change are superseded by a
+new ADR.
 
 ```markdown
 # ADR NNNN: Title

@@ -1,6 +1,6 @@
 # ADR 0002: Licensing-clean ingestion architecture
 
-- Status: proposed (pending user redline)
+- Status: accepted
 - Date: 2026-09-18
 - Deciders: project lead
 
@@ -137,5 +137,3 @@ permission. The pivot changes where licensed content lives:
   minimization measure; the lawful-basis memo template
   (docs/lawful-basis-memo-template.md) is rewritten around the two-repo
   split.
-
-Status remains `proposed (pending user redline)`.

@@ -1,6 +1,6 @@
 # ADR 0007: De-listing / removal detection via re-polling and diffing
 
-- Status: proposed (pending user redline)
+- Status: accepted
 - Date: 2026-09-18
 - Deciders: project lead
 
@@ -92,5 +92,3 @@ docs/source-spec-ransomlook.md). What changed is the blast radius:
   so.
 - The de-listing threshold is unchanged by the pivot (open-decisions.md
   #3 stands; #11 operationalizes it).
-
-Status remains `proposed (pending user redline)`.
