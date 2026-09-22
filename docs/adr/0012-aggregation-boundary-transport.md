@@ -1,8 +1,21 @@
 # ADR 0012: Aggregation-boundary transport
 
-- Status: accepted
+- Status: superseded-in-part
 - Date: 2026-09-21
 - Deciders: project lead
+- Superseded-by: 0014 (§Mechanics, §Identity and audit)
+- Supersession note: 2026-09-22. During M1 execution, an audit
+  established that direct-push path enforcement is not available on
+  `neilweitzel/xevents` — public repos on any GitHub plan do not
+  support push rulesets, and personal-account repos do not support
+  branch-protection actor bypass lists. §Mechanics and §Identity and
+  audit below are therefore superseded by ADR 0014's App-opened-PR
+  transport, which preserves this ADR's load-bearing properties
+  (machinery-first, boundary write set as tight rule, distinct-
+  principal audit signal, G5 as sole gate) using platform mechanisms
+  that actually exist. §Boundary write set, §Rotation, §G5
+  interaction, §Private-repo workflow isolation, and §Non-goals
+  remain in force per ADR 0014 §Related.
 
 ## Context
 
