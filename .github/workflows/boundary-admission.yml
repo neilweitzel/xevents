@@ -8,7 +8,6 @@ on:
 permissions:
   contents: read
   pull-requests: read
-  checks: write
 
 concurrency:
   group: boundary-admission-${{ github.event.pull_request.number }}
@@ -16,7 +15,7 @@ concurrency:
 
 jobs:
   admission:
-    name: Trusted boundary checker
+    name: Boundary admission
     runs-on: ubuntu-24.04
     timeout-minutes: 8
     steps:
@@ -35,4 +34,5 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
-        run: python tools/publication_proof/release_control.py check --pr "$PR_NUMBER"
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: python tools/publication_proof/release_control.py check --pr "$PR_NUMBER" --sha "$EXPECTED_HEAD"

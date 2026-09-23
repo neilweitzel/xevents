@@ -103,26 +103,15 @@ def exact_candidate(number: int, directory: Path) -> None:
         g.need(path.read_bytes() == exported[name], "export_bytes")
 
 
-def check_run(number: int) -> str:
-    """Publish a head-bound check explicitly; target workflows run on base SHA."""
+def check_run(number: int, expected_head: str) -> str:
+    """Verify the exact event head; GitHub owns the native required job check."""
+    expected_head = g.oid(expected_head)
     pr = api(f"repos/{g.REPOSITORY}/pulls/{number}")
     head = g.oid(g.record(pr.get("head")).get("sha"))
-    request = {"name": CHECK_NAME, "head_sha": head, "status": "in_progress"}
-    run = json.loads(g.command(
-        ["gh", "api", "--method", "POST", f"repos/{g.REPOSITORY}/check-runs",
-         "-f", f"name={CHECK_NAME}", "-f", f"head_sha={head}", "-f", "status=in_progress"],
-        1048576))
-    identifier = g.number(g.record(run).get("id"))
-    result, conclusion = "release-refused", "failure"
-    try:
-        result = classify(number)
-        again = api(f"repos/{g.REPOSITORY}/pulls/{number}")
-        g.need(g.record(again.get("head")).get("sha") == request["head_sha"], "state_changed")
-        conclusion = "success"
-    finally:
-        g.command(["gh", "api", "--method", "PATCH",
-                   f"repos/{g.REPOSITORY}/check-runs/{identifier}",
-                   "-f", "status=completed", "-f", f"conclusion={conclusion}"], 1048576)
+    g.need(head == expected_head, "event_head_changed")
+    result = classify(number)
+    again = api(f"repos/{g.REPOSITORY}/pulls/{number}")
+    g.need(g.record(again.get("head")).get("sha") == expected_head, "event_head_changed")
     return result
 
 
@@ -244,7 +233,7 @@ def main() -> int:
             print(preflight().decode("utf-8"))
             return 0
         if args.mode == "check":
-            result = check_run(g.number(args.pr))
+            result = check_run(g.number(args.pr), g.oid(args.sha))
         elif args.mode == "candidate":
             g.need(isinstance(args.directory, Path), "export_directory")
             exact_candidate(g.number(args.pr), args.directory)
