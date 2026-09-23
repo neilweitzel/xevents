@@ -1,6 +1,76 @@
-# Offline publication-proof verifier
+# Publication-proof verifier and read-only GitHub adapter
 
-This is the first implementation increment, not an active publication gate.
+## GitHub snapshot connection
+
+`github_snapshot.py` connects the existing verifier to authenticated, read-only
+GitHub metadata and actual Git objects for the fixed public repository. It serves
+ADR 0019's admission adapter and PP-22/23 plus mutable-state checkpoint cases.
+It adds no signing key, public workflow, required check, status write, merge or
+deployment permission. Production publication remains blocked.
+
+The adapter verifies repository identity and public visibility, same-repository
+open/non-draft PR state, one-commit parentage and current main. A fresh bare
+object database fetches only from the fixed HTTPS repository, without a working
+tree, templates, hooks or submodule recursion. Every commit, tree and blob is
+checked against its Git object identity. Complete base/head trees determine the
+diff; patch snippets and paginated file-list completeness claims are not trusted.
+Unchanged files participate in reconstruction. Symlinks, submodules, deletions,
+mixed code/data changes, unsafe paths, unsupported modes and incomplete counts
+fail. Candidate content is never executed or imported.
+
+`read_admission` rereads PR body, refs, state and metadata after reconstruction.
+`check_admission` additionally calls a runner-supplied, independently selected
+current-policy reader twice, rechecks PR state again and repeats signature,
+expiry and key-validity verification with the final clock. Changed policy or
+state and a backwards clock fail. This is checkpoint validation, not an atomic
+GitHub transaction or protection against an ABA change between observations.
+
+The runner and its authenticated `gh`/`git` environment remain trusted. The
+runner's configured `gh` host/authentication route is respected, including an
+approved connector proxy; neither comes from candidate content. A caller
+who substitutes a dishonest API/object/policy provider is outside this adapter's
+trust model. Use code selected independently of the PR. Safe production key
+provisioning, registry selection, the private signed producer, all release gates,
+controlled merge and deployment verification are still required. The returned
+verdict retains `publication_authorized=False`.
+
+Resource bounds match the core's 5,000 files, 5 MiB per non-boundary blob and
+50 MiB per tree. Additional adapter bounds are 10,000 entries, 64 directory
+levels, 1 MiB per tree object/API response, 256 KiB per commit and 120 seconds
+per transport command. These are refusal limits, never truncation. They bound
+processed objects, not the downloaded Git pack's total disk size.
+
+The diagnostic below checks a proposed boundary PR's snapshot only. It does not
+load a production policy or claim a valid signature, and must not be used as the
+publication success check:
+
+```sh
+uv run --directory tools/publication_proof --locked python github_snapshot.py --pr NUMBER
+```
+
+The remaining sections describe the unchanged pure core and its earlier
+implementation evidence. Its no-I/O restriction applies to `proof.py`, not the
+separate authenticated adapter.
+
+### Adapter validation
+
+Local validation on 2026-09-23: 304 tests passed (238 existing core tests and
+66 adapter tests), with lint, formatting and strict type checks passing. The
+core retains 100% measured statement/branch coverage; the adapter measures 99%
+(its executable entry line runs in a separate subprocess test). Coverage is not
+a security-completeness claim.
+
+The adapter tests cover real bare Git object reads, byte-identity mismatches,
+unsafe tree structure/modes, incomplete diffs, fork and identity rejection,
+mixed code changes, stale/mutating PR state, policy changes, late expiry,
+interrupted reads, transport failures and fixed CLI diagnostics. An authenticated
+read-only live probe reconstructed and verified all 102 files at public main
+`37c973df003745436c087299f70b893c43ffaf56`. That probe did not approve a boundary
+PR, sign data, change repository settings or publish anything.
+
+## Pure verifier core
+
+The core was the first implementation increment, not an active publication gate.
 It verifies a synthetic or caller-supplied attestation against explicitly supplied
 policy, snapshot and clock inputs. Success means **valid at check time**;
 the result always has `publication_authorized=False`.
@@ -41,11 +111,11 @@ snapshot is complete and current. Setting `complete=True` is an adapter assertio
 not independent evidence. A deliberate test demonstrates that internally
 consistent but fabricated Git identifiers can pass this core.
 
-The future adapter must select trusted verifier/policy revisions independently
-of the candidate, authenticate repository/PR/Git-object metadata, reconstruct
-complete trees and diffs, detect incomplete reads, and re-read changing state at
-the defined checkpoints. It must not trust a caller's completeness flag, patch
-snippet, declared blob identity, file count or old policy selection.
+The separate adapter described above authenticates repository/PR/Git-object
+metadata, reconstructs complete trees and diffs, detects incomplete reads, and
+rereads changing state. Its trusted runner must still select verifier/policy
+revisions independently of the candidate; production selection is not
+implemented here. Neither layer trusts a patch snippet or declared blob identity.
 
 A valid signature authenticates the key holder's assertion; it cannot prove
 that the private scan happened or that an authorized signer is honest. This
@@ -54,8 +124,9 @@ validate sealed receipts, assess proof-ID entropy, or check export eligibility.
 URL-looking content stays inert bytes. No continuous URL-safety claim is made.
 
 There is no replay database, producer, signing service, command-line success
-gate, credential handling, deployment mode, merge controller, final state re-read
-or hosted protection test. Rechecking the same still-valid proof is idempotent;
+gate, credential handling, deployment mode, merge controller or hosted protection
+test in the core. The adapter adds final point-in-time state rereads, not a
+controlled merge. Rechecking the same still-valid proof is idempotent;
 issuing a newer proof does not automatically revoke an older valid proof.
 Merged PRs remain invalid for this admission-only function.
 
@@ -140,7 +211,7 @@ uv run --directory tools/publication_proof --locked pytest \
   --cov=proof --cov-branch --cov-report=term-missing --cov-fail-under=100
 uv run --directory tools/publication_proof --locked ruff check .
 uv run --directory tools/publication_proof --locked ruff format --check .
-uv run --directory tools/publication_proof --locked mypy --strict proof.py
+uv run --directory tools/publication_proof --locked mypy --strict proof.py github_snapshot.py
 ```
 
 The independently generated project vector uses Node's crypto implementation
@@ -189,12 +260,14 @@ does not mark entire multi-part plan cases complete.
 | Unknown-profile, no-I/O inspection, inert URL and fabricated snapshot tests | Limited PP-28, PP-33, PP-35 and PP-44 trust-boundary evidence | Private mappings, truthful scans, public job isolation, changing external URLs |
 | Time boundaries, clock rejection, repeat verification and proof refresh tests | PP-36 through PP-41 and PP-43 admission components | Deployment behavior or mutable-state re-reads in PP-42 |
 
-PP-22/23 adapters, private-producer PP-28 through PP-32 and PP-45 through PP-52,
-and hosted checkpoint/deployment PP-53 through PP-62 are not implemented.
-The offline acceptance stage as a whole is therefore still incomplete.
+The new adapter exercises PP-22/23 and mutable-state checkpoint topics with
+synthetic authenticated-metadata substitutes and real local Git object tests.
+This does not complete the hosted acceptance plan. Private-producer PP-28
+through PP-32 and PP-45 through PP-52, and hosted checkpoint/deployment PP-53
+through PP-62 remain incomplete.
 
-Next bounded increment: review this core and its provisional policy schema,
-then design/implement the authenticated read-only snapshot adapter and its
-incomplete-read/state-change tests. Keep the production block in place until
-the remaining producer, deployment and hosted acceptance work is separately
-reviewed and authorized.
+The next production prerequisite is reviewed safe-key provisioning and an
+independently selected current registry, followed by the private signed producer
+and controlled merge/deployment connection. Keep the production block until
+those components and the release gates pass separately reviewed acceptance
+tests. No successful diagnostic here authorizes publishing data.
