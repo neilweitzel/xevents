@@ -185,19 +185,44 @@ def test_squash_rebase_or_wrong_parent_order_refused(monkeypatch, parents):
 
 def test_check_is_explicitly_bound_to_candidate_head(monkeypatch):
     f, _ = setup(monkeypatch)
-    with patch.object(g, "command", side_effect=[b'{"id":99}', b'{}']) as transport:
-        assert c.check_run(7) == "attestation-valid-at-check-time"
-    assert f"head_sha={f.head}" in transport.call_args_list[0].args[0]
-    assert "conclusion=success" in transport.call_args_list[1].args[0]
+    with patch.object(g, "command") as transport:
+        assert c.check_run(7, f.head) == "attestation-valid-at-check-time"
+    transport.assert_not_called()
 
 
 def test_failed_check_is_not_left_successful(monkeypatch):
     f, _ = setup(monkeypatch)
     f.pr["body"] = "{}"
-    with patch.object(g, "command", side_effect=[b'{"id":99}', b'{}']) as transport:
+    with patch.object(g, "command") as transport:
         with pytest.raises(p.Refused):
-            c.check_run(7)
-    assert "conclusion=failure" in transport.call_args_list[1].args[0]
+            c.check_run(7, f.head)
+    transport.assert_not_called()
+
+
+def test_native_job_refuses_a_different_event_head(monkeypatch):
+    setup(monkeypatch)
+    with patch.object(c, "classify") as classify:
+        with pytest.raises(g.SnapshotRefused, match="event_head_changed"):
+            c.check_run(7, "f" * 40)
+    classify.assert_not_called()
+
+
+def test_native_job_refuses_head_changed_during_verification(monkeypatch):
+    f, _ = setup(monkeypatch)
+    head = f.head
+    def changed_head(number):
+        f.pr["head"]["sha"] = "f" * 40
+        return "attestation-valid-at-check-time"
+    monkeypatch.setattr(c, "classify", changed_head)
+    with pytest.raises(g.SnapshotRefused, match="event_head_changed"):
+        c.check_run(7, head)
+
+
+@pytest.mark.parametrize("head", [None, "", "wrong", "f" * 39])
+def test_native_job_requires_a_well_formed_event_head(monkeypatch, head):
+    setup(monkeypatch)
+    with pytest.raises(g.SnapshotRefused):
+        c.check_run(7, head)
 
 
 def test_production_policy_rejects_known_test_key(monkeypatch):

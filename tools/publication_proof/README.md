@@ -2,6 +2,12 @@
 
 ## GitHub snapshot connection
 
+The required `Boundary admission` check is the trusted workflow's native job,
+not an extra Checks API record. Its validator compares the webhook's expected
+PR head with authenticated live state before and after full verification.
+The workflow checks out trusted main, never candidate code, and needs no
+`checks: write` permission. Strict up-to-date protection remains required.
+
 The inherited `data/aggregates/.gitkeep` is inert repository scaffolding only
 when it is an unchanged, zero-byte, regular `100644` file in both authenticated
 trees. It is not an allowed release write, not part of the candidate digest,
