@@ -130,12 +130,12 @@ Authoritative reasoning: ADR 0002. This section is the rules.
 Authoritative reasoning: ADR 0003. This section is the rules.
 
 Counts-only RC qualification: [ADR 0022](docs/adr/0022-unattended-research-rc.md)
-proposes a narrower public manifest of export hashes, bounded metadata
+authorizes a narrower public manifest of export hashes, bounded metadata
 screening and automatic ordinary eligibility. The
 [RC research/privacy memo](docs/research-privacy-memo.md) explicitly rejects
-guaranteed anonymity and blanket perpetual retention. Until activation is
-approved, these are reviewed implementation proposals, not permission to
-publish. Original ADR bodies remain historical decision records.
+guaranteed anonymity and blanket perpetual retention. The operator approved
+limited-RC activation on 2026-09-23; technical gates remain mandatory on every
+release. Original ADR bodies remain historical decision records.
 
 - **Capture at ingest, into the private repo.** Every observation gets its
   evidence then and there: raw API response (byte-faithful), source
@@ -233,11 +233,11 @@ publish. Original ADR bodies remain historical decision records.
 ## Automation (xfeeds pattern — ADR 0009)
 
 > Phase note: private scheduled collection is operational. The unattended
-> counts-only RC implementation is proposed in ADR 0022 and remains inactive
-> until its reviewed public/private changes, production trust key, required
-> head-bound check, Actions-based Pages, private contact and operator-reviewed
-> research/privacy memo are in place. Do not treat merged code or passing tests
-> as activation by themselves.
+> counts-only RC is approved in ADR 0022. Activation requires the reviewed
+> public/private changes, production trust key, required head-bound check,
+> Actions-based Pages and release-enable setting. The operator approved the
+> research/privacy memo and GitHub-only reporting channels on 2026-09-23.
+> Do not treat merged code or passing tests as a successful deployment.
 
 The target is for xevents to run like xfeeds: fully automated on GitHub Actions
 + Pages.

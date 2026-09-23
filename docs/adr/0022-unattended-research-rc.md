@@ -1,6 +1,11 @@
 # ADR 0022: Unattended, counts-only research RC
 
-- Status: proposed for activation approval
+- Status: accepted for limited-RC activation, 2026-09-23
+
+The operator approved GitHub-only reporting: public issues and pull requests
+for non-sensitive corrections, and GitHub private vulnerability reporting for
+sensitive privacy/security reports. This supersedes earlier dedicated-email
+requirements; no email address or routine human release approval is required.
 - Date: 2026-09-23
 - Authority: the operator requested one unattended collection-to-Pages cycle
   and explicitly authorized necessary documentation changes.
@@ -110,7 +115,7 @@ G5 failure, invalid proof, stale state, missing controls or deployment error.
 Source failures preserve evidence and leave the last release available.
 The reader labels old data stale. Small samples are not zero incidents.
 
-Activation requires: approved memo and private dispute contact, separately
+Activation requires: approved memo and monitored GitHub reporting channels, separately
 approved key provisioning, passing tests, reviewed merges, required public
 boundary check, Actions-based Pages, and an explicit private enable flag.
 Turning off that flag stops new releases without disabling evidence intake.

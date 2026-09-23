@@ -1,0 +1,42 @@
+name: Research correction or methodology question
+description: Report a non-sensitive aggregate, classification, export or documentation issue.
+title: "[Research correction] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this public form only for non-sensitive questions about published aggregates, exports or methodology.
+
+        **Do not include affected-party names, personal information, source evidence, credentials or other sensitive material.** Use the repository's private security reporting link for anything sensitive.
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Area
+      options:
+        - Published aggregate or export
+        - Sector classification
+        - Methodology or documentation
+        - App behavior
+    validations:
+      required: true
+  - type: input
+    id: release
+    attributes:
+      label: Release or page
+      description: Provide the public URL, retrieval week or dataset generation time.
+    validations:
+      required: true
+  - type: textarea
+    id: observation
+    attributes:
+      label: What should be reviewed?
+      description: Explain the public, non-sensitive issue and the expected correction.
+    validations:
+      required: true
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Public-information confirmation
+      options:
+        - label: I have not included names, personal information, credentials, raw evidence or other sensitive material.
+          required: true

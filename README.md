@@ -28,9 +28,9 @@ incident claims over time, not distributing indicators for enforcement.
 ## Current status
 
 The [public app](https://neilweitzel.github.io/xevents/) is available. The
-unattended release integration is being prepared for activation and research
-release-candidate burn-in; it is not yet a graduated production service.
-Private scheduled collection is already operating.
+unattended release integration is approved for research release-candidate
+burn-in; it is not yet a graduated production service. Private scheduled
+collection is already operating.
 
 The app loads published research data by default. If no dataset has been
 published, it says so instead of substituting sample numbers. An explicitly
@@ -95,6 +95,11 @@ record-level disclosures of private evidence.
 - **Contributing:** start with [AGENTS.md](AGENTS.md) and the
   [documentation map](docs/README.md). Never put private evidence, credentials or
   affected-party identities in public issues or pull requests.
+
+For a non-sensitive aggregate or methodology correction, use the
+[research correction form](https://github.com/neilweitzel/xevents/issues/new?template=correction.yml).
+Use [GitHub private reporting](https://github.com/neilweitzel/xevents/security/advisories/new)
+for privacy, identity, credential or sensitive-evidence concerns.
 
 ## Attribution
 

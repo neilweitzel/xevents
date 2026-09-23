@@ -5,8 +5,9 @@ launch gate (ADR 0003, ADR 0009, mvp-scope.md item 7): the public surface
 serves no data until this memo exists and is reviewed. No memo, no public
 surface. This template specifies what the completed memo must contain;
 filling it is tracked work, not a decision. The counts-only RC assessment is
-now [research-privacy-memo.md](research-privacy-memo.md); its explicit operator
-review remains pending. This template is guidance, not evidence of legal clearance.
+now [research-privacy-memo.md](research-privacy-memo.md); the operator approved
+that limited RC assessment on 2026-09-23. This historical template is guidance,
+not evidence of general legal clearance.
 
 ## Why this memo is simpler than originally scoped
 

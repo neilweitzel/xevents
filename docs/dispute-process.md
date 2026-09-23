@@ -1,6 +1,6 @@
 # xevents — Dispute and correction process
 
-**Status:** draft, 2026-09-21. Implements ADR 0004 and open-decisions.md
+**Status:** limited-RC process approved, 2026-09-23. Implements ADR 0004 and open-decisions.md
 #4 (SLA) as narrowed by #8 (sector-aggregated public surface). The
 published process ships before the public surface serves data (ADR 0004);
 handling is manual in MVP.
@@ -8,9 +8,9 @@ handling is manual in MVP.
 **Counts-only RC update (2026-09-23):** routine eligible records do not enter a
 manual approval queue. Exceptional correction/privacy review remains manual.
 The RC supports private candidate suppression and recomputation, not the
-complete public correction ledger described below. The monitored private
-email channel must be selected and published before activation; do not send
-sensitive evidence or identities through a public issue. The companion is now
+complete public correction ledger described below. GitHub issues/PRs are the
+ordinary public channel; GitHub private reporting is required for sensitive
+evidence, privacy concerns or identities. The companion is
 the [RC research/privacy memo](research-privacy-memo.md).
 
 ## Scope of disputes in a sector-aggregated product
@@ -29,7 +29,8 @@ remains, and what this process covers:
    the source record").
 4. **Method/vector/malware-class corrections** from researchers.
 
-Legal demands (takedown, defamation) enter through this same private channel.
+Legal demands, privacy reports and sensitive takedown requests enter through
+GitHub private reporting.
 Urgent privacy or safety concerns may require precautionary withholding while
 review continues. The [RC research/privacy memo](research-privacy-memo.md)
 is the companion assessment; statutory obligations are not displaced by this
@@ -37,12 +38,15 @@ project's ordinary response targets.
 
 ## Intake
 
-- **Channel:** a dedicated email address, published on the site and in
-  this document. Private intake, no new infrastructure, no public thread
-  that exposes the disputant.
-- **A complete submission contains:** who you are, your relationship to
-  the subject (for classes 2–4: evidence of standing, e.g. writing from
-  the organization's domain), the specific aggregate/manifest entry (IDs,
+- **Public channel:** the
+  [research correction form](https://github.com/neilweitzel/xevents/issues/new?template=correction.yml)
+  or a pull request for non-sensitive aggregate, export, app or methodology
+  corrections.
+- **Sensitive channel:** [GitHub private reporting](https://github.com/neilweitzel/xevents/security/advisories/new)
+  for security flaws, privacy concerns, personal information, credentials,
+  affected-party identities or sensitive evidence. Never place those in a
+  public issue or pull request.
+- **A complete submission contains:** the specific aggregate/manifest entry (IDs,
   URLs, dates), what you assert is wrong, and supporting evidence. The SLA
   clock starts on **complete** submission, not first contact; incomplete
   submissions get one request for the missing pieces.
@@ -119,8 +123,7 @@ correlation risk must be considered before publishing a corrected release.
 
 ## Operational commitment
 
-A published channel nobody monitors is worse than none (ADR 0004). The
-intake mailbox is checked on every business day; the SLA is tracked in the
-review queue; a missed SLA is itself a recorded incident with a
-root-cause note. If the project cannot staff the channel, the public
-surface is paused until it can.
+A published channel nobody monitors is worse than none (ADR 0004). GitHub
+notifications and private reports are checked on business days; the response
+targets are tracked in the review queue. If the project cannot monitor these
+channels, public releases are paused.

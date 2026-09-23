@@ -15,5 +15,14 @@
   },
   "aggregate_files": ["data/aggregates/view1.jsonl", "data/aggregates/view2.jsonl"],
   "profiles": ["counts-rc-v1"],
-  "keys": []
+  "keys": [
+    {
+      "key_id": "rc-2026-01",
+      "public_key": "L5_e60JWsLgWibfMvxwZaR499D44AxhM7A3c_zTcFGs",
+      "profiles": ["counts-rc-v1"],
+      "not_before": 1790180508,
+      "not_after": 1797956568,
+      "revoked": false
+    }
+  ]
 }

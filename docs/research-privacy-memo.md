@@ -1,9 +1,10 @@
 # Counts-only RC research and privacy memo
 
-Status: prepared for project-lead review on 2026-09-23. This records the
-bounded RC design, not a legal opinion or a claim that activation is approved.
-The reviewer must approve the operating assumptions, confirm jurisdiction and
-the private contact channel, and decide whether counsel review is required.
+Status: operator-reviewed and approved for the limited RC on 2026-09-23. This
+records the bounded RC design, not legal advice or general legal clearance.
+Neil Weitzel confirmed this is a personal research project operated from
+Indiana, USA, accepted the residual risks described here, and approved lead
+sign-off without requiring counsel before this limited RC.
 
 ## Purpose and scope
 
@@ -35,7 +36,8 @@ they do not prove anonymity against correlation or release-to-release inference.
 
 ## Jurisdiction and basis for review
 
-The operator must confirm their operating jurisdiction before activation.
+The accountable operator is Neil Weitzel, operating this personal research
+project from Indiana, USA.
 Hosting on GitHub Pages does not alone determine all applicable law. Where
 EU GDPR applies, its territorial scope includes the criteria in Article 3;
 legitimate interests under Article 6(1)(f) require a necessity and rights
@@ -98,16 +100,14 @@ withholding while investigated.
 
 ## Activation review and reassessment
 
-Activation remains blocked until the project lead records:
-
-- their operating jurisdiction and accountable operator;
-- the monitored private email address authorized for publication;
-- acceptance of this limited research use and its residual risks;
-- whether lead sign-off is sufficient or counsel must review first;
-- approval of the RC contract, dedicated key and enforced deployment path.
+The operator approved the limited research use, residual risks, RC contract,
+dedicated key and enforced deployment path on 2026-09-23. Public GitHub issues
+and pull requests are the ordinary project channel. GitHub private reporting is
+the channel for sensitive evidence, privacy concerns and affected-party
+identities; those must not be posted publicly. Operator approval does not
+prevent later counsel review or change legal obligations.
 
 Reassess at the 30-day burn-in review, at least annually thereafter, and before
 adding sources, broader coverage, new fields or a changed privacy boundary.
-Stop publication if a privacy issue or an unstaffed contact channel makes the
-accepted operating conditions untrue. The project lead must not record this
-document as reviewed merely because it was generated or its links were checked.
+Stop publication if a privacy issue or an unstaffed GitHub reporting channel
+makes the accepted operating conditions untrue.
