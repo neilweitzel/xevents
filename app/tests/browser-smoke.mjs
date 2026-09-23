@@ -48,6 +48,9 @@ try {
   assert.match(await page.locator(".sectors tbody tr").first().innerText(), /Manufacturing/);
   await ui("sort-name").click();
   assert.match(await page.locator(".sectors tbody tr").first().innerText(), /Educational/);
+  assert.equal(await ui("sort-name").locator("..").getAttribute("aria-sort"), "ascending");
+  assert.equal(await ui("sort-count").locator("..").getAttribute("aria-sort"), "none");
+  assert.equal(await ui("sort-count").innerText(), "Claims");
   await ui("select-week").selectOption("0");
   assert.equal(await page.locator(".band.insufficient").count(), 6);
   assert.equal(await page.locator(".bar-slot").count(), 1);
@@ -85,7 +88,7 @@ try {
   await ui("button-theme").click();
   assert.equal(await page.locator("html").getAttribute("data-theme"), "light");
 
-  for (const width of [1440, 375]) {
+  for (const width of [1440, 375, 320]) {
     await page.setViewportSize({width, height: 900});
     for (const [hash, title] of [
       ["#/", "Sector exposure"], ["#/sector/54", "Professional and technical services"],
@@ -116,7 +119,20 @@ try {
   assert.equal(await page.locator(":focus").getAttribute("id"), "week");
   assert.deepEqual(errors, []);
   assert.deepEqual(external, []);
-  console.log("PASS: filters, sorting, downloads, nulls, routes, themes, layouts, keyboard, network.");
+  // Inject a failed module request, then verify an actual user retry recovers.
+  const failurePage = await context.newPage();
+  let failOnce = true;
+  await failurePage.route("**/model.mjs", route => {
+    if (failOnce) { failOnce = false; return route.abort(); }
+    return route.continue();
+  });
+  await failurePage.goto(base);
+  await failurePage.getByRole("heading", {name: "The preview could not start", exact: true}).waitFor();
+  await failurePage.getByTestId("button-retry").click();
+  await failurePage.getByTestId("metric-latest").waitFor();
+  assert.equal(await failurePage.getByTestId("metric-latest").innerText(), "≥ 128");
+  await failurePage.close();
+  console.log("PASS: filters, sorting, downloads, nulls, routes, themes, layouts, keyboard, network, startup recovery.");
 } finally {
   await context.close();
   await browser.close();

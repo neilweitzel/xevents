@@ -86,3 +86,25 @@ test("labels use UTC so browser locale does not shift reporting dates", () => {
   assert.equal(dateLabel("2026-09-14"), "Sep 14");
   assert.equal(dateLabel("2026-09-14", true), "September 14, 2026");
 });
+test("every sector subset and time window reconciles totals, cells and exports", () => {
+  let cases = 0;
+  for (let mask = 0; mask < 2 ** SECTORS.length; mask++) {
+    const rows = SECTORS.filter((_, i) => mask & (1 << i));
+    for (let end = 0; end < WEEKS.length; end++) for (const lookback of [1, 4, 12]) {
+      const indices = selectWeeks(end, lookback);
+      const start = Math.max(0, end - lookback + 1);
+      const cells = rows.flatMap(s => s.counts.slice(start, end + 1));
+      const expected = cells.filter(n => n !== null).reduce((a, b) => a + b, 0);
+      const missing = cells.filter(n => n === null).length;
+      assert.deepEqual(totalFor(rows, indices), {visible: expected, suppressed: missing});
+      const output = makeExport(rows, indices);
+      assert.equal(output.window.start, WEEKS[start]);
+      assert.equal(output.window.end, WEEKS[end]);
+      assert.deepEqual(output.sectors.flatMap(s => s.weekly_claims.map(c => c.count)), cells);
+      assert.equal(output.synthetic, true);
+      assert.equal(output.publication_authorized, false);
+      cases++;
+    }
+  }
+  assert.equal(cases, 2304);
+});

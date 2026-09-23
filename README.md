@@ -32,8 +32,9 @@ review decisions). The public build never reads the private repo. See
   dispute/correction handling.
 - [docs/lawful-basis-memo-template.md](docs/lawful-basis-memo-template.md) —
   the launch-gate memo template. Unwritten; no memo, no public surface.
-- [docs/adr/](docs/adr/) — Architecture Decision Records (all `proposed`,
-  pending user redline):
+- [docs/adr/](docs/adr/) — Architecture Decision Records; each record carries
+  its decision status. See [AGENTS.md](AGENTS.md) for the accepted and
+  superseded decision rules:
   - 0001 — immutable observations vs cautiously-resolved incident records
   - 0002 — licensing-clean ingestion architecture
   - 0003 — capture-at-ingest evidence preservation
@@ -67,6 +68,13 @@ review decisions). The public build never reads the private repo. See
 
 ## Status
 
-Docs only. No code yet. 2026-09-21 pivot to sector aggregation + two-repo
-architecture is documented and awaiting user redline; all ADRs remain
-`proposed`.
+Implementation is underway. Repository invariant checks, baseline branch
+protection, and an offline signed-publication-proof verifier exist. The
+[synthetic research preview](app/README.md) is runnable locally and uses only
+invented aggregate fixtures.
+
+This is not a live production service. Source ingestion, a trusted production
+aggregate adapter, proof enforcement in required CI, and the publication/build
+path are not yet integrated end to end. No public Actions workflows are
+installed. Passing local tests or viewing the synthetic app does not authorize
+live publication; the launch memo, review and burn-in gates still apply.

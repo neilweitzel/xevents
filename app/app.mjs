@@ -91,8 +91,8 @@ function metrics(rows, selected) {
 function table(rows) {
   return `<section class="panel sector-panel"><div class="panel-heading"><div><h2>Sector activity</h2><p>Illustrative bands compare the selected week with its prior four weeks.</p></div><span class="pill">View 1</span></div>
     <div class="table-scroll"><table class="sectors"><caption class="sr-only">Synthetic sector activity for the selected week</caption>
-      <thead><tr><th scope="col"><button id="sort-name" data-testid="sort-name">Sector${state.sort === "name" ? " ↓" : ""}</button></th><th scope="col">Demo activity</th>
-        <th scope="col" aria-sort="${state.sort === "latest-desc" ? "descending" : state.sort === "latest-asc" ? "ascending" : "none"}"><button id="sort-count" data-testid="sort-count">Claims ${state.sort === "latest-asc" ? "↑" : "↓"}</button></th><th scope="col">Week change</th><th scope="col">Trend</th></tr></thead>
+      <thead><tr><th scope="col" aria-sort="${state.sort === "name" ? "ascending" : "none"}"><button id="sort-name" data-testid="sort-name">Sector${state.sort === "name" ? " A–Z" : ""}</button></th><th scope="col">Demo activity</th>
+        <th scope="col" aria-sort="${state.sort === "latest-desc" ? "descending" : state.sort === "latest-asc" ? "ascending" : "none"}"><button id="sort-count" data-testid="sort-count">Claims${state.sort === "latest-asc" ? " ↑" : state.sort === "latest-desc" ? " ↓" : ""}</button></th><th scope="col">Week change</th><th scope="col">Trend</th></tr></thead>
       <tbody>${rows.map(s => `<tr data-testid="row-sector-${s.id}"><th scope="row"><a class="sector-link" href="#/sector/${s.id}" data-testid="link-sector-${s.id}">${s.name}<span>SECTOR ${s.id}</span></a></th><td>${badge(s)}</td><td class="numeric">${s.counts[state.end] === null ? '<span class="muted cell-withheld">Withheld</span>' : number(s.counts[state.end])}</td><td>${changeLabel(s)}</td><td>${spark(s)}</td></tr>`).join("")}</tbody>
     </table></div><div class="table-footnote">A withheld cell means insufficient data, not zero activity. All values are synthetic.</div>
   </section>`;
