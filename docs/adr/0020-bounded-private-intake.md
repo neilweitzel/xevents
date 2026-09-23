@@ -6,6 +6,41 @@
 - Authority: operator approved implementing one bounded private intake followed
   by an identical-response replay on 2026-09-23.
 
+## RC2 amendment: typed intake and unattended collection
+
+Proposed implementation requested on 2026-09-23. The following supersedes
+the manual-only and missing-screenshot rules below for the version-2 adapter:
+
+- Accept native booleans and the explicitly supported legacy boolean strings.
+  Link, magnet and screenshot fields may be null; other types stay strict.
+  Keep the untouched source bytes and field values.
+- A null or empty screenshot means `not_provided`, not a failed request.
+  Admit the API metadata into private pending-review storage with that status.
+  Attempt to fetch, bound, hash and archive a supplied screenshot.
+  Failed retrieval records `unavailable` without discarding usable API metadata.
+  Screenshot availability is supplementary, not a private-intake admission gate.
+  Never manufacture source evidence or claim that failed image evidence exists.
+  This changes private admission only, not G2 or publication eligibility.
+- Verify old transactions with their original adapter. Explicit offline
+  reprocessing may append newly understood observations with original retrieval
+  time, never rewrite history, advance sightings or claim burn-in.
+- Use a two-hour GitHub Actions trigger and six-hour effective polling guard.
+  Persist append-only results on a dedicated private data branch, with serialized
+  runs, signed commits and a data-only write-set check. No personal computer,
+  boundary App key or public write token is required.
+- The first automated window remains at most ten recent records. A full window
+  reports possible truncation; this is not complete source coverage, backfill,
+  de-listing detection or automatic research publication.
+- Merge and schedule activation require explicit approval of this change.
+  Private branch protection remains a hosting-plan limitation; checked,
+  expected-head signed writes are compensating controls, not equivalent
+  protection. Failure is visible as a failed private workflow run.
+
+The remaining end-to-end work is classification, release-gate execution,
+signed aggregate transport and automatic Pages updates from approved releases.
+Neither an automated collector nor the synthetic Pages demonstration represents
+that completed production path.
+
 ## Purpose
 
 Implement the already-approved RansomLook source without activating a scheduler
