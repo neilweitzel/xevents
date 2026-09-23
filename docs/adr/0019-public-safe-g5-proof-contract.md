@@ -2,6 +2,7 @@
 
 - Status: proposed (pending user redline)
 - Date: 2026-09-22
+- Revision: 2026-09-23; checkpoint semantics proposed, not accepted
 - Deciders: project lead; preparation only authorized
 - Scope: M1 boundary proof contract and adversarial test design
 - Related: [privacy-preserving verification](0015-private-invariant-verification.md),
@@ -30,6 +31,26 @@ approved or implemented.
 It would not change the three-location write set, loosen the naming policy,
 approve correction export, or rewrite accepted historical documents.
 
+## Focused revision and changed guarantee
+
+This revision replaces the earlier requirement for atomic custom authorization
+at the instant of GitHub merge with explicit validation checkpoints. It is a
+weaker timing guarantee, not an equivalent implementation of that requirement.
+The operator has endorsed the initial D4 limits and evidence-based tuning;
+that endorsement does not accept this D6 change or authorize activation.
+
+| Earlier proposal | Revised proposal, requiring explicit acceptance |
+|---|---|
+| Expiry, proof-body changes and revocation prevent every merge at the exact instant it occurs. | Each controlled operation checks fresh evidence immediately before its request; native branch rules govern merges, but no atomic custom expiry/revocation guarantee is claimed. |
+| A green required proof check must remain current until merge. | A green check records validity at check time only; controlled merge and website deployment repeat validation. A manual merge may still use a previously valid green check. |
+| The 15-minute limit is a maximum age at completed publication. | The unchanged 900-second limit is enforced at the defined validation checkpoints, not a deadline guaranteed for GitHub's later completion or CDN propagation. |
+
+Public branch creation is already public disclosure. Public main is also
+public, even if Pages has not deployed. A later website check cannot prevent
+or undo either exposure. Every initial boundary write therefore still requires
+successful private G5/export validation of the exact bytes before transport.
+This revision does not authorize publishing unscanned data as public staging.
+
 ## Meaning of a proof
 
 A valid attestation would mean: a separately trusted private producer states
@@ -41,7 +62,7 @@ It would NOT mean the public job inspected private evidence, independently
 reran G5, proved the private producer uncompromised, established incident
 truth, or authorized release. A signature authenticates a producer's claim;
 it does not make an incorrect producer truthful. Required protections,
-all other gates, export contracts and merge-time freshness remain independent.
+all other gates, export contracts and checkpoint freshness remain independent.
 
 The claim is point-in-time. In particular, a scanned external URL can change
 after the scan. A short proof lifetime reduces this interval; it does not
@@ -114,9 +135,9 @@ an object with exactly the following fields; null values and extensions fail:
 |---|---|
 | `version` | Integer `1`, not Boolean. |
 | `repository_id` | Positive GitHub numeric ID equal to the trusted target policy and live PR metadata. |
-| `pr_number` | Positive integer equal to the live open PR. |
-| `base_sha` | Exactly 40 lowercase hex characters; current public main and direct parent of the candidate commit. |
-| `head_sha` | Exactly 40 lowercase hex characters; current same-repository PR head. |
+| `pr_number` | Positive integer equal to the same-repository PR; open for admission/merge, merged for the separate deployment mode. |
+| `base_sha` | Exactly 40 lowercase hex characters; direct parent of the candidate and current public main at admission/merge validation; historical first parent of the verified merge commit at deployment. |
+| `head_sha` | Exactly 40 lowercase hex characters; exact same-repository PR head, preserved as the second parent of the merge commit for deployment validation. |
 | `candidate_sha256` | Exactly 64 lowercase hex characters; digest defined below. |
 | `policy_sha256` | Exactly 64 lowercase hex characters; SHA-256 of the canonical, independently trusted public verification policy. |
 | `profile_id` | Exact member of the policy's approved scanner-profile set; ASCII grammar `[a-z0-9][a-z0-9._-]{0,63}`. |
@@ -148,7 +169,8 @@ There is no separate outcome field: only a complete successful G5 scan can
 produce a v1 proof. A quarantine, exception, partial scan or skipped prerequisite
 must produce no public proof or new boundary branch/PR. If a later revalidation
 fails after a successful initial scan and partial transport, the existing
-branch/PR remains unmergeable; its existence is not authorization.
+controlled operation stops; an existing branch/PR is not authorization. A
+previously emitted green status has the residual timing limitations below.
 
 ## Exact public-candidate binding
 
@@ -174,12 +196,21 @@ or unsafe paths and unexpected aggregate members. Initial limits are 1 MiB per
 file and 4 MiB across the boundary candidate. These are proposed safety caps;
 oversize fails, never truncates. Larger production needs require review.
 
-In v1, the candidate is exactly one commit whose sole parent is current public
-main. The complete parent-to-head diff must contain only regular-file additions
+At admission/merge validation, the v1 candidate is exactly one commit whose
+sole parent is current public main. The complete parent-to-head diff contains
+only regular-file additions
 or modifications inside the permitted locations. Deletions, renames, copies,
 multiple parents, extra commits and mixed code/data changes are refused even
 where the existing path-only check is broader. These proposed restrictions
 serve the thin first transport, not new permissions.
+
+For boundary data, the proposed controlled transport requests a merge commit,
+not squash or rebase. At deployment, verify that merge commit has exactly the
+ordered parents `[base_sha, head_sha]` and its full Git tree equals the signed
+candidate head's tree. A different merge shape, conflict resolution or altered
+tree is ineligible; never silently reinterpret an old proof for a new tree.
+This is a future boundary-transport requirement, not a repository setting change
+or a restriction newly applied to documentation PRs.
 
 The private producer must scan exactly this complete candidate and privately
 bind the scan to these same bytes. An adapter from the existing scanner envelope
@@ -199,8 +230,10 @@ record is created or activated by this preparation.
 A separately selected trusted verifier revision loads that policy from a
 reviewed public policy revision, never the candidate, PR body, attached key or
 artifact. The payload's policy digest must equal the current approved policy.
-Policy or revocation changes invalidate prior proofs; a proof cannot select an
-older registry to revive a revoked key. Policy changes and candidate data cannot
+Policy or revocation changes invalidate prior proofs at the next validation;
+no instantaneous cancellation of an in-flight GitHub operation is promised.
+A proof cannot select an older registry to revive a revoked key.
+Policy changes and candidate data cannot
 approve each other in one boundary PR.
 
 For each public profile, a private reviewed mapping must bind the exact scanner
@@ -236,13 +269,27 @@ Repository, PR, base, head, candidate digest, current policy and signature
 prevent reuse for a different target. The nonce is not a replay database.
 Repeated verification of the same proof for the same open PR and unchanged
 head is intentionally idempotent while valid. This contract does not claim
-global one-time consumption. A merged/closed PR is not eligible.
+global one-time consumption. A merged/closed PR is not eligible for admission
+or merge mode. Deployment mode separately
+requires an already merged PR with the exact merge provenance defined below;
+a merely closed, unmerged PR is never eligible.
 
-A changed head, advanced base, policy change, expiry or relevant private-input
-change requires a newly validated candidate and fresh proof. Issuing a new proof
+A changed head, advanced base at admission, policy change, expiry or relevant
+private-input change requires a newly validated candidate and fresh proof.
+Deployment uses the historical parent tuple and current-main selection rules
+below, rather than applying admission's current-base rule to a merged PR.
+Issuing a new proof
 does not itself revoke an otherwise valid old one: urgent invalidation requires
-an enforceable policy/key revocation mechanism. Its merge-time propagation is
-part of the readiness blocker below.
+a current policy/key revocation record checked at each checkpoint. Revocation
+does not erase public Git history, retract a completed deployment or cancel an
+already accepted provider request.
+
+The initial limits remain 900/300/60 seconds and 1 MiB per file, 4 MiB total.
+Record scan duration, scan-to-sign delay, queue wait, validation-to-request
+delay and provider completion duration during authorized runs. Review measured
+results before changing limits; never auto-widen, truncate, extend an old scan
+or treat a slow run as an implicit exception. Public telemetry still requires
+the disclosure review above.
 
 ## Producer and consumer sequence
 
@@ -256,7 +303,11 @@ Future producer, only after separate implementation approval:
 3. Only then permit App credential access. Construct a signed public commit
    from an exact public base using the scanned bytes. Verify remote blob bytes,
    the complete diff and the commit identity. A transport failure produces no
-   authorization and leaves any partial public PR unmergeable.
+   authorization and stops the controlled operation.
+   Before the first public write, recheck the private receipt's exact candidate,
+   current profile/input state and scan age below 900 seconds. There is no
+   public PR number or signed PR envelope yet; this private preflight is not
+   misrepresented as a public proof. Queue waits require a new preflight.
 4. Obtain the public PR number using a fixed pending body, with a random public
    branch identifier, never a private batch/fixture identifier. Revalidate the
    complete candidate and fresh scan before proof signing.
@@ -265,9 +316,11 @@ Future producer, only after separate implementation approval:
    checks does it receive the dedicated signing key and emit the minimal proof.
    Arbitrary uploaded `pass` JSON or a caller-supplied digest is insufficient.
 6. Replace the PR body with the envelope. Errors, cancellations or proof-attach
-   failure must leave merge blocked; there is no unsigned fallback.
+   failure must stop controlled publication; no unsigned fallback. Required
+   checks must not report success without a valid proof, but stale green
+   statuses have the expressly documented limitations below.
 
-Future public consumer:
+Future public admission consumer:
 
 1. Use trusted verifier code and independently approved current policy.
 2. Read the exact open same-repository PR and its actual base/head, enforce
@@ -282,7 +335,7 @@ Future public consumer:
 Passing this consumer means only `attestation-valid-at-check-time`.
 It must not be called a complete publication authorization.
 
-## Unresolved merge-time enforcement: hard readiness blocker
+## Checkpoint model and native controls
 
 A green status is not a continuously refreshed authorization. Proof expiry,
 key revocation, PR-body replacement and base changes can occur after a check.
@@ -292,21 +345,92 @@ and a last-minute read improve detection but are not an atomic merge condition.
 GitHub's documented merge endpoint offers a `sha` condition on the PR head;
 its parameter list does not provide an equivalent base-SHA condition
 ([GitHub REST documentation](https://docs.github.com/en/rest/pulls/pulls)).
-Do not claim that passing `sha=head_sha` alone closes the base, proof-body,
-expiry or policy-revocation race.
+Strict required status checks require a branch to be up to date with its base;
+they do not provide a custom proof-expiry condition
+([protected branches](https://docs.github.com/repositories/configuring-branches-and-merges-in-your-repository/defining-the-mergeability-of-pull-requests/about-protected-branches)).
+GitHub can treat neutral/skipped checks as successful, so requiring a check name
+alone does not establish a fail-closed verifier
+([status checks](https://docs.github.com/en/pull-requests/reference/status-checks)).
 
-Before live transport or a passing required proof check can be activated, a
-separate reviewed enforcement design must demonstrate that every authorized
-merge path, including an operator merge, applies current proof and policy to the
-exact candidate being merged. It must either provide enforceable serialization/
-merge-time evaluation on this repository or explicitly redesign the mechanism
-with user approval. A bot-only convention, post-merge check, timer that flips
-status, or administrator promise is not a mechanical guarantee.
+The proposed checkpoints are:
 
-No supported platform solution is asserted here. The proof parser may later be
-implemented in offline shadow mode while this blocker remains, but the existing
-hard-failing public G5 gate must remain unchanged. This prevents the contract
-from promising stronger platform enforcement than has been demonstrated.
+1. **First public write:** private preflight above, before any branch/blob/commit
+   write. Failed or stale input means no new public write by the producer.
+2. **PR admission and controlled merge:** admission runs the public verifier.
+   The controlled publisher repeats the entire verification immediately before
+   requesting merge with `sha=head_sha` and `merge_method=merge`. The final
+   validation and request occur consecutively in the same trusted job, with no
+   approval wait, queued downstream job or unrelated work between them. A
+   retry starts validation again; never reuse an earlier green result.
+3. **Website deployment:** a trusted public-only workflow verifies the actual
+   merged result, current policy/key, full candidate bytes and fresh proof.
+   It builds only that immutable revision, runs the other site gates, then
+   repeats validation after all build/queue/approval waits and immediately
+   before submitting the exact checked artifact for deployment. No job may
+   substitute a newer branch tip or an unbound artifact after validation.
+
+Deployment mode is a separate verifier entry point, not a permissive flag on
+admission. It requires the actual PR state `merged`, its recorded merge commit
+equal to the selected deployment revision, ordered parents and full-tree
+equality above, and that revision still being public main at the final read.
+It reuses the exact signed public tuple and recomputes the candidate digest.
+It does not require historical `base_sha` still to be current main.
+
+If a proof expires after merge, stop deployment. The private producer may issue
+a replacement only after a new complete scan of those same immutable public
+bytes under current inputs/profile and a new sealed receipt. It may replace the
+same merged PR's body after verifying the exact merge provenance; no new data
+write is implied. The original base/head tuple stays fixed, but timestamps and
+proof ID are new. Never re-sign the old scan with a later expiry. If the tuple,
+public main or candidate changed, do not refresh it as a shortcut: use a new
+reviewed candidate path. This recovery needs explicit private-producer tests.
+
+Before activation, demonstrate native required checks with strict up-to-date
+enforcement, authenticated expected check producers, required PRs/signatures,
+and no configured bypass. The trusted final verdict must execute regardless of
+child-job outcomes and emit success only for explicit complete validation;
+skipped, neutral, missing or failed prerequisites cannot become success.
+Candidate-controlled code must not produce that verdict. A discovered bypass
+or untrusted producer blocks activation rather than becoming an exception.
+
+Every deploy-capable path, including manual workflow dispatch and retries, must
+enter the deployment checkpoint. Inventory and test those paths and credential
+holders before activation; no separate unchecked Pages workflow is permitted.
+Workflow concurrency can serialize cooperating jobs, but is not a lock against
+manual GitHub merges or administrators. Administrators who change protections,
+trusted code or deployment permissions remain outside this control's guarantee.
+
+### Residual risks requiring acceptance
+
+- A manual merge can occur after a proof expires or changes if an earlier green
+  check still satisfies native rules. This proposal does not claim to prohibit
+  it mechanically. The deployment workflow must evaluate fresh evidence rather
+  than trust that green check; repository disclosure has already happened.
+- Expiry, revocation, body edits or a new main revision after the final read but
+  before provider completion may escape that operation's last check. There is
+  no claimed numerical upper bound on provider delay or universal atomic
+  cancellation. Record the outcome; subsequent operations must validate anew.
+- Timeout or lost responses can leave an already submitted merge/deployment
+  completed despite an unknown local result. Reconcile provider state read-only;
+  do not blindly retry, report "no write", or claim a rollback.
+- Do not automatically delete public history or revert a deployment after such
+  a race. Detection triggers the existing incident/correction process; rollback
+  and takedown remain separately authorized actions.
+
+This model needs no new server, organization transfer or merge queue. GitHub
+documents queue availability for organization-owned repositories, and queue
+checks still do not document custom atomic expiry/revocation evaluation
+([merge queues](https://docs.github.com/repositories/configuring-branches-and-merges-in-your-repository/configuring-pull-request-merges/managing-a-merge-queue)).
+Those alternatives are not dependencies of this proposed revision.
+
+### Readiness remains blocked
+
+The existing hard-failing public G5 gate remains unchanged until this weaker
+checkpoint model is explicitly accepted, its trusted implementations and
+native protections pass the revised adversarial tests, and activation is
+separately authorized. A docs merge or offline parser pass is not activation.
+If the residual window is unacceptable, reject this revision and retain the
+prior block while reviewing another architecture; do not quietly waive it.
 
 ## Required decisions and exit criteria
 
@@ -317,14 +441,16 @@ The operator must explicitly accept or redline:
 - D3: body-only transport, signed envelope and complete-candidate descriptor.
 - D4: initial lifetime, clock tolerance, candidate caps and filename restrictions.
 - D5: profile versioning and key/policy rotation and revocation requirements.
-- D6: retain the hard block until merge-time enforcement is separately proven.
+- D6 (revised): explicitly accept or reject checkpoint-time freshness, the
+  manual-merge/in-flight residual risks and the independent deployment gate;
+  retain the hard block until implementation and hosted enforcement are proven.
 
 Preparation is complete when these decisions are reviewable, test cases and
 expected outcomes are traceable, and the two documents add no runtime behavior.
 Acceptance of a design is not acceptance of its implementation.
 
 Later stages, each separately authorized: offline verifier and synthetic vectors;
-private producer/profile/key lifecycle; trusted public consumer and enforceable
-merge-time integration; adversarial hosted tests; only then required-check and
+private producer/profile/key lifecycle; trusted public consumer and checkpoint
+integration with native protections; adversarial hosted tests; only then required-check and
 transport activation. Correction export, documentation enforcement, site build,
 and all other M1/M2 dependencies remain separate gates, not waived by a proof.
