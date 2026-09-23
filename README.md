@@ -1,11 +1,17 @@
 # xevents
 
-**Research public incident claims without republishing the people and organizations behind them.**
+**Study ransomware claims without amplifying the leak.**
 
 xevents turns observed ransomware listing claims into name-free, weekly sector
 aggregates for security practitioners and researchers. It preserves the evidence
 privately and keeps uncertainty visible in the public results. A listing is a
 claim, not confirmation that a breach occurred.
+
+The aim is to make observed activity useful for research without turning a
+research tool into another directory of victims or a distribution channel for
+attacker publicity. xevents collects public listing metadata, groups repeat
+claims, checks eligibility and cautiously assigns sectors. Only the resulting
+privacy-checked aggregates become public.
 
 [Open the research app](https://neilweitzel.github.io/xevents/) ·
 [Read the methodology](docs/research-guide.md) ·
@@ -29,13 +35,33 @@ incident claims over time, not distributing indicators for enforcement.
 
 The [public app](https://neilweitzel.github.io/xevents/) is available. The
 unattended release integration is approved for research release-candidate
-burn-in; it is not yet a graduated production service. Private scheduled
-collection is already operating.
+burn-in; it is not yet a graduated production service. End-to-end activation
+has completed successfully, including automatic publication and verified Pages
+deployment. The collector is configured to wake every two hours, with at least
+six hours between successful source captures. A scheduled wake-up is not
+necessarily a new source capture.
 
 The app loads published research data by default. If no dataset has been
 published, it says so instead of substituting sample numbers. An explicitly
 labeled [synthetic demo](https://neilweitzel.github.io/xevents/?demo=1) is available
 separately and must not be cited as research.
+
+### Activity before publishable counts
+
+The app explains work in progress using the latest verified snapshot:
+
+- **Claims assessed privately:** cumulative grouped claims, including those
+  not eligible for publication, in bands of 25. “Fewer than 25” includes zero;
+  older snapshots without this measure say “Not reported.”
+- **Claims in published counts:** the sum of numeric sector-week cells, not
+  a total of all private claims or confirmed incidents.
+- **Published sector-week counts:** how many cells contain publishable numbers.
+- **Latest source capture:** when the source was last successfully captured
+  for this snapshot, not when the page happened to deploy.
+
+Zero published counts can coexist with ongoing private assessment. Exact
+small private totals and per-gate rejection counts are not exposed. These are
+snapshot measures, not a live operational-health dashboard or an approval rate.
 
 ## How to read the results
 
@@ -69,7 +95,7 @@ Signed release, protected merge and verified deployment
 Public research app and aggregate exports
 ```
 
-The full automated release path is the RC activation target. Routine eligible
+The automated release path is active for RC burn-in. Routine eligible
 records do not require individual human approval. Privacy exceptions remain
 withheld; failed integrity or publication checks stop that release and preserve
 the previous site. The browser reads public aggregates only and has no access

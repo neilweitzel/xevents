@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {CODES, SCHEMA, MAX_BYTES, parseAggregate, loadAggregate, selection, exportSelection} from "../aggregate.mjs";
+import {CODES, SCHEMA, ACTIVITY_SCHEMA, MAX_BYTES, parseAggregate, loadAggregate, selection, exportSelection, activitySummary} from "../aggregate.mjs";
 
 export const NOW = Date.parse("2026-09-23T15:00:00Z");
 export const header = () => ({
@@ -18,6 +18,32 @@ test("closed rectangular dataset roundtrips with nulls and fixed sector labels",
   assert.deepEqual(d.sectors.find(s => s.id === "62").counts, [null, null]);
   assert.equal(d.stale, false);
   assert.throws(() => d.rows[0].claim_count = 15);
+});
+test("activity bands are strict, compatible and never pretend missing data is zero", () => {
+  assert.equal(activitySummary(null), null);
+  assert.equal(activitySummary(parseAggregate(jsonl(), NOW)).assessed, "Not reported");
+  for (const [floor, label] of [[0, "Fewer than 25"], [25, "25–49"], [50, "50–74"], [10000, "10,000–10,024"]]) {
+    const d = parseAggregate(jsonl({...header(), schema_version: ACTIVITY_SCHEMA,
+      assessed_claims_floor: floor}), NOW);
+    assert.equal(activitySummary(d).assessed, label);
+    assert.equal(activitySummary(d).published, 14);
+    assert.equal(activitySummary(d).cells, 2);
+    assert.equal(exportSelection(d, selection(d, "", 1)).contract_version, ACTIVITY_SCHEMA);
+  }
+  for (const value of [-25, 1, 24, 26, 25.1, 10025, true, "25", null])
+    assert.throws(() => parseAggregate(jsonl({...header(), schema_version: ACTIVITY_SCHEMA,
+      assessed_claims_floor: value}), NOW));
+  assert.throws(() => parseAggregate(jsonl({...header(), schema_version: ACTIVITY_SCHEMA}), NOW));
+  assert.throws(() => parseAggregate(jsonl({...header(), assessed_claims_floor: 0}), NOW));
+  const excessive = rows().map(r => ({...r, claim_count: 25}));
+  assert.throws(() => parseAggregate(jsonl({...header(), schema_version: ACTIVITY_SCHEMA,
+    assessed_claims_floor: 0}, excessive), NOW));
+  const empty = activitySummary(parseAggregate(jsonl({...header(),
+    schema_version: ACTIVITY_SCHEMA, assessed_claims_floor: 0}, []), NOW));
+  assert.equal(empty.published, 0); assert.equal(empty.cells, 0);
+  const held = activitySummary(parseAggregate(jsonl(header(), rows().map(r =>
+    ({...r, claim_count: null}))), NOW));
+  assert.equal(held.published, 0); assert.equal(held.cells, 0);
 });
 test("draft state, extra names, arbitrary sectors and small counts are rejected", () => {
   for (const change of [{release_state: "blocked"}, {privacy_floor: 1}, {actor: "forbidden"},

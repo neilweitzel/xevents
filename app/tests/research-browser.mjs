@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import {createRequire} from "node:module";
 import {chromium} from "playwright";
-import {CODES, SCHEMA} from "../aggregate.mjs";
+import {CODES, SCHEMA, ACTIVITY_SCHEMA} from "../aggregate.mjs";
 const require = createRequire(import.meta.url);
 const base = process.argv[2] || "http://127.0.0.1:3000";
 const browser = await chromium.launch({headless: true});
@@ -17,6 +17,8 @@ const fixture = state => {
     generated_at: generated.toISOString().replace(".000Z", "Z"),
     release_state: state === "blocked" ? "blocked" : "released",
     privacy_floor: 5, time_basis: "retrieved_at", coverage: "recent_only"};
+  if (state !== "legacy") Object.assign(header,
+    {schema_version: ACTIVITY_SCHEMA, assessed_claims_floor: state === "band" ? 25 : 0});
   const rows = state === "empty" ? [] : weeks.flatMap(week_start => CODES.map(sector =>
     ({sector, week_start, claim_count: sector === "31-33" && state !== "withheld" ? 7 : null})));
   return [header, ...rows].map(canonical).join("\n") + "\n";
@@ -39,6 +41,7 @@ try {
   await visit("No published dataset yet");
   assert.equal(requested.some(path => path.endsWith("/model.mjs") || path.endsWith("/app.mjs")), false);
   assert.equal(await page.getByTestId("metric-total").count(), 0);
+  assert.equal(await page.getByTestId("activity-assessed").count(), 0);
   mode = "ready";
   await page.getByRole("button", {name: "Check again", exact: true}).click();
   await page.getByRole("heading", {name: "Sector exposure", exact: true}).waitFor();
@@ -68,19 +71,30 @@ try {
     ["blocked", "The dataset could not be loaded"], ["failed", "The dataset could not be loaded"],
     ["invalid", "The dataset could not be loaded"], ["empty", "No released aggregate cells"],
     ["withheld", "Sector exposure"], ["stale", "Sector exposure"],
+    ["legacy", "Sector exposure"], ["band", "Sector exposure"],
   ]) {
     mode = state; await visit(expected);
     if (state === "withheld") assert.equal(await page.getByTestId("metric-total").innerText(), "Withheld");
     if (state === "stale") await page.getByText("Stale dataset.", {exact: true}).waitFor();
+    if (state === "legacy") assert.equal(await page.getByTestId("activity-assessed").innerText(), "Not reported");
+    if (state === "band") assert.equal(await page.getByTestId("activity-assessed").innerText(), "25–49");
+    if (state === "empty" || state === "withheld") {
+      assert.equal(await page.getByTestId("activity-assessed").innerText(), "Fewer than 25");
+      assert.equal(await page.getByTestId("activity-published").innerText(), "0");
+      assert.equal(await page.getByTestId("activity-cells").innerText(), "0");
+    }
+    if (["blocked", "failed", "invalid"].includes(state))
+      assert.equal(await page.getByTestId("activity-assessed").count(), 0);
     if (["blocked", "failed", "invalid"].includes(state))
       assert.equal(await page.getByTestId("button-export").count(), 0);
   }
   let scans = 0;
-  for (const state of ["waiting", "ready", "stale", "invalid"]) {
+  for (const state of ["waiting", "ready", "stale", "invalid", "empty"]) {
     mode = state;
     for (const width of [1440, 375, 320]) {
       await page.setViewportSize({width, height: 1000});
       await visit(state === "waiting" ? "No published dataset yet" :
+        state === "empty" ? "No released aggregate cells" :
         state === "invalid" ? "The dataset could not be loaded" : "Sector exposure");
       for (const theme of ["light", "dark"]) {
         if (await page.locator("html").getAttribute("data-theme") !== theme)
