@@ -2,8 +2,8 @@
 
 - Status: proposed (pending user redline)
 - Date: 2026-09-22
-- Revision: 2026-09-23; checkpoint semantics proposed, not accepted
-- Deciders: project lead; preparation only authorized
+- Revision: 2026-09-23; revised D6 approved as design direction only
+- Deciders: project lead; D6 design approval recorded, no merge or implementation authorization
 - Scope: M1 boundary proof contract and adversarial test design
 - Related: [privacy-preserving verification](0015-private-invariant-verification.md),
   [App transport](0014-app-opened-pr-transport.md),
@@ -36,10 +36,14 @@ approve correction export, or rewrite accepted historical documents.
 This revision replaces the earlier requirement for atomic custom authorization
 at the instant of GitHub merge with explicit validation checkpoints. It is a
 weaker timing guarantee, not an equivalent implementation of that requirement.
-The operator has endorsed the initial D4 limits and evidence-based tuning;
-that endorsement does not accept this D6 change or authorize activation.
+The operator endorsed the initial D4 limits and evidence-based tuning, then
+explicitly approved revised D6 as the design direction on 2026-09-23.
+That D6 approval includes the checkpoint model and residual risks stated here;
+it does not authorize merge, implementation, key setup or activation.
+The full ADR remains proposed; this approval is not blanket acceptance of the
+remaining contract decisions.
 
-| Earlier proposal | Revised proposal, requiring explicit acceptance |
+| Earlier proposal | Revised D6, approved as design direction only |
 |---|---|
 | Expiry, proof-body changes and revocation prevent every merge at the exact instant it occurs. | Each controlled operation checks fresh evidence immediately before its request; native branch rules govern merges, but no atomic custom expiry/revocation guarantee is claimed. |
 | A green required proof check must remain current until merge. | A green check records validity at check time only; controlled merge and website deployment repeat validation. A manual merge may still use a previously valid green check. |
@@ -400,7 +404,7 @@ Workflow concurrency can serialize cooperating jobs, but is not a lock against
 manual GitHub merges or administrators. Administrators who change protections,
 trusted code or deployment permissions remain outside this control's guarantee.
 
-### Residual risks requiring acceptance
+### Residual risks accepted as design limits
 
 - A manual merge can occur after a proof expires or changes if an earlier green
   check still satisfies native rules. This proposal does not claim to prohibit
@@ -425,25 +429,27 @@ Those alternatives are not dependencies of this proposed revision.
 
 ### Readiness remains blocked
 
-The existing hard-failing public G5 gate remains unchanged until this weaker
-checkpoint model is explicitly accepted, its trusted implementations and
-native protections pass the revised adversarial tests, and activation is
-separately authorized. A docs merge or offline parser pass is not activation.
-If the residual window is unacceptable, reject this revision and retain the
-prior block while reviewing another architecture; do not quietly waive it.
+The existing hard-failing public G5 gate remains unchanged. D6 design approval
+satisfies only that decision: the remaining contract review, trusted
+implementations, native protections and revised adversarial tests still need
+completion, and activation must be separately authorized. A docs merge or
+offline parser pass is not activation. A future change to the accepted risk
+model requires explicit review; do not quietly widen it.
 
 ## Required decisions and exit criteria
 
-The operator must explicitly accept or redline:
+Decision register; approval of one item does not approve the others:
 
 - D1: attestation trust model and dedicated Ed25519 credential dependency.
 - D2: the exact public disclosure budget, including timing and public labels.
 - D3: body-only transport, signed envelope and complete-candidate descriptor.
-- D4: initial lifetime, clock tolerance, candidate caps and filename restrictions.
+- D4: initial time/size limits and evidence-based tuning endorsed; filename
+  restrictions remain part of the overall contract review.
 - D5: profile versioning and key/policy rotation and revocation requirements.
-- D6 (revised): explicitly accept or reject checkpoint-time freshness, the
-  manual-merge/in-flight residual risks and the independent deployment gate;
-  retain the hard block until implementation and hosted enforcement are proven.
+- D6 (revised): approved as design direction on 2026-09-23, including
+  checkpoint-time freshness, manual-merge/in-flight residual risks and the
+  independent deployment gate. Merge, implementation and activation remain
+  separately authorized; the existing hard block remains in place.
 
 Preparation is complete when these decisions are reviewable, test cases and
 expected outcomes are traceable, and the two documents add no runtime behavior.

@@ -14,7 +14,9 @@ Revision 2026-09-23 changes the expected enforcement model, not execution status
 PP-53 through PP-62 now distinguish native merge controls, workflow checkpoints
 and explicitly accepted residual races. A stale manual merge may be possible;
 a test must report it truthfully, not count it as mechanically prevented.
-These revised expectations require operator acceptance of revised D6.
+The operator approved revised D6 as the design direction on 2026-09-23.
+This records acceptance of its timing limits, not executed tests, full-contract
+acceptance, merge permission or implementation/activation authorization.
 
 The plan serves the M1 G5/transport acceptance criteria and public required proof
 check described in [the implementation plan](implementation-plan.md).
