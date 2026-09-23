@@ -27,7 +27,7 @@ select = ["E4", "E7", "E9", "F", "I"]
 [tool.mypy]
 strict = true
 python_version = "3.14"
-files = ["proof.py"]
+files = ["proof.py", "github_snapshot.py"]
 
 [tool.coverage.run]
 branch = true
