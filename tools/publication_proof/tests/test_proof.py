@@ -140,6 +140,40 @@ def test_wire_order_whitespace_and_exact_body_cap():
     refuses(lambda: run(raw=raw + b" "), p.Code.FORMAT)
 
 
+def test_existing_empty_aggregate_placeholder_is_not_release_data():
+    snap = snapshot()
+    placeholder = p.Blob(p.PLACEHOLDER, "100644", b"")
+    snap = replace(snap, base_files=(*snap.base_files, placeholder),
+                   head_files=(*snap.head_files, placeholder))
+    assert p.PLACEHOLDER not in p.ALLOWED
+    assert p.candidate_digest(snap) == p.candidate_digest(snapshot())
+    assert run(snap=snap) == run()
+
+
+@pytest.mark.parametrize("mutation", [
+    "added", "removed", "changed", "nonempty", "executable", "nested", "different-name",
+])
+def test_placeholder_exception_cannot_carry_content_or_expand_write_set(mutation):
+    snap = snapshot()
+    before = after = p.Blob(p.PLACEHOLDER, "100644", b"")
+    if mutation == "changed":
+        after = replace(after, data=b"not empty")
+    elif mutation == "nonempty":
+        before = after = replace(after, data=b"not empty")
+    elif mutation == "executable":
+        before = after = replace(after, mode="100755")
+    elif mutation == "nested":
+        before = after = replace(after, path="data/aggregates/nested/.gitkeep")
+    elif mutation == "different-name":
+        before = after = replace(after, path="data/aggregates/.placeholder")
+    snap = replace(
+        snap,
+        base_files=snap.base_files + (() if mutation == "added" else (before,)),
+        head_files=snap.head_files + (() if mutation == "removed" else (after,)),
+    )
+    refuses(lambda: run(snap=refreshed(snap)), p.Code.CANDIDATE)
+
+
 @pytest.mark.parametrize(
     "raw",
     [
