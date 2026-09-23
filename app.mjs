@@ -5,6 +5,12 @@ import {
 
 const state = {query: "", sort: "latest-desc", end: WEEKS.length - 1, window: 12};
 const $ = selector => document.querySelector(selector);
+$(".sidebar-bottom strong").textContent = "Synthetic only";
+$(".sidebar-bottom p").textContent = "No source data is used in this demo. Public publishing is disabled.";
+$(".sidebar-bottom .version").textContent = "SYNTHETIC DEMO · VIEW 1";
+$(".preview-label").textContent = "Synthetic preview";
+$(".sample-notice").innerHTML = "<strong>Test data, not threat intelligence.</strong><span>All counts are invented. No real incidents are represented.</span>";
+$("footer span:last-child").textContent = "Synthetic fixture · No live data";
 const escape = value => String(value).replace(/[&<>"']/g, c =>
   ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
 const number = value => value.toLocaleString("en-US");
