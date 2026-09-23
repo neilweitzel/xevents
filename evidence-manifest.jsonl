@@ -1,1 +1,2 @@
-{"file_purpose": "Evidence manifest for xevents. Append-only public mirror of the private-side manifest. One row per evidence artifact (hash + provenance). This file is boundary-writable per ADR 0012 §Boundary write set; the xevents-boundary[bot] GitHub App copies it across from xevents-internal on each publish per ADR 0014. See docs/data-model.md for the row schema and xevents-internal/docs/file-layout.md §JSONL header-row convention for the header contract.", "schema_version": "0"}
+{"file_purpose":"evidence_manifest","schema_version":"rc-export-binding/v1"}
+{"evidence_binding":"verified_private_chain","path":"data/aggregates/view1.jsonl","sha256":"d207b99916368fd2c869eed7c0cf35a2caf01d6e73d666b86e4811ecbb60f786"}
