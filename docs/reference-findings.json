@@ -1,0 +1,377 @@
+{
+  "schema_version": 1,
+  "status": "proposal-only",
+  "scope": "public",
+  "baseline_sha": "4471d5273674ef3c158c6f1c6ffc160ddf4bd0d3",
+  "public_baseline_sha": null,
+  "records": [
+    {
+      "id": "PR-01",
+      "prior_id": "P02",
+      "finding": {
+        "path": "docs/adr/0002-licensing-clean-ingestion.md",
+        "line": 45,
+        "code": "possible_decision_language_drift",
+        "detail": "2"
+      },
+      "source_sha256": "afdf7930b0dcf7b54cdc3bd819ceac68ff43cfffa3cb2076198508022b252bdf",
+      "kind": "preserved_history",
+      "owner": "public",
+      "milestone": null,
+      "action": "Bind unchanged historical unit to the current no-contact ruling; do not grant manual-query permission.",
+      "authority": "Decision #2; ADR 0016 current-rulings table"
+    },
+    {
+      "id": "PR-02",
+      "prior_id": "P03",
+      "finding": {
+        "path": "docs/adr/0004-correction-history.md",
+        "line": 48,
+        "code": "possible_decision_language_drift",
+        "detail": "4"
+      },
+      "source_sha256": "db22c06366a8c051700f74b96c9448576139f1691ef4bbab4ed7441b2e4857e1",
+      "kind": "preserved_history",
+      "owner": "public",
+      "milestone": null,
+      "action": "Bind unchanged historical unit to the current 2/1/10-business-day SLA.",
+      "authority": "Decision #4; ADR 0016 current-rulings table"
+    },
+    {
+      "id": "PR-03",
+      "prior_id": "P04",
+      "finding": {
+        "path": "docs/adr/0007-delisting-detection.md",
+        "line": 53,
+        "code": "possible_decision_language_drift",
+        "detail": "5"
+      },
+      "source_sha256": "5e0081d851aeff6596b9a6609514a49f82b201796ef91d4ba583ef163f3e388f",
+      "kind": "preserved_history",
+      "owner": "public",
+      "milestone": null,
+      "action": "Bind unchanged historical unit to the two-hour trigger and six-hour effective-cadence guard.",
+      "authority": "Decision #5; ADR 0016 current-rulings table"
+    },
+    {
+      "id": "PR-04",
+      "prior_id": "P05",
+      "finding": {
+        "path": "docs/adr/0009-static-first-architecture.md",
+        "line": 91,
+        "code": "unresolved_reference",
+        "detail": ".github/workflows/update-feeds.yml"
+      },
+      "source_sha256": "144370e5e0aaa530fceceb69adf0c8a6e875e749fb219d826c97eb3874822e26",
+      "kind": "external_public",
+      "owner": "external-public",
+      "milestone": null,
+      "action": "Record xfeeds ownership and require a separately reviewed immutable public evidence snapshot; do not claim current remote verification.",
+      "authority": "ADR 0009 research basis explicitly names neilweitzel/xfeeds"
+    },
+    {
+      "id": "PR-05",
+      "prior_id": "P08",
+      "finding": {
+        "path": "docs/adr/0013-g5-name-scan-gate.md",
+        "line": 259,
+        "code": "unresolved_reference",
+        "detail": "docs/file-layout.md"
+      },
+      "source_sha256": "794f8b8668955d24a4a8b3460b48cde042c81a0722b3a118b10e956f52213628",
+      "kind": "private_owned",
+      "owner": "private",
+      "milestone": null,
+      "action": "Public reports not checked here; owner-side file and section verification remains required.",
+      "authority": "ADR 0013 private layout reference"
+    },
+    {
+      "id": "PR-06",
+      "prior_id": "P09",
+      "finding": {
+        "path": "docs/adr/0014-app-opened-pr-transport.md",
+        "line": 138,
+        "code": "unresolved_reference",
+        "detail": "docs/file-layout.md"
+      },
+      "source_sha256": "98c9090e80cd10caab4d161648d0f57baf4323066ef33660edc58de6738602e0",
+      "kind": "private_owned",
+      "owner": "private",
+      "milestone": null,
+      "action": "Public reports not checked here; owner-side tri-declaration evidence remains required.",
+      "authority": "ADR 0014 tri-declaration invariant"
+    },
+    {
+      "id": "PR-07",
+      "prior_id": "P12",
+      "finding": {
+        "path": "docs/implementation-plan.md",
+        "line": 205,
+        "code": "unresolved_reference",
+        "detail": ".github/workflows/build-site.yml"
+      },
+      "source_sha256": "088daf543f8b4664705656a0d11ace66a87a4dbce56ee6827626dd08a0e3a791",
+      "kind": "planned",
+      "owner": "public",
+      "milestone": "M2",
+      "action": "Deliverable site-build; project lead accountable; absence remains outstanding until M2 delivery and AC2.1/AC2.2/AC2.5 evidence.",
+      "authority": "Implementation plan M2 What ships and acceptance criteria"
+    },
+    {
+      "id": "PR-08",
+      "prior_id": "P13",
+      "finding": {
+        "path": "docs/implementation-plan.md",
+        "line": 266,
+        "code": "unresolved_reference",
+        "detail": ".github/workflows/ingest.yml"
+      },
+      "source_sha256": "088daf543f8b4664705656a0d11ace66a87a4dbce56ee6827626dd08a0e3a791",
+      "kind": "planned",
+      "owner": "private",
+      "milestone": "M3",
+      "action": "Deliverable ingest-workflow; project lead accountable; require owner-side M3 delivery and AC3.1/AC3.8 evidence.",
+      "authority": "Implementation plan M3 explicitly identifies private ingest"
+    },
+    {
+      "id": "PR-09",
+      "prior_id": "P14",
+      "finding": {
+        "path": "docs/implementation-plan.md",
+        "line": 90,
+        "code": "unresolved_reference",
+        "detail": ".github/workflows/publish-boundary.yml"
+      },
+      "source_sha256": "088daf543f8b4664705656a0d11ace66a87a4dbce56ee6827626dd08a0e3a791",
+      "kind": "private_owned",
+      "owner": "private",
+      "milestone": null,
+      "action": "Validate exact workflow privately; distinguish its existence from transport authorization.",
+      "authority": "Implementation plan M1; WS6 scan/archive/publication separation"
+    },
+    {
+      "id": "PR-10",
+      "prior_id": "P15",
+      "finding": {
+        "path": "docs/implementation-plan.md",
+        "line": 170,
+        "code": "unresolved_reference",
+        "detail": "docs/file-layout.md"
+      },
+      "source_sha256": "088daf543f8b4664705656a0d11ace66a87a4dbce56ee6827626dd08a0e3a791",
+      "kind": "private_owned",
+      "owner": "private",
+      "milestone": null,
+      "action": "Validate layout and tri-declaration privately; do not provide a public checkout or credential.",
+      "authority": "Implementation plan AC1.8 and its approved mechanism revision"
+    },
+    {
+      "id": "PR-11",
+      "prior_id": "P16",
+      "finding": {
+        "path": "docs/implementation-plan.md",
+        "line": 335,
+        "code": "unresolved_reference",
+        "detail": "docs/sector-classification-rules.md"
+      },
+      "source_sha256": "088daf543f8b4664705656a0d11ace66a87a4dbce56ee6827626dd08a0e3a791",
+      "kind": "planned",
+      "owner": "private",
+      "milestone": "M4",
+      "action": "Deliverable sector-classification; project lead accountable; require owner-side M4 rules and AC4.2 evidence; no duplicate public implementation file.",
+      "authority": "Implementation plan M4 sector-classification deliverable; ownership proposed for review"
+    },
+    {
+      "id": "PR-12",
+      "prior_id": "P17",
+      "finding": {
+        "path": "docs/implementation-plan.md",
+        "line": 93,
+        "code": "unresolved_reference",
+        "detail": "tests/boundary/fixtures/<batch-id>/"
+      },
+      "source_sha256": "088daf543f8b4664705656a0d11ace66a87a4dbce56ee6827626dd08a0e3a791",
+      "kind": "bounded_template",
+      "owner": "private",
+      "milestone": null,
+      "action": "Bind this exact placeholder to an owner-side finite fixture contract; validate every concrete target privately.",
+      "authority": "Implementation plan M1 adversarial corpus"
+    },
+    {
+      "id": "PR-13",
+      "prior_id": "P19",
+      "finding": {
+        "path": "docs/m1-execution-checklist.md",
+        "line": 420,
+        "code": "unresolved_reference",
+        "detail": ".github/workflows/publish-boundary.yml"
+      },
+      "source_sha256": "89fd4946febb6d47690d6e79648a39aac51a6de0c9959ba36f2ded086dd38481",
+      "kind": "private_owned",
+      "owner": "private",
+      "milestone": null,
+      "action": "Validate owner-side workflow without treating old transport description as current readiness evidence.",
+      "authority": "M1 checklist WS6 and WS6 separation clarification"
+    },
+    {
+      "id": "PR-14",
+      "prior_id": "P20",
+      "finding": {
+        "path": "docs/m1-execution-checklist.md",
+        "line": 680,
+        "code": "unresolved_reference",
+        "detail": "docs/file-layout.md"
+      },
+      "source_sha256": "89fd4946febb6d47690d6e79648a39aac51a6de0c9959ba36f2ded086dd38481",
+      "kind": "private_owned",
+      "owner": "private",
+      "milestone": null,
+      "action": "Validate owner-side layout section and tri-declaration invariant.",
+      "authority": "M1 checklist WS9"
+    },
+    {
+      "id": "PR-15",
+      "prior_id": "P21",
+      "finding": {
+        "path": "docs/m1-execution-checklist.md",
+        "line": 564,
+        "code": "unresolved_reference",
+        "detail": "docs/foo.md"
+      },
+      "source_sha256": "89fd4946febb6d47690d6e79648a39aac51a6de0c9959ba36f2ded086dd38481",
+      "kind": "example",
+      "owner": "public",
+      "milestone": null,
+      "action": "Bind exact example to a negative mixed-boundary-diff test; do not create the hypothetical document.",
+      "authority": "M1 checklist WS7 negative mixed-write-set example"
+    },
+    {
+      "id": "PR-16",
+      "prior_id": "P22",
+      "finding": {
+        "path": "docs/m1-execution-checklist.md",
+        "line": 836,
+        "code": "unresolved_reference",
+        "detail": "tests/boundary/fixtures/"
+      },
+      "source_sha256": "89fd4946febb6d47690d6e79648a39aac51a6de0c9959ba36f2ded086dd38481",
+      "kind": "private_owned",
+      "owner": "private",
+      "milestone": null,
+      "action": "Verify corpus directory contract privately; directory presence alone cannot prove scan outcomes.",
+      "authority": "M1 checklist WS10 private CI"
+    },
+    {
+      "id": "PR-17",
+      "prior_id": "P23",
+      "finding": {
+        "path": "docs/m1-execution-checklist.md",
+        "line": 433,
+        "code": "unresolved_reference",
+        "detail": "tests/boundary/fixtures/${{ inputs.batch_id }}/"
+      },
+      "source_sha256": "89fd4946febb6d47690d6e79648a39aac51a6de0c9959ba36f2ded086dd38481",
+      "kind": "bounded_template",
+      "owner": "private",
+      "milestone": null,
+      "action": "Recognize only this exact batch-ID placeholder; validate a finite owner-side ID set without evaluating Actions expressions.",
+      "authority": "M1 checklist WS6 batch loader"
+    },
+    {
+      "id": "PR-18",
+      "prior_id": "P24",
+      "finding": {
+        "path": "docs/m1-execution-checklist.md",
+        "line": 843,
+        "code": "unresolved_reference",
+        "detail": "tests/boundary/test_corpus.py"
+      },
+      "source_sha256": "89fd4946febb6d47690d6e79648a39aac51a6de0c9959ba36f2ded086dd38481",
+      "kind": "historical_target",
+      "owner": "private",
+      "milestone": null,
+      "action": "Keep the old path absent; require approved owner-side execution mapping and zero-skip test evidence before WS10 wiring.",
+      "authority": "ADR 0016 execution clarification; M1 checklist WS10"
+    },
+    {
+      "id": "PR-19",
+      "prior_id": "P25",
+      "finding": {
+        "path": "docs/m1-execution-checklist.md",
+        "line": 653,
+        "code": "unresolved_reference",
+        "detail": "tests/boundary/test_machinery_invariants_completeness.py"
+      },
+      "source_sha256": "89fd4946febb6d47690d6e79648a39aac51a6de0c9959ba36f2ded086dd38481",
+      "kind": "private_owned",
+      "owner": "private",
+      "milestone": null,
+      "action": "Validate exact owner-side completeness test and execution evidence.",
+      "authority": "M1 checklist WS8"
+    },
+    {
+      "id": "PR-20",
+      "prior_id": "P26",
+      "finding": {
+        "path": "docs/m1-execution-checklist.md",
+        "line": 650,
+        "code": "unresolved_reference",
+        "detail": "tests/boundary/test_machinery_invariants_schema.py"
+      },
+      "source_sha256": "89fd4946febb6d47690d6e79648a39aac51a6de0c9959ba36f2ded086dd38481",
+      "kind": "private_owned",
+      "owner": "private",
+      "milestone": null,
+      "action": "Validate exact owner-side schema test and execution evidence.",
+      "authority": "M1 checklist WS8"
+    },
+    {
+      "id": "PR-21",
+      "prior_id": "P27",
+      "finding": {
+        "path": "docs/m1-execution-checklist.md",
+        "line": 491,
+        "code": "unresolved_reference",
+        "detail": "tests/boundary/test_workflow_lint.py"
+      },
+      "source_sha256": "89fd4946febb6d47690d6e79648a39aac51a6de0c9959ba36f2ded086dd38481",
+      "kind": "private_owned",
+      "owner": "private",
+      "milestone": null,
+      "action": "Validate exact owner-side workflow-lint test and execution evidence.",
+      "authority": "M1 checklist WS6"
+    },
+    {
+      "id": "PR-22",
+      "prior_id": "P28",
+      "finding": {
+        "path": "docs/m1-execution-checklist.md",
+        "line": 392,
+        "code": "unresolved_reference",
+        "detail": "tests/g5/"
+      },
+      "source_sha256": "89fd4946febb6d47690d6e79648a39aac51a6de0c9959ba36f2ded086dd38481",
+      "kind": "private_owned",
+      "owner": "private",
+      "milestone": null,
+      "action": "Validate owner-side G5 suite, test discovery and existing coverage threshold.",
+      "authority": "M1 checklist WS5"
+    },
+    {
+      "id": "PR-23",
+      "prior_id": "P33",
+      "finding": {
+        "path": "docs/ws6-boundary-separation.md",
+        "line": 48,
+        "code": "unresolved_reference",
+        "detail": ".github/workflows/archive-boundary.yml"
+      },
+      "source_sha256": "49c7ed0b8c560d9e6c6dd1a819f59018495082e98bd37e83a2e7154e2b3416b5",
+      "kind": "private_owned",
+      "owner": "private",
+      "milestone": null,
+      "action": "Validate owner-side archive workflow; do not infer public publishing capability.",
+      "authority": "WS6 separation clarification"
+    }
+  ]
+}
