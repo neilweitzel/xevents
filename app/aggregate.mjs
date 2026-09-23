@@ -1,5 +1,6 @@
 /** Closed RC display reader. Not a signing verifier or publication authority. */
 export const SCHEMA = "xevents-view1-display/v1";
+export const ACTIVITY_SCHEMA = "xevents-view1-display/v2";
 export const MAX_BYTES = 1024 * 1024;
 export const LABELS = Object.freeze({
   "11": "Agriculture, forestry and fishing", "21": "Mining and extraction",
@@ -49,11 +50,16 @@ export function parseAggregate(text, now = Date.now()) {
     return value;
   });
   const header = values[0], rows = values.slice(1);
+  const activity = header?.schema_version === ACTIVITY_SCHEMA;
   keys(header, ["file_purpose", "schema_version", "release_state", "generated_at",
-    "coverage", "time_basis", "privacy_floor"]);
-  require(header.file_purpose === "sector_aggregate" && header.schema_version === SCHEMA &&
+    "coverage", "time_basis", "privacy_floor", ...(activity ? ["assessed_claims_floor"] : [])]);
+  require(header.file_purpose === "sector_aggregate" &&
+    [SCHEMA, ACTIVITY_SCHEMA].includes(header.schema_version) &&
     header.release_state === "released" && header.coverage === "recent_only" &&
     header.time_basis === "retrieved_at" && header.privacy_floor === 5);
+  if (activity) require(Number.isSafeInteger(header.assessed_claims_floor) &&
+    header.assessed_claims_floor >= 0 && header.assessed_claims_floor <= 10000 &&
+    header.assessed_claims_floor % 25 === 0);
   const generated = clock(header.generated_at);
   require(generated <= now + 5 * 60000);
   const seen = new Set(), weeks = new Set();
@@ -68,6 +74,8 @@ export function parseAggregate(text, now = Date.now()) {
     seen.add(key); weeks.add(row.week_start);
   }
   const ordered = [...weeks].sort();
+  if (activity) require(rows.reduce((n, row) => n + (row.claim_count ?? 0), 0) <
+    header.assessed_claims_floor + 25);
   require(rows.length === ordered.length * CODES.length);
   ordered.forEach((w, i) => require(!i || monday(w) - monday(ordered[i - 1]) === 7 * DAY));
   const frozenRows = Object.freeze(rows.map(row => Object.freeze({...row})));
@@ -77,6 +85,17 @@ export function parseAggregate(text, now = Date.now()) {
     sectors: Object.freeze(CODES.map(code => Object.freeze({id: code, name: LABELS[code],
       counts: Object.freeze(ordered.map(w => rows.find(r => r.sector === code && r.week_start === w).claim_count)),
     }))),
+  });
+}
+export function activitySummary(dataset) {
+  if (!dataset) return null;
+  const floor = dataset.header.assessed_claims_floor;
+  return Object.freeze({
+    assessed: floor === undefined ? "Not reported" : floor === 0 ? "Fewer than 25" :
+      `${floor.toLocaleString("en-US")}–${(floor + 24).toLocaleString("en-US")}`,
+    published: dataset.rows.reduce((n, row) => n + (row.claim_count ?? 0), 0),
+    cells: dataset.rows.filter(row => row.claim_count !== null).length,
+    captured: dataset.header.generated_at, stale: dataset.stale,
   });
 }
 export async function loadAggregate(fetcher = fetch, now = Date.now()) {
@@ -125,7 +144,7 @@ export function selection(dataset, query, end, length = 12, sort = "name") {
 export function exportSelection(dataset, selected) {
   require(selected.rows.every(row => dataset.rows.includes(row)));
   return {
-    contract_version: SCHEMA, dataset: "xevents", synthetic: false,
+    contract_version: dataset.header.schema_version, dataset: "xevents", synthetic: false,
     framing: "Public claims about cyber incidents, not verified breaches. Names are excluded.",
     license: "CC BY 4.0", attribution: "RansomLook, CC BY 4.0; https://www.ransomlook.io/",
     generated_at: dataset.header.generated_at, coverage: dataset.header.coverage,

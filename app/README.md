@@ -42,7 +42,10 @@ see [the RC contract](../docs/adr/0022-unattended-research-rc.md).
   subthreshold counts are bundled. Partial totals count visible cells only.
 - Illustrative activity thresholds are not production scoring policy.
 - The demo schema `xevents-synthetic-preview/v1` is distinct from the
-  counts-only research reader contract `xevents-view1-display/v1`.
+  counts-only research reader contracts `xevents-view1-display/v1` and `/v2`.
+  V2 adds only a bounded global `assessed_claims_floor`, displayed in bands of
+  25. V1 remains readable with its assessment metric explicitly not reported.
+  The activity panel uses the whole snapshot, not selected table rows.
 - The research reader requests `data/aggregates/view1.jsonl` once at startup
   with no credentials, no cache and no redirects. Waiting/error states offer
   a manual retry. It never requests a private repository or a source API.
@@ -56,8 +59,8 @@ see [the RC contract](../docs/adr/0022-unattended-research-rc.md).
 - No source records, actor/victim names, evidence receipts or private reads.
 - This preview does not implement production G5 enforcement or change its limits.
 
-The production path still needs the review, launch and signed-publication
-prerequisites. The reader and private processor do not supply these. Never replace
+The active RC release path enforces the separate signed-publication
+prerequisites. The reader itself does not supply these. Never replace
 this fixture with raw source data or interpret a successful UI test as release
 authorization. The second exploitation view, correction ledger and evidence
 manifest browser are outside this first runnable slice.

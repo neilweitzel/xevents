@@ -45,6 +45,31 @@ The app flags data older than two weeks as stale. This is a display warning,
 not a service-level promise or a claim that newer data is comprehensive. The
 synthetic demo is a separate, labeled interface preview.
 
+## Activity without disclosing small private totals
+
+The activity panel describes the whole published snapshot, independently of
+table filters. “Claims assessed privately” counts distinct normalized
+actor/subject groups across retained intake, including ineligible and
+suppressed claims. Repeated sightings of the same group do not add another
+claim. This is not independent incident verification or a count for a single
+reporting week.
+
+The counter is rounded down to a multiple of 25 and displayed as a band:
+“Fewer than 25” (zero through 24), “25–49”, and so on. An older v1 snapshot
+does not report this counter; the app says “Not reported,” never zero.
+Unavailable or invalid snapshots show no activity numbers.
+
+“Claims in published counts” sums numeric cells only; “Published sector-week
+counts” counts those numeric cells. A zero in either means nothing numeric is
+displayed, not that a withheld cell contains zero claims. Do not subtract these
+measures to infer withheld counts or compute a publication rate: one describes
+all assessed groups, while the other describes publishable cells.
+
+Activity bands reduce precision, not all disclosure risk. Threshold crossings
+and outside information can still support inference. There are no exact small
+private totals, source-specific activity bands, or per-gate exclusion counters.
+See the [activity amendment](adr/0023-coarse-research-activity.md).
+
 ## Downloading and citing a snapshot
 
 Use **Dataset & export** to inspect the selected aggregate JSON or **Download

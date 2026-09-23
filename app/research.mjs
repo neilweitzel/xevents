@@ -1,4 +1,4 @@
-import {loadAggregate, selection, exportSelection} from "./aggregate.mjs";
+import {loadAggregate, selection, exportSelection, activitySummary} from "./aggregate.mjs";
 
 const $ = selector => document.querySelector(selector);
 const escape = value => String(value).replace(/[&<>"']/g, c =>
@@ -32,6 +32,28 @@ function connection() {
     empty: "No released cells", waiting: "No published dataset yet", unavailable: "Dataset unavailable"};
   $(".sidebar-bottom strong").textContent = names[result.state];
 }
+function introduction(showTitle = true) {
+  return `<section class="project-intro" aria-label="About xevents">
+    ${showTitle ? "<h2>Study ransomware claims without amplifying the leak.</h2>" : ""}
+    <p>xevents collects public listing metadata, checks and groups claims privately, then publishes name-free weekly sector counts. It gives security practitioners and researchers a way to study observed activity over time without republishing affected organizations or attacker publicity.</p>
+    <p class="intro-detail">The first release covers a limited recent RansomLook window. It does not verify breaches, measure a sector’s risk or provide a blocking feed. <a href="#/methodology">Read the methodology</a></p>
+  </section>`;
+}
+function activity() {
+  const summary = activitySummary(result.dataset);
+  if (!summary) return '<p class="activity-note">Activity metrics are unavailable until a valid public snapshot can be read. Missing data is not zero activity.</p>';
+  const captured = new Date(summary.captured).toLocaleString("en-US",
+    {timeZone: "UTC", dateStyle: "medium", timeStyle: "short"});
+  return `<section class="activity-summary" aria-label="Published snapshot activity">
+    <h2>From private assessment to public research</h2>
+    <div class="metrics activity-metrics">
+      <div><span>Claims assessed privately</span><strong data-testid="activity-assessed">${escape(summary.assessed)}</strong><span>Grouped claims, reported in bands of 25</span></div>
+      <div><span>Claims in published counts</span><strong data-testid="activity-published">${count(summary.published)}</strong><span>Only numeric cells; not total incidents</span></div>
+      <div><span>Published sector-week counts</span><strong data-testid="activity-cells">${count(summary.cells)}</strong><span>Each contains at least five eligible claims</span></div>
+    </div>
+    <p class="activity-note">Latest source capture: <time datetime="${escape(summary.captured)}">${escape(captured)} UTC</time>. ${summary.stale ? "<strong>Stale snapshot: more than two weeks old.</strong> " : ""}These measures describe this published snapshot, not a live health check. The first band includes zero; repeat sightings do not increase the grouped-claim count.</p>
+  </section>`;
+}
 function unavailable() {
   const title = {waiting: "No published dataset yet", empty: "No released aggregate cells",
     unavailable: "The dataset could not be loaded"}[result.state];
@@ -40,8 +62,12 @@ function unavailable() {
     result.state === "empty" ?
     "This release contains no aggregate cells under the publication rules. It does not mean no incidents occurred." :
     "A research dataset has not been published here yet. The app will show released aggregates when they become available.";
-  $("#view").innerHTML = heading(title, message) +
-    '<section class="panel prose"><h2>Research incident claims, not named victims</h2><p>xevents helps security practitioners and researchers explore listing claims by sector and retrieval week. It does not confirm breaches or score an organization’s risk.</p><p>Source evidence stays private. This site shows only published, name-free aggregates, and never substitutes sample numbers for missing research data.</p><p><button class="primary" id="refresh-data">Check again</button> <a href="#/methodology">How to read the results</a> · <a href="?demo=1#/">Explore the synthetic demo</a></p><p><a href="https://github.com/neilweitzel/xevents">About the project and documentation</a></p></section>';
+  $("#view").innerHTML = heading("Study ransomware claims without amplifying the leak.",
+    "Public claims. Private evidence. Open research.") + introduction(false) + activity() +
+    `<section class="panel prose"><h2>${title}</h2><p>${message}</p>
+    <p>Collection, assessment and publication run automatically for ordinary eligible data. Small cells and privacy exceptions stay withheld; a failed release leaves the last valid snapshot in place. A published total of zero means no numeric claim counts are displayed, not that no claims were collected or no incidents occurred.</p>
+    <p><button class="primary" id="refresh-data">Check again</button> <a href="?demo=1#/">Explore the synthetic demo</a></p>
+    <p><a href="https://github.com/neilweitzel/xevents">Project, methods and implementation</a></p></section>`;
   $("#refresh-data").addEventListener("click", async () => {
     $("#refresh-data").disabled = true;
     $("#refresh-data").textContent = "Checking…";
@@ -55,6 +81,8 @@ function methodology() {
     `<section class="panel prose"><h2>One limited source window</h2><p>Released counts describe incident claims observed through a bounded recent-record source window. They are not a complete census, a count of confirmed breaches or a risk score.</p>
     <h2>Retrieval weeks, not attack dates</h2><p>Weeks begin on Monday in UTC and use first retrieval time. Source-claimed dates are not used to backdate a sighting or imply when a compromise occurred.</p>
     <h2>Classification is provisional</h2><p>Sector assignments use conservative terms in listing descriptions. Ambiguous descriptions stay unclassified. Repeated listings are not independent confirmation, and these counts are not a sector risk ranking.</p>
+    <h2>What the activity measures mean</h2><p>Claims assessed privately counts distinct normalized actor/subject groups in the retained intake, including claims that cannot be published. It is cumulative, not a count of this week’s incidents. Bands of 25 conceal exact small totals; “Fewer than 25” includes zero. Older snapshots without this measure say “Not reported.”</p><p>Claims in published counts sums only numeric sector-week cells across the whole snapshot. Withheld cells add no published number; they are not treated as zero observations. These measures have different scopes and must not be used to calculate an approval rate. The capture timestamp is data freshness, not proof that the most recent scheduled run succeeded.</p>
+    <h2>An automatic, bounded pipeline</h2><p>The collector is scheduled every two hours, with at least six hours between successful source captures and ten recent records requested per capture. It preserves evidence privately, groups repeat claims, checks eligibility and sector classification, scans the exact output, then signs and verifies each release before deployment. Ordinary eligible data does not wait for human review. Failures preserve the last valid site; exceptions stay withheld.</p>
     <h2>Privacy and uncertainty</h2><p>A cell below five is withheld as null, including zero. Missing and withheld data do not mean no activity. Names and source evidence stay private; name removal and small-cell withholding reduce risk but cannot guarantee anonymity in every context.</p>
     <h2>Research release</h2><p>This is an early counts-only research app. Routine eligible records are intended to flow automatically through private checks and a verified publication process; exceptional or unsafe records remain withheld. The displayed dataset timestamp reflects the latest source capture represented, not just a site rebuild.</p>
     <h2>Attribution</h2><p>Derived source: <a href="https://www.ransomlook.io/" rel="noreferrer">RansomLook</a>, <a href="https://www.ransomlook.io/about" rel="noreferrer">CC BY 4.0</a>. xevents supplies the grouping and sector aggregation. These are listing claims, not confirmed breaches.</p>
@@ -67,6 +95,7 @@ function research(datasetMode, sectorCode) {
   const sector = dataset.sectors.find(s => s.id === sectorCode);
   $("#view").innerHTML = heading(datasetMode ? "A portable research snapshot" : sector ? escape(sector.name) : "Sector exposure",
     "Listing claims aggregated by retrieval week. Uncertainty remains visible.") +
+    (!datasetMode && !sector ? introduction() + activity() : "") +
     (dataset.stale ? '<div class="sample-notice" role="status"><strong>Stale dataset.</strong><span>This release was generated more than two weeks ago. It is not current coverage.</span></div>' : "") +
     `<section class="filters"><label class="search-field"><span>Search sectors</span><input id="search" data-testid="input-search" value="${escape(state.query)}" type="search"></label>
     <label><span>Reporting week</span><select id="week" data-testid="select-week">${dataset.weeks.map((w, i) =>
