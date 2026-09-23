@@ -7,6 +7,7 @@ import subprocess
 import sys
 from copy import deepcopy
 from dataclasses import replace
+from hashlib import sha256
 from pathlib import Path
 
 import pytest
@@ -171,6 +172,19 @@ def test_wire_order_whitespace_and_exact_body_cap():
 )
 def test_malformed_envelopes(raw):
     refuses(lambda: run(raw=raw), p.Code.FORMAT)
+
+
+def test_negative_zero_in_otherwise_valid_signed_envelope():
+    payload = deepcopy(VECTOR["payload"])
+    payload.update(scan_completed_at=0, issued_at=30, expires_at=900)
+    raw = signing(payload)
+    assert run(raw=raw, now=60) == p.Verdict(7, "b" * 40)
+    token = b'"scan_completed_at":0'
+    assert raw.count(token) == 1
+    negative_zero = raw.replace(token, b'"scan_completed_at":-0', 1)
+    # Only the forbidden wire spelling changes, not the payload or signature.
+    assert json.loads(negative_zero) == json.loads(raw)
+    refuses(lambda: run(raw=negative_zero, now=60), p.Code.FORMAT)
 
 
 @pytest.mark.parametrize(
@@ -552,6 +566,40 @@ def test_file_and_candidate_size_boundaries():
     snap = changed(snap, p.AGGREGATES[0], data=b"x" * (p.LIMITS["file_bytes"] + 1))
     refuses(lambda: run(snap=snap), p.Code.CANDIDATE)
     # With four allowed files, the per-file caps also imply the aggregate cap.
+
+
+def test_individual_file_size_limit_below_candidate_total():
+    boundary_paths = {file["path"] for file in VECTOR["descriptor"]["files"]}
+    for size in (1_048_576, 1_048_577):
+        snap = changed(snapshot(), p.AGGREGATES[0], data=b"x" * size)
+        files = sorted(
+            (file for file in snap.head_files if file.path in boundary_paths),
+            key=lambda file: file.path,
+        )
+        assert sum(len(file.data) for file in files) < 4_194_304
+        # Build and sign both candidates without calling candidate_digest or
+        # its guards: rejection must happen inside verify_offline, not setup.
+        descriptor = {
+            "files": [
+                {
+                    "path": file.path,
+                    "mode": file.mode,
+                    "size": len(file.data),
+                    "sha256": sha256(file.data).hexdigest(),
+                }
+                for file in files
+            ]
+        }
+        canonical_descriptor = json.dumps(descriptor, sort_keys=True, separators=(",", ":")).encode(
+            "ascii"
+        )
+        payload = deepcopy(VECTOR["payload"])
+        payload["candidate_sha256"] = sha256(canonical_descriptor).hexdigest()
+        raw = signing(payload)
+        if size == 1_048_576:
+            assert run(raw=raw, snap=snap) == p.Verdict(7, "b" * 40)
+        else:
+            refuses(lambda: run(raw=raw, snap=snap), p.Code.CANDIDATE)
 
 
 def test_no_network_execution_or_private_reads():

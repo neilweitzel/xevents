@@ -64,6 +64,41 @@ Do not print input values, exception locals or debug dumps. Missing dependency
 imports fail rather than fall back; a future runner must sanitize bootstrap
 failures too. Unexpected runtime failures must never become a success verdict.
 
+## Production-key registration prerequisite
+
+**Production key registration remains blocked pending a reviewed provisioning
+design and its acceptance tests.** The current policy loader checks public-key
+encoding and 32-byte length, not whether that encoding establishes a safe
+signing identity. Signature verification alone does not supply this guarantee.
+
+A synthetic review probe registered the identity-point encoding (`01` followed
+by 31 zero bytes) in the supplied trusted policy. A constructed signature of
+that value followed by 32 zero bytes then passed the current offline verifier
+without a private signing operation. The same signature failed under the normal
+RFC test public key. This depends on an unsafe key being placed in trusted
+policy; it is not evidence of a bypass of a properly provisioned approved key.
+The verdict still had `publication_authorized=False`.
+
+Before any production key can enter an approved registry, the separately
+reviewed provisioning implementation must:
+
+- Establish and record the key's approved origin, authorized signer and custody;
+  never import candidate-supplied keys or the deliberately public RFC test key.
+- Define and enforce safe Ed25519 key-acceptance rules using a maintained,
+  reviewed validation mechanism, not handwritten curve arithmetic. Explicitly
+  reject identity/low-order keys and invalid encodings; length alone is not
+  validation.
+- Include the identity-key/constructed-signature regression, rejection cases
+  for the other prohibited key classes, and a positive control for a properly
+  generated key. Demonstrate failure before an unsafe key is registered.
+- Review the provisioning evidence and the independently selected registry
+  before authorizing production use. Existing validity and revocation fields
+  do not replace this prerequisite.
+
+These are future acceptance requirements, not implemented guarantees of this
+offline component. No key, credential, production registry or live workflow
+is introduced here.
+
 ## Canonicalization and provisional policy schema
 
 The core supports only ASCII strings and nonnegative safe integers, plus
@@ -128,10 +163,19 @@ committed vector and do not shell out to Node.
 
 ## Test evidence and remaining acceptance work
 
-Local validation on 2026-09-23: 236 proof tests passed with zero skips, strict
+Local validation on 2026-09-23: 238 proof tests passed with zero skips, strict
 type checking and lint/format checks passed, and the core had 100% measured
 statement/branch coverage. This metric describes exercised code, not security
 completeness, hosted behavior or completion of the full adversarial plan.
+
+Two isolated regressions now use otherwise-valid signed envelopes: a boundary
+file at 1 MiB passes while 1 MiB + 1 byte fails with the candidate total below
+4 MiB, and scan-time `0` passes while the wire spelling `-0` fails. The size
+fixture constructs its descriptor hash independently of `candidate_digest`.
+In disposable copies, removing only the per-file size guard or allowing only
+the negative-zero token each caused its corresponding new test to fail
+(1 failed, 237 passed per mutation). These targeted checks are not an exhaustive
+mutation-testing score.
 
 The [62-case plan](../../docs/publication-proof-adversarial-plan.md) remains
 the acceptance backlog. The table below maps local evidence to topics; it
