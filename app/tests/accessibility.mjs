@@ -11,7 +11,9 @@ try {
     await page.setViewportSize({width, height: 900});
     for (const mode of ["light", "dark"]) {
       for (const route of ["#/", "#/sector/48-49", "#/methodology", "#/dataset"]) {
-        await page.goto(`${base}/${route}`);
+        const url = new URL(`${base}/${route}`);
+        url.searchParams.set("demo", "1");
+        await page.goto(url.href);
         await page.locator("#view .page-heading").waitFor();
         if (await page.locator("html").getAttribute("data-theme") !== mode)
           await page.getByTestId("button-theme").click();

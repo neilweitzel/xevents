@@ -5,9 +5,10 @@
   "type": "module",
   "engines": {"node": ">=20"},
   "scripts": {
-    "test": "node --test tests/model.test.mjs",
+    "test": "node --test tests/model.test.mjs tests/aggregate.test.mjs",
     "test:browser": "node tests/browser-smoke.mjs",
-    "test:accessibility": "node tests/accessibility.mjs"
+    "test:accessibility": "node tests/accessibility.mjs",
+    "test:research": "node tests/research-browser.mjs"
   },
   "devDependencies": {
     "axe-core": "4.13.0",
