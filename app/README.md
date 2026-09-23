@@ -1,8 +1,9 @@
-# xevents synthetic research preview
+# xevents research application
 
-Runnable first slice of MVP item 7: sector overview, weekly trends, sector
-detail, methodology and filtered JSON download. Authorized as a synthetic,
-private preview on 2026-09-23. This is not the live MVP or a publication gate.
+Research reader plus a separate synthetic demonstration. The reader defaults
+to a same-origin released aggregate file, with explicit waiting and failure
+states. The synthetic interface remains available only at `?demo=1`.
+This increment is not a completed publication pipeline or a publication gate.
 
 ## Run
 
@@ -10,7 +11,7 @@ Serve this directory with any static HTTP server; open `index.html`.
 Node 20.20.1 was used for the dependency-free model tests:
 
 ```sh
-node --test app/tests/model.test.mjs
+node --test app/tests/model.test.mjs app/tests/aggregate.test.mjs
 ```
 
 Optional browser and accessibility regressions (development tooling only;
@@ -21,28 +22,40 @@ npm --prefix app ci --ignore-scripts
 npm --prefix app exec -- playwright install chromium
 npm --prefix app run test:browser
 npm --prefix app run test:accessibility
+npm --prefix app run test:research
 ```
 
 There is no application build step, server component, package installation,
 credential, browser storage, telemetry or external network dependency required
 to run the app. The optional development tests use the pinned lockfile. Hash
 routes work on ordinary static hosting. Filter and theme state is transient.
-No GitHub Pages workflow is introduced or enabled.
+No GitHub Pages workflow is introduced or enabled. Deploying this code and
+deploying a real dataset are separate operations.
 
 ## Data boundary
 
-- All fixture counts are invented, labeled synthetic in the UI and downloads.
+- Demo fixture counts are invented, labeled synthetic in the UI and downloads.
 - The fixture is authored aggregate data, not derived from any private input.
 - Six sectors, twelve weeks; cells are integers >= 5 or `null`. No hidden
   subthreshold counts are bundled. Partial totals count visible cells only.
 - Illustrative activity thresholds are not production scoring policy.
-- The schema `xevents-synthetic-preview/v1` is deliberately distinct from
-  production export contracts. No importer or live-data switch exists.
+- The demo schema `xevents-synthetic-preview/v1` is distinct from the
+  counts-only research reader contract `xevents-view1-display/v1`.
+- The research reader requests `data/aggregates/view1.jsonl` once at startup
+  with no credentials, no cache and no redirects. Waiting/error states offer
+  a manual retry. It never requests a private repository or a source API.
+- Missing file: awaiting approved data. Failed/invalid/oversized file:
+  unavailable. Empty released file: no released cells. Never demo fallback.
+- Reader data has a closed canonical JSONL schema, fixed sector vocabulary,
+  complete sector/week matrix and null or integer counts >= 5. Data older than
+  two weeks is marked stale. Attribution and uncertainty survive JSON export.
+- `release_state: released` is a format marker, not cryptographic authority.
+  Publication must be authorized by the separate boundary before hosting.
 - No source records, actor/victim names, evidence receipts or private reads.
 - This preview does not implement production G5 enforcement or change its limits.
 
-The production app still needs a separately validated aggregate adapter and
-the ingestion, review, burn-in and publication prerequisites. Never replace
+The production path still needs the review, launch and signed-publication
+prerequisites. The reader and private processor do not supply these. Never replace
 this fixture with raw source data or interpret a successful UI test as release
 authorization. The second exploitation view, correction ledger and evidence
 manifest browser are outside this first runnable slice.
@@ -61,6 +74,12 @@ Development only: Playwright 1.59.0 (Apache-2.0) and axe-core 4.13.0
 served with the app. Chromium is downloaded separately by Playwright for tests.
 
 ## QA inventory
+
+Research mode additionally covers: missing/empty/blocked/corrupt/oversized
+and unreachable data; retry; no automatic demo import; strict dates and
+duplicate-key rejection; rectangular matrix; filters, sorting, downloads and
+sector routes; all-withheld cells and stale releases. Browser network fixtures
+are entirely invented and are never saved as public release files.
 
 - Overview metrics, chart values and rows reconcile to model calculations.
 - Search by name/code; empty result and reset; count/name sorting.

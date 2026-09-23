@@ -4,6 +4,7 @@ import assert from "node:assert/strict";
 import {chromium} from "playwright";
 
 const base = process.argv[2] || "http://127.0.0.1:3000";
+const demo = address => { const url = new URL(address); url.searchParams.set("demo", "1"); return url.href; };
 const origin = new URL(base).origin;
 const browser = await chromium.launch({headless: true});
 const context = await browser.newContext({viewport: {width: 1440, height: 1000}});
@@ -22,7 +23,7 @@ async function download() {
 }
 
 try {
-  await page.goto(base);
+  await page.goto(demo(base));
   await heading("Sector exposure");
   assert.equal(await ui("metric-latest").innerText(), "≥ 128");
   await ui("input-search").fill("manufact");
@@ -94,7 +95,7 @@ try {
       ["#/", "Sector exposure"], ["#/sector/54", "Professional and technical services"],
       ["#/methodology", "Know what the numbers mean"], ["#/dataset", "A portable research snapshot"],
     ]) {
-      await page.goto(`${base}/${hash}`);
+      await page.goto(demo(`${base}/${hash}`));
       await heading(title);
       assert.equal(await page.evaluate(() =>
         document.documentElement.scrollWidth > innerWidth ||
@@ -102,7 +103,7 @@ try {
       ), false, `Overflow at ${width} ${hash}`);
     }
   }
-  await page.goto(`${base}/#/invalid`);
+  await page.goto(demo(`${base}/#/invalid`));
   await heading("That view is not available");
   await page.getByRole("link", {name: "Back to sector exposure"}).click();
   await heading("Sector exposure");
@@ -126,7 +127,7 @@ try {
     if (failOnce) { failOnce = false; return route.abort(); }
     return route.continue();
   });
-  await failurePage.goto(base);
+  await failurePage.goto(demo(base));
   await failurePage.getByRole("heading", {name: "The preview could not start", exact: true}).waitFor();
   await failurePage.getByTestId("button-retry").click();
   await failurePage.getByTestId("metric-latest").waitFor();
