@@ -1,80 +1,110 @@
 # xevents
 
-Evidence-first incident intelligence: record, preserve, and reconcile **public**
-claims about cyber incidents — starting with ransomware victim listings and
-breach disclosures. Never treat a single source's claim, or echoed claims, as
-established fact.
+**Research public incident claims without republishing the people and organizations behind them.**
 
-**Pivot (2026-09-21):** the public surface is **sector-aggregated** — no
-organization names, no threat-actor brand names. Two repositories:
-`neilweitzel/xevents` (public: app, research output, docs, evidence manifest)
-and `neilweitzel/xevents-internal` (private: raw observations, raw evidence,
-review decisions). The public build never reads the private repo. See
-[docs/open-decisions.md](docs/open-decisions.md) #8–#11 and
-[docs/naming-policy.md](docs/naming-policy.md).
+xevents turns observed ransomware listing claims into name-free, weekly sector
+aggregates for security practitioners and researchers. It preserves the evidence
+privately and keeps uncertainty visible in the public results. A listing is a
+claim, not confirmation that a breach occurred.
 
-## Docs
+[Open the research app](https://neilweitzel.github.io/xevents/) ·
+[Read the methodology](docs/research-guide.md) ·
+[Explore the documentation](docs/README.md)
 
-- [AGENTS.md](AGENTS.md) — operating manual: the doctrine, scope discipline,
-  licensing/ToS discipline, evidence-handling rules, scar tissue, dependency
-  and docs discipline. Read this before touching anything.
-- [docs/mvp-scope.md](docs/mvp-scope.md) — **the approved build target:**
-  tightly-scoped MVP definition with acceptance criteria and an explicit
-  non-goals list. If it's not here, it's not approved work.
-- [docs/open-decisions.md](docs/open-decisions.md) — user rulings. Never
-  resolve an open question by assumption.
-- [docs/naming-policy.md](docs/naming-policy.md) — the no-name boundary:
-  what is never published, what the public taxonomy is, and how the
-  private holdings differ.
-- [docs/dashboard-spec.md](docs/dashboard-spec.md) — the public research
-  surface: pages, practitioner jobs, growth strategy, runbook design.
-- [docs/dispute-process.md](docs/dispute-process.md) — sector-appropriate
-  dispute/correction handling.
-- [docs/lawful-basis-memo-template.md](docs/lawful-basis-memo-template.md) —
-  the launch-gate memo template. Unwritten; no memo, no public surface.
-- [docs/adr/](docs/adr/) — Architecture Decision Records; each record carries
-  its decision status. See [AGENTS.md](AGENTS.md) for the accepted and
-  superseded decision rules:
-  - 0001 — immutable observations vs cautiously-resolved incident records
-  - 0002 — licensing-clean ingestion architecture
-  - 0003 — capture-at-ingest evidence preservation
-  - 0004 — corrections, denials, removals, retractions as first-class history
-  - 0005 — entity-resolution strategy
-  - 0006 — explainable, independence-aware confidence model
-  - 0007 — de-listing/removal detection via re-polling and diffing
-  - 0008 — PostgreSQL as the system of record (superseded by 0009)
-  - 0009 — static-first architecture: GitHub Actions + Pages, git as the system of record
-  - 0010 — quality assurance: gates, burn-in, review queues, incident response
-- [docs/data-model.md](docs/data-model.md) — core schema: source, observation,
-  evidence artifact, listing state, entity, alias, incident, membership,
-  correction event, confidence assessment, review task, model version; sector
-  classification fields; the observation→incident and correction propagation
-  lifecycles; the two-repo physical mapping; the aggregate JSON export
-  contract.
-- [docs/source-spec-ransomlook.md](docs/source-spec-ransomlook.md) — the MVP
-  ingest source, specified: verified endpoints, record schema, poller rules,
-  backfill policy, known limitations. Re-verify at build time.
-- [docs/retention-policy.md](docs/retention-policy.md) — **PROPOSAL:**
-  evidence tiering and ledger retention in a git-native world (required by
-  ADR 0003).
-- [docs/evidence-storage.md](docs/evidence-storage.md) — physical evidence
-  plan: raw evidence in the private repo, public hash manifest, volume
-  strategy.
-- [docs/glossary.md](docs/glossary.md) — precise definitions; the authoritative
-  home for what terms mean.
-- [research/landscape-report.md](research/landscape-report.md) — the evidence
-  base (Sep 17, 2026): source landscape, licensing findings, gaps, blockers.
-  Every architectural claim in the docs traces to a finding here.
+## What you can use it for
 
-## Status
+- **Explore observed activity:** compare published claim counts by sector and
+  retrieval week, without a public directory of named victims or threat actors.
+- **Build a research snapshot:** filter the view and download the selected
+  aggregate data as JSON.
+- **Understand the limits:** see withheld cells, data freshness and the coverage
+  boundaries alongside the numbers.
 
-Implementation is underway. Repository invariant checks, baseline branch
-protection, and an offline signed-publication-proof verifier exist. The
-[synthetic research preview](app/README.md) is runnable locally and uses only
-invented aggregate fixtures.
+This is not a breach registry, an organization risk score, a complete census of
+ransomware activity or a feed for automated blocking. Unlike
+[xfeeds](https://github.com/neilweitzel/xfeeds), xevents is built for interpreting
+incident claims over time, not distributing indicators for enforcement.
 
-This is not a live production service. Source ingestion, a trusted production
-aggregate adapter, proof enforcement in required CI, and the publication/build
-path are not yet integrated end to end. No public Actions workflows are
-installed. Passing local tests or viewing the synthetic app does not authorize
-live publication; the launch memo, review and burn-in gates still apply.
+## Current status
+
+The [public app](https://neilweitzel.github.io/xevents/) is available. The
+unattended release integration is approved for research release-candidate
+burn-in; it is not yet a graduated production service. Private scheduled
+collection is already operating.
+
+The app loads published research data by default. If no dataset has been
+published, it says so instead of substituting sample numbers. An explicitly
+labeled [synthetic demo](https://neilweitzel.github.io/xevents/?demo=1) is available
+separately and must not be cited as research.
+
+## How to read the results
+
+- **Claims, not confirmed incidents:** the initial source is RansomLook.
+  Repeated observations do not provide independent corroboration.
+- **Retrieval time, not attack time:** reporting weeks start on Monday in UTC,
+  based on when xevents first retrieved a claim.
+- **Partial coverage:** the initial collector samples a bounded recent-record
+  window. It cannot establish how many claims were missed or whether a listing
+  was later removed.
+- **Conservative classification:** the RC uses description-based sector
+  heuristics. Ambiguous descriptions remain unclassified rather than acquiring
+  an invented sector or confidence score.
+- **Small cells stay withheld:** counts below five, including zero, are shown as
+  withheld. Missing and withheld values are not evidence of no activity.
+
+The [research guide](docs/research-guide.md) explains appropriate comparisons,
+exports, privacy limitations and the difference between a claim and an incident.
+
+## How it works
+
+```text
+Public listing metadata
+        |
+Private collection and evidence preservation
+        |
+Automatic eligibility, sector aggregation and exact-output privacy checks
+        |
+Signed release, protected merge and verified deployment
+        |
+Public research app and aggregate exports
+```
+
+The full automated release path is the RC activation target. Routine eligible
+records do not require individual human approval. Privacy exceptions remain
+withheld; failed integrity or publication checks stop that release and preserve
+the previous site. The browser reads public aggregates only and has no access
+to private evidence or credentials.
+
+Raw source text, organization and threat-actor names, screenshots and
+record-level evidence stay private. The public repository contains the app,
+aggregate export surface, verification code and the methodology needed to
+examine the design. Public export hashes verify published bytes; they are not
+record-level disclosures of private evidence.
+
+## Go deeper
+
+- **Research and reuse:** [research guide](docs/research-guide.md),
+  [source specification](docs/source-spec-ransomlook.md) and
+  [glossary](docs/glossary.md).
+- **Privacy and corrections:** [naming policy](docs/naming-policy.md),
+  [correction process](docs/dispute-process.md) and
+  [RC research/privacy memo](docs/research-privacy-memo.md).
+- **Engineering:** [app development](app/README.md),
+  [automated RC contract](docs/adr/0022-unattended-research-rc.md) and
+  [architecture decisions](docs/adr/).
+- **Contributing:** start with [AGENTS.md](AGENTS.md) and the
+  [documentation map](docs/README.md). Never put private evidence, credentials or
+  affected-party identities in public issues or pull requests.
+
+For a non-sensitive aggregate or methodology correction, use the
+[research correction form](https://github.com/neilweitzel/xevents/issues/new?template=correction.yml).
+Use [GitHub private reporting](https://github.com/neilweitzel/xevents/security/advisories/new)
+for privacy, identity, credential or sensitive-evidence concerns.
+
+## Attribution
+
+The initial derived source is [RansomLook](https://www.ransomlook.io/).
+RansomLook identifies its website, API and datasets as
+[CC BY 4.0](https://www.ransomlook.io/about). xevents transforms observations into
+restricted aggregate outputs; its classifications and limitations are its own.
+Source licensing does not make sensitive personal information safe to publish.

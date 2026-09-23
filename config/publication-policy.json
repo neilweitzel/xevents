@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "contract": "xevents-publication-proof/v1",
+  "algorithm": "Ed25519",
+  "repository_id": 1378759643,
+  "repository_name": "neilweitzel/xevents",
+  "base_branch": "main",
+  "limits": {
+    "body_bytes": 8192,
+    "file_bytes": 1048576,
+    "candidate_bytes": 4194304,
+    "scan_lifetime": 900,
+    "sign_delay": 300,
+    "clock_skew": 60
+  },
+  "aggregate_files": ["data/aggregates/view1.jsonl", "data/aggregates/view2.jsonl"],
+  "profiles": ["counts-rc-v1"],
+  "keys": [
+    {
+      "key_id": "rc-2026-01",
+      "public_key": "L5_e60JWsLgWibfMvxwZaR499D44AxhM7A3c_zTcFGs",
+      "profiles": ["counts-rc-v1"],
+      "not_before": 1790180508,
+      "not_after": 1797956568,
+      "revoked": false
+    }
+  ]
+}

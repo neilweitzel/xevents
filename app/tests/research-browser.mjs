@@ -36,7 +36,7 @@ async function visit(expected) {
   await page.getByRole("heading", {name: expected, exact: true}).waitFor();
 }
 try {
-  await visit("Awaiting approved data");
+  await visit("No published dataset yet");
   assert.equal(requested.some(path => path.endsWith("/model.mjs") || path.endsWith("/app.mjs")), false);
   assert.equal(await page.getByTestId("metric-total").count(), 0);
   mode = "ready";
@@ -80,7 +80,7 @@ try {
     mode = state;
     for (const width of [1440, 375, 320]) {
       await page.setViewportSize({width, height: 1000});
-      await visit(state === "waiting" ? "Awaiting approved data" :
+      await visit(state === "waiting" ? "No published dataset yet" :
         state === "invalid" ? "The dataset could not be loaded" : "Sector exposure");
       for (const theme of ["light", "dark"]) {
         if (await page.locator("html").getAttribute("data-theme") !== theme)
@@ -103,7 +103,7 @@ try {
   await failedPage.getByRole("heading", {name: "The research app could not start", exact: true}).waitFor();
   await failedPage.unroute("**/research.mjs");
   await failedPage.getByRole("button", {name: "Reload app", exact: true}).click();
-  await failedPage.getByRole("heading", {name: "Awaiting approved data", exact: true}).waitFor();
+  await failedPage.getByRole("heading", {name: "No published dataset yet", exact: true}).waitFor();
   await failedContext.close();
   console.log(`PASS: research loading/retry, filters, download, routes, fail-closed states, layouts and ${scans} accessibility scans.`);
 } finally { await browser.close(); }

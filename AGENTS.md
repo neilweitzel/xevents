@@ -129,6 +129,14 @@ Authoritative reasoning: ADR 0002. This section is the rules.
 
 Authoritative reasoning: ADR 0003. This section is the rules.
 
+Counts-only RC qualification: [ADR 0022](docs/adr/0022-unattended-research-rc.md)
+authorizes a narrower public manifest of export hashes, bounded metadata
+screening and automatic ordinary eligibility. The
+[RC research/privacy memo](docs/research-privacy-memo.md) explicitly rejects
+guaranteed anonymity and blanket perpetual retention. The operator approved
+limited-RC activation on 2026-09-23; technical gates remain mandatory on every
+release. Original ADR bodies remain historical decision records.
+
 - **Capture at ingest, into the private repo.** Every observation gets its
   evidence then and there: raw API response (byte-faithful), source
   screenshot, fetch metadata — stored content-addressed (SHA-256) under
@@ -224,14 +232,21 @@ Authoritative reasoning: ADR 0003. This section is the rules.
 
 ## Automation (xfeeds pattern — ADR 0009)
 
-> Phase note: the automation below is **build-phase design**, not current
-> state. Implementation is authorized and includes local invariant checks,
-> an offline proof verifier and a synthetic app preview. The public repository
-> has no Actions workflows on `main`; scheduled ingestion and Pages publication
-> are not operational. Do not treat implemented test machinery as a live gate.
+> Phase note: private scheduled collection is operational. The unattended
+> counts-only RC is approved in ADR 0022. Activation requires the reviewed
+> public/private changes, production trust key, required head-bound check,
+> Actions-based Pages and release-enable setting. The operator approved the
+> research/privacy memo and GitHub-only reporting channels on 2026-09-23.
+> Do not treat merged code or passing tests as a successful deployment.
 
 The target is for xevents to run like xfeeds: fully automated on GitHub Actions
 + Pages.
+
+The historical build-phase bullets below describe the earlier target, not the
+new RC workflow. ADR 0022 uses an App-authored merge to trigger a separately
+verified Pages deployment, serialized jobs, private exception records and no
+second scheduler. Its concrete implementation takes precedence within that
+approved RC scope once activated.
 
 - The scheduled refresh workflow owns the pipeline: cron + internal cadence
   guard (cron fires more often than the effective poll interval — GitHub's
@@ -240,8 +255,9 @@ The target is for xevents to run like xfeeds: fully automated on GitHub Actions
 - A push made with `GITHUB_TOKEN` does **not** trigger other workflows.
   The refresh workflow therefore deploys Pages itself; `pages.yml` is only
   a `workflow_run` safety net.
-- Human review lives in GitHub Issues: the pipeline opens issues with
-  review checklists; it never auto-applies a judgment a human should make.
+- Routine RC eligibility is deterministic and unattended. Exceptional privacy,
+  correction and calibration judgments remain human decisions and private;
+  identities or evidence must never enter a public issue.
 - `keepalive.yml` commits a timestamp only when the repo has gone quiet
   (14 days vs GitHub's 60-day scheduled-workflow disable).
 - Never add a second scheduler, a server component, or a secret the

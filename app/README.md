@@ -3,7 +3,8 @@
 Research reader plus a separate synthetic demonstration. The reader defaults
 to a same-origin released aggregate file, with explicit waiting and failure
 states. The synthetic interface remains available only at `?demo=1`.
-This increment is not a completed publication pipeline or a publication gate.
+The browser is not a publication gate. Server-side release controls must
+authorize the data before it is deployed.
 
 ## Run
 
@@ -29,8 +30,9 @@ There is no application build step, server component, package installation,
 credential, browser storage, telemetry or external network dependency required
 to run the app. The optional development tests use the pinned lockfile. Hash
 routes work on ordinary static hosting. Filter and theme state is transient.
-No GitHub Pages workflow is introduced or enabled. Deploying this code and
-deploying a real dataset are separate operations.
+The verified Pages workflow packages only reviewed app assets and admitted
+public release files. Its activation is separate from installing the code;
+see [the RC contract](../docs/adr/0022-unattended-research-rc.md).
 
 ## Data boundary
 
@@ -44,7 +46,7 @@ deploying a real dataset are separate operations.
 - The research reader requests `data/aggregates/view1.jsonl` once at startup
   with no credentials, no cache and no redirects. Waiting/error states offer
   a manual retry. It never requests a private repository or a source API.
-- Missing file: awaiting approved data. Failed/invalid/oversized file:
+- Missing file: no published dataset yet. Failed/invalid/oversized file:
   unavailable. Empty released file: no released cells. Never demo fallback.
 - Reader data has a closed canonical JSONL schema, fixed sector vocabulary,
   complete sector/week matrix and null or integer counts >= 5. Data older than
