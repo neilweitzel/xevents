@@ -1,8 +1,11 @@
 # ADR 0023: Coarse research activity in public snapshots
 
-Status: proposed (pending user redline)
+Status: accepted
 
 Date: 2026-09-23
+
+Approval: operator approved the coarse activity disclosure and coordinated
+deployment on 2026-09-23.
 
 ## Context
 
