@@ -225,10 +225,13 @@ Authoritative reasoning: ADR 0003. This section is the rules.
 ## Automation (xfeeds pattern — ADR 0009)
 
 > Phase note: the automation below is **build-phase design**, not current
-> state. The repo is documentation-only until the project lead authorizes
-> execution; no workflows exist on `main` today.
+> state. Implementation is authorized and includes local invariant checks,
+> an offline proof verifier and a synthetic app preview. The public repository
+> has no Actions workflows on `main`; scheduled ingestion and Pages publication
+> are not operational. Do not treat implemented test machinery as a live gate.
 
-xevents runs like xfeeds: fully automated on GitHub Actions + Pages.
+The target is for xevents to run like xfeeds: fully automated on GitHub Actions
++ Pages.
 
 - The scheduled refresh workflow owns the pipeline: cron + internal cadence
   guard (cron fires more often than the effective poll interval — GitHub's
