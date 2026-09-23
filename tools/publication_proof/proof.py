@@ -23,6 +23,7 @@ DOMAIN = b"xevents-publication-proof/v1\0"
 AGGREGATES = ("data/aggregates/view1.jsonl", "data/aggregates/view2.jsonl")
 MANDATORY = ("coverage-boundary-statement.md", "evidence-manifest.jsonl")
 ALLOWED = frozenset((*AGGREGATES, *MANDATORY))
+PLACEHOLDER = "data/aggregates/.gitkeep"
 LIMITS = {
     "body_bytes": 8192,
     "file_bytes": 1048576,
@@ -356,10 +357,16 @@ def candidate_digest(snapshot: Snapshot) -> str:
         require(change.path not in seen, Code.CANDIDATE)
         require(change.status == ("modified" if change.path in before else "added"), Code.CANDIDATE)
         seen.add(change.path)
+    # Existing empty scaffolding is not release data. It must be byte-for-byte
+    # unchanged in both authenticated trees; never expand the App write set.
+    if PLACEHOLDER in after:
+        inert = Blob(PLACEHOLDER, "100644", b"")
+        require(before.get(PLACEHOLDER) == after[PLACEHOLDER] == inert, Code.CANDIDATE)
     surface = {
         p
         for p in after
-        if p in MANDATORY or p == "data/aggregates" or p.startswith("data/aggregates/")
+        if p != PLACEHOLDER
+        and (p in MANDATORY or p == "data/aggregates" or p.startswith("data/aggregates/"))
     }
     require(surface <= ALLOWED and set(MANDATORY) <= surface, Code.CANDIDATE)
     require(bool(set(AGGREGATES) & surface), Code.CANDIDATE)

@@ -2,6 +2,12 @@
 
 ## GitHub snapshot connection
 
+The inherited `data/aggregates/.gitkeep` is inert repository scaffolding only
+when it is an unchanged, zero-byte, regular `100644` file in both authenticated
+trees. It is not an allowed release write, not part of the candidate digest,
+and not packaged into Pages. Every other unexpected aggregate-directory file
+remains a refusal.
+
 `github_snapshot.py` connects the existing verifier to authenticated, read-only
 GitHub metadata and actual Git objects for the fixed public repository. It serves
 ADR 0019's admission adapter and PP-22/23 plus mutable-state checkpoint cases.
