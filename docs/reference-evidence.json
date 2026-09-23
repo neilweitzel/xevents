@@ -1,0 +1,127 @@
+{
+  "schema_version": 1,
+  "mode": "shadow-only",
+  "scope": "public",
+  "inventory_sha256": "f0d5903a63469515ffcd58dd6df633852646694e84e8d219782b91c3c4e6af9b",
+  "rules": {
+    "PR-01": {
+      "kind": "history",
+      "decision": "2",
+      "authority": {
+        "type": "file",
+        "path": "docs/open-decisions.md",
+        "sha256": "426d1e6f55c8d4417d439fc19ee51773b2b4bc570ccc9f816b4e44dc55f33d75",
+        "section": {
+          "heading": "## 2. ransomware.live manual cross-checks",
+          "sha256": "0ccf1d67595bb26cb488e0a4947d91342fc58601188098000c0362991247b7c0"
+        }
+      }
+    },
+    "PR-02": {
+      "kind": "history",
+      "decision": "4",
+      "authority": {
+        "type": "file",
+        "path": "docs/open-decisions.md",
+        "sha256": "426d1e6f55c8d4417d439fc19ee51773b2b4bc570ccc9f816b4e44dc55f33d75",
+        "section": {
+          "heading": "## 4. Dispute-channel response SLA for v1",
+          "sha256": "3c6d44fddd48ae1c53db2c36a3f80c52368bc92204bd8ebba266541007bf7cfd"
+        }
+      }
+    },
+    "PR-03": {
+      "kind": "history",
+      "decision": "5",
+      "authority": {
+        "type": "file",
+        "path": "docs/open-decisions.md",
+        "sha256": "426d1e6f55c8d4417d439fc19ee51773b2b4bc570ccc9f816b4e44dc55f33d75",
+        "section": {
+          "heading": "## 5. Polling cadence",
+          "sha256": "b29a342ce3c8d920f34b26f42f8a165bd335ed321049dfa362a20de3502adfdb"
+        }
+      }
+    },
+    "PR-04": {
+      "kind": "external",
+      "repository": "neilweitzel/xfeeds",
+      "path": ".github/workflows/update-feeds.yml"
+    },
+    "PR-05": {
+      "kind": "owner-deferred"
+    },
+    "PR-06": {
+      "kind": "owner-deferred"
+    },
+    "PR-07": {
+      "kind": "planned",
+      "target": ".github/workflows/build-site.yml",
+      "deliverable": "site-build",
+      "milestone": "M2",
+      "criteria": [
+        "AC2.1",
+        "AC2.2",
+        "AC2.5"
+      ]
+    },
+    "PR-08": {
+      "kind": "owner-deferred"
+    },
+    "PR-09": {
+      "kind": "owner-deferred"
+    },
+    "PR-10": {
+      "kind": "owner-deferred"
+    },
+    "PR-11": {
+      "kind": "owner-deferred"
+    },
+    "PR-12": {
+      "kind": "owner-deferred"
+    },
+    "PR-13": {
+      "kind": "owner-deferred"
+    },
+    "PR-14": {
+      "kind": "owner-deferred"
+    },
+    "PR-15": {
+      "kind": "example",
+      "test": {
+        "file": {
+          "type": "file",
+          "path": "tests/invariants/test_pr_diff_write_set.py",
+          "sha256": "8e08d9aac2b6947f60a545dfc1653f2d5aef31dd158f65b07e3b23264c6a4115",
+          "section": null
+        },
+        "class": "DiffTests",
+        "method": "test_mixed_data_and_code_refused_for_every_author_branch"
+      }
+    },
+    "PR-16": {
+      "kind": "owner-deferred"
+    },
+    "PR-17": {
+      "kind": "owner-deferred"
+    },
+    "PR-18": {
+      "kind": "owner-deferred"
+    },
+    "PR-19": {
+      "kind": "owner-deferred"
+    },
+    "PR-20": {
+      "kind": "owner-deferred"
+    },
+    "PR-21": {
+      "kind": "owner-deferred"
+    },
+    "PR-22": {
+      "kind": "owner-deferred"
+    },
+    "PR-23": {
+      "kind": "owner-deferred"
+    }
+  }
+}
