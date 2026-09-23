@@ -18,7 +18,7 @@ $(".skip").addEventListener("click", event => {
 document.title = "xevents | Incident-claim research";
 $(".preview-label").textContent = "Research RC";
 $(".sidebar-bottom .version").textContent = "RESEARCH RC · VIEW 1";
-$("footer span:last-child").textContent = "Name-free sector aggregates";
+$("footer span:last-child").innerHTML = '<a href="https://github.com/neilweitzel/xevents">Project & documentation</a>';
 $(".sample-notice").innerHTML = "<strong>Claims, not confirmed breaches.</strong><span>Partial source coverage. Withheld cells are not zero.</span>";
 $(".sidebar-bottom strong").textContent = "Checking public data";
 $(".sidebar-bottom p").textContent = "Only published aggregates are requested. This browser never reads private records.";
@@ -29,17 +29,19 @@ let current;
 const heading = (title, body) => `<div class="page-heading"><div><p class="eyebrow">XEVENTS / RESEARCH</p><h1>${title}</h1><p class="lede">${body}</p></div></div>`;
 function connection() {
   const names = {ready: result.dataset?.stale ? "Published data · stale" : "Published data",
-    empty: "No released cells", waiting: "Awaiting approved data", unavailable: "Dataset unavailable"};
+    empty: "No released cells", waiting: "No published dataset yet", unavailable: "Dataset unavailable"};
   $(".sidebar-bottom strong").textContent = names[result.state];
 }
 function unavailable() {
-  const title = {waiting: "Awaiting approved data", empty: "No released aggregate cells",
+  const title = {waiting: "No published dataset yet", empty: "No released aggregate cells",
     unavailable: "The dataset could not be loaded"}[result.state];
   const message = result.state === "unavailable" ?
     "The release file is unreachable or failed validation. No sample counts have been substituted." :
-    "There are no approved aggregate cells available here yet. This does not mean there were no incidents.";
+    result.state === "empty" ?
+    "This release contains no aggregate cells under the publication rules. It does not mean no incidents occurred." :
+    "A research dataset has not been published here yet. The app will show released aggregates when they become available.";
   $("#view").innerHTML = heading(title, message) +
-    '<section class="panel prose"><h2>A clear boundary</h2><p>Collection and processing happen privately. This site reads only released, name-free aggregates; it cannot authorize their publication.</p><p>You can inspect the interface using explicitly labeled synthetic data while research releases are pending.</p><p><button class="primary" id="refresh-data">Check again</button> <a href="?demo=1#/">Open synthetic demo</a></p></section>';
+    '<section class="panel prose"><h2>Research incident claims, not named victims</h2><p>xevents helps security practitioners and researchers explore listing claims by sector and retrieval week. It does not confirm breaches or score an organization’s risk.</p><p>Source evidence stays private. This site shows only published, name-free aggregates, and never substitutes sample numbers for missing research data.</p><p><button class="primary" id="refresh-data">Check again</button> <a href="#/methodology">How to read the results</a> · <a href="?demo=1#/">Explore the synthetic demo</a></p><p><a href="https://github.com/neilweitzel/xevents">About the project and documentation</a></p></section>';
   $("#refresh-data").addEventListener("click", async () => {
     $("#refresh-data").disabled = true;
     $("#refresh-data").textContent = "Checking…";
@@ -52,9 +54,11 @@ function methodology() {
   $("#view").innerHTML = heading("Know what the numbers mean", "Claims are observations to examine, not breaches to declare.") +
     `<section class="panel prose"><h2>One limited source window</h2><p>Released counts describe incident claims observed through a bounded recent-record source window. They are not a complete census, a count of confirmed breaches or a risk score.</p>
     <h2>Retrieval weeks, not attack dates</h2><p>Weeks begin on Monday in UTC and use first retrieval time. Source-claimed dates are not used to backdate a sighting or imply when a compromise occurred.</p>
-    <h2>Privacy and uncertainty</h2><p>A cell below five is withheld as null, including zero. Missing, pending and withheld data must not be interpreted as absence of activity. No demo activity bands are applied to research data.</p>
-    <h2>Release controls</h2><p>The reader validates the format of a published file. Review, evidence linkage, name scanning and signed publication must happen before that file reaches this site; a browser cannot replace those controls.</p>
-    <h2>Attribution</h2><p>Derived source attribution: <a href="https://www.ransomlook.io/" rel="noreferrer">RansomLook</a>, CC BY 4.0. This RC shows counts only, not the complete planned evidence and correction views.</p>
+    <h2>Classification is provisional</h2><p>Sector assignments use conservative terms in listing descriptions. Ambiguous descriptions stay unclassified. Repeated listings are not independent confirmation, and these counts are not a sector risk ranking.</p>
+    <h2>Privacy and uncertainty</h2><p>A cell below five is withheld as null, including zero. Missing and withheld data do not mean no activity. Names and source evidence stay private; name removal and small-cell withholding reduce risk but cannot guarantee anonymity in every context.</p>
+    <h2>Research release</h2><p>This is an early counts-only research app. Routine eligible records are intended to flow automatically through private checks and a verified publication process; exceptional or unsafe records remain withheld. The displayed dataset timestamp reflects the latest source capture represented, not just a site rebuild.</p>
+    <h2>Attribution</h2><p>Derived source: <a href="https://www.ransomlook.io/" rel="noreferrer">RansomLook</a>, <a href="https://www.ransomlook.io/about" rel="noreferrer">CC BY 4.0</a>. xevents supplies the grouping and sector aggregation. These are listing claims, not confirmed breaches.</p>
+    <h2>Go deeper</h2><p>Read the <a href="https://github.com/neilweitzel/xevents/blob/main/docs/research-guide.md">research guide</a> for coverage and export interpretation, or explore the <a href="https://github.com/neilweitzel/xevents/tree/main/docs">public methodology and technical documentation</a>. Never post sensitive evidence or affected-party identities in a public issue.</p>
     <p><a href="?demo=1#/">Open the separate synthetic demo</a></p></section>`;
 }
 function research(datasetMode, sectorCode) {

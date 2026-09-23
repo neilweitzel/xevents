@@ -4,14 +4,16 @@
 launch gate (ADR 0003, ADR 0009, mvp-scope.md item 7): the public surface
 serves no data until this memo exists and is reviewed. No memo, no public
 surface. This template specifies what the completed memo must contain;
-filling it is tracked work, not a decision.
+filling it is tracked work, not a decision. The counts-only RC assessment is
+now [research-privacy-memo.md](research-privacy-memo.md); its explicit operator
+review remains pending. This template is guidance, not evidence of legal clearance.
 
 ## Why this memo is simpler than originally scoped
 
 The 2026-09-21 pivot (open-decisions.md #8) removed the memo's hardest
-problems: the public surface names no organizations and no threat actors,
-publishes no breach contents, and carries no personal data by construction
-(enforced by the name-scan gate, ADR 0010 G5). The residual questions
+exposures: the public surface is designed to omit organization and actor names
+and publish no breach contents. Aggregation and the name scan reduce risk but
+do not prove anonymity or guarantee the absence of personal data. Residual questions
 concern the *private* holdings (incidental PII in raw evidence) and the
 general publication of claims about incidents. The memo must still be
 written — "simpler" is not "unnecessary."
@@ -24,7 +26,7 @@ written — "simpler" is not "unnecessary."
    holdings), and any other jurisdiction where the project lead operates.
 2. **What is published vs. what is held.** The two-repo split stated
    plainly: public = sector aggregates, manifest hashes, methodology
-   (no personal data by construction); private = raw observations and
+   (with documented correlation and re-identification risks); private = raw observations and
    evidence (may incidentally contain personal data from source
    material). The analysis differs per repo; the memo covers both.
 3. **Lawful basis per jurisdiction.** For the public corpus: the research
@@ -44,7 +46,8 @@ written — "simpler" is not "unnecessary."
 6. **Retention and deletion.** Summary of docs/retention-policy.md with
    the data-subject request handling: where requests are actioned
    (cold-review gate), what "erasure" means against an append-only ledger
-   (suppression from working tree + administrative note; hashes remain),
+   (working-tree suppression alone is not erasure; assess history, copies,
+   artifacts, backups and residual linkability),
    and response timeframes.
 7. **Risk assessment (DPIA-style).** Foreseeable harms: misclassification
    causing sector-level reputational effects; re-identification;
@@ -53,7 +56,8 @@ written — "simpler" is not "unnecessary."
    control (with the ADR/doc reference).
 8. **Dispute-channel consistency.** Confirmation that the published
    dispute process (docs/dispute-process.md) and this memo agree on
-   standing, verification, and the no-suppression-on-allegation rule.
+   standing, verification, evidence-led correction and precautionary safety
+   withholding during review.
 9. **Review cadence and sign-off.** Who wrote it, who reviewed it, when it
    is re-reviewed (at minimum: annually, on any new source, on any
    architectural change touching the trust boundary). **Open question for
