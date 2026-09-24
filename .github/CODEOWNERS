@@ -14,3 +14,13 @@
 # authoritative ownership declaration.
 
 * @neilweitzel
+
+# Automated release paths. The xevents-boundary App writes only these
+# files, and every such PR is gated by the signed attestation and the
+# required `Boundary admission` check, not by human review. Leaving
+# them unowned stops a review-request email on every unattended run;
+# run history stays in the repository and Actions log. Failed runs
+# still alert through GitHub Actions notifications.
+/coverage-boundary-statement.md
+/evidence-manifest.jsonl
+/data/aggregates/
