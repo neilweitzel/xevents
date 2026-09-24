@@ -1,5 +1,5 @@
 # Research RC coverage
 
-Release evaluation: 2026-09-23T18:24:04Z.
+Release evaluation: 2026-09-24T00:12:13Z.
 
 Automated metadata-derived listing claims, not confirmed breaches. One source; recent-window coverage only. No absence or removal inference. Classification uses description terms; uncertain sectors are unclassified. Counts below five, including zero, are withheld. Global assessed-claim activity is reported in bands of 25, including claims ineligible for publication; the lowest band includes zero. Raw evidence and candidate identifiers remain private. The public manifest verifies export bytes, not individual source records. G1: verified immutable intake. G2: bounded metadata screen. G3: conservative name-character screen. G4: automated RC eligibility; exception review only. G5: exact export scan. G6: fixed claim framing. G7: private evidence binding with public export-integrity manifest. Per-record decisions and gate counts are retained privately; publishing small exclusion counts could identify withheld records. Images are private supplementary evidence, not inspected classification inputs. Corrections suppress candidates through an append-only private ledger. This is an operational burn-in release, not production graduation.
