@@ -46,8 +46,8 @@ function activity() {
   const summary = activitySummary(result.dataset);
   if (!summary) return '<p class="activity-note">Activity metrics are unavailable until a valid public snapshot can be read. Missing data is not zero activity.</p>';
   const captured = utcLabel(summary.captured);
-  const when = summary.accurate ?
-    `<strong>Accurate as of <time datetime="${escape(summary.accurate)}" data-testid="accurate-as-of">${escape(utcLabel(summary.accurate))} UTC</time>.</strong>` :
+  const when = summary.lastRun ?
+    `<strong>Last run completed <time datetime="${escape(summary.lastRun)}" data-testid="last-run">${escape(utcLabel(summary.lastRun))} UTC</time>.</strong>` :
     `Latest source capture: <time datetime="${escape(summary.captured)}">${escape(captured)} UTC</time>.`;
   return `<section class="activity-summary" aria-label="Published snapshot activity">
     <h2>From private assessment to public research</h2>
@@ -109,7 +109,7 @@ function research(datasetMode, sectorCode) {
       `<option value="${n}" ${n === state.length ? "selected" : ""}>${n} week${n > 1 ? "s" : ""}</option>`).join("")}</select></label>
     <label><span>Sort</span><select id="sort"><option value="name">Sector name</option><option value="latest-desc">Most claims</option><option value="latest-asc">Fewest claims</option></select></label>
     <button id="reset" class="quiet">Reset</button><button id="export" class="primary" data-testid="button-export">Download JSON</button></section>
-    <p class="lede">${dataset.header.evaluated_at ? `Accurate as of ${escape(dataset.header.evaluated_at)}` : `Generated ${escape(dataset.header.generated_at)}`} · Recent-window coverage only</p>
+    <p class="lede">${dataset.header.evaluated_at ? "" : `Generated ${escape(dataset.header.generated_at)} · `}Recent-window coverage only</p>
     <div id="results" aria-live="polite"></div>`;
   $("#sort").value = state.sort;
   function update() {

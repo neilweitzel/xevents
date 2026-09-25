@@ -105,7 +105,7 @@ export function activitySummary(dataset) {
       `${floor.toLocaleString("en-US")}–${(floor + 24).toLocaleString("en-US")}`,
     published: dataset.rows.reduce((n, row) => n + (row.claim_count ?? 0), 0),
     cells: dataset.rows.filter(row => row.claim_count !== null).length,
-    captured: dataset.header.generated_at, accurate: dataset.header.evaluated_at ?? null,
+    captured: dataset.header.generated_at, lastRun: dataset.header.evaluated_at ?? null,
     stale: dataset.stale,
   });
 }

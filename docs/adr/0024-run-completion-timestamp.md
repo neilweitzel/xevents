@@ -4,7 +4,7 @@ Status: accepted
 
 Date: 2026-09-25
 
-Approval: operator requested the "accurate as of" display on 2026-09-25 and
+Approval: operator requested a "last run completed" display on 2026-09-25 and
 approved it by merging this ADR with its coordinated reader.
 
 ## Context
@@ -25,8 +25,8 @@ published in the coverage-boundary statement. The producer rounds the clock
 up to the next second, so `evaluated_at` is never earlier than
 `generated_at`. The reader requires the field in v3, requires whole-second
 form, refuses values earlier than the capture or more than five minutes
-ahead of the viewer's clock, and displays it as "Accurate as of" in place
-of the capture time. The capture time remains in the data file and export;
+ahead of the viewer's clock, and displays it as a single "Last run completed"
+line in place of the capture time, matching the xfeeds status line. The capture time remains in the data file and export;
 v1 and v2 snapshots still display it.
 
 This supersedes ADR 0023's statement that no public field describes run

@@ -80,9 +80,9 @@ try {
     if (state === "stale") await page.getByText("Stale dataset.", {exact: true}).waitFor();
     if (state === "legacy") assert.equal(await page.getByTestId("activity-assessed").innerText(), "Not reported");
     if (state === "band") assert.equal(await page.getByTestId("activity-assessed").innerText(), "25–49");
-    if (state === "run") assert.match(await page.getByTestId("accurate-as-of").innerText(), / UTC$/);
+    if (state === "run") assert.match(await page.getByTestId("last-run").innerText(), / UTC$/);
     if (state !== "run" && !["blocked", "failed", "invalid"].includes(state))
-      assert.equal(await page.getByTestId("accurate-as-of").count(), 0);
+      assert.equal(await page.getByTestId("last-run").count(), 0);
     if (state === "empty" || state === "withheld") {
       assert.equal(await page.getByTestId("activity-assessed").innerText(), "Fewer than 25");
       assert.equal(await page.getByTestId("activity-published").innerText(), "0");

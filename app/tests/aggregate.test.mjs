@@ -111,12 +111,12 @@ test("v3 carries a whole-second run completion that is never before its capture"
   const v3 = (extra = {}) => ({...header(), schema_version: RUN_SCHEMA, assessed_claims_floor: 25,
     generated_at: "2026-09-23T14:00:00.672575Z", evaluated_at: "2026-09-23T14:00:01Z", ...extra});
   const d = parseAggregate(jsonl(v3()), NOW);
-  assert.equal(activitySummary(d).accurate, "2026-09-23T14:00:01Z");
+  assert.equal(activitySummary(d).lastRun, "2026-09-23T14:00:01Z");
   assert.equal(activitySummary(d).captured, "2026-09-23T14:00:00.672575Z");
   assert.equal(activitySummary(d).assessed, "25–49");
   assert.equal(exportSelection(d, selection(d, "", 1)).contract_version, RUN_SCHEMA);
   // A guarded run: capture unchanged, completion hours later.
-  assert.equal(activitySummary(parseAggregate(jsonl(v3({evaluated_at: "2026-09-23T14:59:00Z"})), NOW)).accurate,
+  assert.equal(activitySummary(parseAggregate(jsonl(v3({evaluated_at: "2026-09-23T14:59:00Z"})), NOW)).lastRun,
     "2026-09-23T14:59:00Z");
   // Equal to a whole-second capture is accepted.
   parseAggregate(jsonl(v3({generated_at: "2026-09-23T14:00:01Z"})), NOW);
@@ -130,5 +130,5 @@ test("v3 carries a whole-second run completion that is never before its capture"
   assert.throws(() => parseAggregate(jsonl({...header(), schema_version: ACTIVITY_SCHEMA,
     assessed_claims_floor: 25, evaluated_at: "2026-09-23T14:00:01Z"}), NOW));
   assert.equal(activitySummary(parseAggregate(jsonl({...header(), schema_version: ACTIVITY_SCHEMA,
-    assessed_claims_floor: 25}), NOW)).accurate, null);
+    assessed_claims_floor: 25}), NOW)).lastRun, null);
 });

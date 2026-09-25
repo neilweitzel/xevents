@@ -47,7 +47,7 @@ see [the RC contract](../docs/adr/0022-unattended-research-rc.md).
   V2 adds only a bounded global `assessed_claims_floor`, displayed in bands of
   25. V1 remains readable with its assessment metric explicitly not reported.
   The activity panel uses the whole snapshot, not selected table rows.
-  V3 adds only the whole-second `evaluated_at`, shown as "Accurate as of"
+  V3 adds only the whole-second `evaluated_at`, shown as "Last run completed"
   (ADR 0024). It is never earlier than the capture.
 - The research reader requests `data/aggregates/view1.jsonl` once at startup
   with no credentials, no cache and no redirects. Waiting/error states offer
