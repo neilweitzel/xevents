@@ -39,11 +39,16 @@ function introduction(showTitle = true) {
     <p class="intro-detail">The first release covers a limited recent RansomLook window. It does not verify breaches, measure a sector’s risk or provide a blocking feed. <a href="#/methodology">Read the methodology</a></p>
   </section>`;
 }
+function utcLabel(value) {
+  return new Date(value).toLocaleString("en-US", {timeZone: "UTC", dateStyle: "medium", timeStyle: "short"});
+}
 function activity() {
   const summary = activitySummary(result.dataset);
   if (!summary) return '<p class="activity-note">Activity metrics are unavailable until a valid public snapshot can be read. Missing data is not zero activity.</p>';
-  const captured = new Date(summary.captured).toLocaleString("en-US",
-    {timeZone: "UTC", dateStyle: "medium", timeStyle: "short"});
+  const captured = utcLabel(summary.captured);
+  const when = summary.lastRun ?
+    `<strong>Last run completed <time datetime="${escape(summary.lastRun)}" data-testid="last-run">${escape(utcLabel(summary.lastRun))} UTC</time>.</strong>` :
+    `Latest source capture: <time datetime="${escape(summary.captured)}">${escape(captured)} UTC</time>.`;
   return `<section class="activity-summary" aria-label="Published snapshot activity">
     <h2>From private assessment to public research</h2>
     <div class="metrics activity-metrics">
@@ -51,7 +56,7 @@ function activity() {
       <div><span>Claims in published counts</span><strong data-testid="activity-published">${count(summary.published)}</strong><span>Only numeric cells; not total incidents</span></div>
       <div><span>Published sector-week counts</span><strong data-testid="activity-cells">${count(summary.cells)}</strong><span>Each contains at least five eligible claims</span></div>
     </div>
-    <p class="activity-note">Latest source capture: <time datetime="${escape(summary.captured)}">${escape(captured)} UTC</time>. ${summary.stale ? "<strong>Stale snapshot: more than two weeks old.</strong> " : ""}These measures describe this published snapshot, not a live health check. The first band includes zero; repeat sightings do not increase the grouped-claim count.</p>
+    <p class="activity-note">${when} ${summary.stale ? "<strong>Stale snapshot: more than two weeks old.</strong> " : ""}These measures describe this published snapshot. The first band includes zero; repeat sightings do not increase the grouped-claim count.</p>
   </section>`;
 }
 function unavailable() {
@@ -104,7 +109,7 @@ function research(datasetMode, sectorCode) {
       `<option value="${n}" ${n === state.length ? "selected" : ""}>${n} week${n > 1 ? "s" : ""}</option>`).join("")}</select></label>
     <label><span>Sort</span><select id="sort"><option value="name">Sector name</option><option value="latest-desc">Most claims</option><option value="latest-asc">Fewest claims</option></select></label>
     <button id="reset" class="quiet">Reset</button><button id="export" class="primary" data-testid="button-export">Download JSON</button></section>
-    <p class="lede">Generated ${escape(dataset.header.generated_at)} · Recent-window coverage only</p>
+    <p class="lede">${dataset.header.evaluated_at ? "" : `Generated ${escape(dataset.header.generated_at)} · `}Recent-window coverage only</p>
     <div id="results" aria-live="polite"></div>`;
   $("#sort").value = state.sort;
   function update() {
