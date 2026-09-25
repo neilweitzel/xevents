@@ -2,6 +2,8 @@
 export const SCHEMA = "xevents-view1-display/v1";
 export const ACTIVITY_SCHEMA = "xevents-view1-display/v2";
 export const RUN_SCHEMA = "xevents-view1-display/v3";
+export const ROLLUP_SCHEMA = "xevents-view1-display/v4";
+export const MAX_WEEKS = 104, MAX_MONTHS = 25;
 export const MAX_BYTES = 1024 * 1024;
 export const LABELS = Object.freeze({
   "11": "Agriculture, forestry and fishing", "21": "Mining and extraction",
@@ -33,6 +35,10 @@ function monday(value) {
     date.getUTCDay() === 1);
   return +date;
 }
+function monthOf(value) {
+  require(typeof value === "string" && /^\d{4}-(?:0[1-9]|1[0-2])$/.test(value));
+  return value;
+}
 function clock(value) {
   require(typeof value === "string" && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,6})?Z$/.test(value));
   const date = new Date(value);
@@ -43,7 +49,7 @@ export function parseAggregate(text, now = Date.now()) {
   require(typeof text === "string" && new TextEncoder().encode(text).length <= MAX_BYTES &&
     text.endsWith("\n") && Number.isFinite(now));
   const lines = text.slice(0, -1).split("\n");
-  require(lines.length <= 1 + 104 * CODES.length);
+  require(lines.length <= 1 + (MAX_WEEKS + MAX_MONTHS) * CODES.length);
   const values = lines.map(line => {
     const value = JSON.parse(line);
     // Canonical spelling rejects duplicate keys, escapes and nonfinite forms.
@@ -51,13 +57,14 @@ export function parseAggregate(text, now = Date.now()) {
     return value;
   });
   const header = values[0], rows = values.slice(1);
-  const run = header?.schema_version === RUN_SCHEMA;
+  const rollup = header?.schema_version === ROLLUP_SCHEMA;
+  const run = rollup || header?.schema_version === RUN_SCHEMA;
   const activity = run || header?.schema_version === ACTIVITY_SCHEMA;
   keys(header, ["file_purpose", "schema_version", "release_state", "generated_at",
     "coverage", "time_basis", "privacy_floor", ...(activity ? ["assessed_claims_floor"] : []),
     ...(run ? ["evaluated_at"] : [])]);
   require(header.file_purpose === "sector_aggregate" &&
-    [SCHEMA, ACTIVITY_SCHEMA, RUN_SCHEMA].includes(header.schema_version) &&
+    [SCHEMA, ACTIVITY_SCHEMA, RUN_SCHEMA, ROLLUP_SCHEMA].includes(header.schema_version) &&
     header.release_state === "released" && header.coverage === "recent_only" &&
     header.time_basis === "retrieved_at" && header.privacy_floor === 5);
   if (activity) require(Number.isSafeInteger(header.assessed_claims_floor) &&
@@ -72,28 +79,56 @@ export function parseAggregate(text, now = Date.now()) {
     const evaluated = clock(header.evaluated_at);
     require(evaluated >= generated && evaluated <= now + 5 * 60000);
   }
-  const seen = new Set(), weeks = new Set();
+  const seen = new Set(), weeks = new Set(), monthSet = new Set();
+  const weekRows = [], monthRows = [];
+  const count = value => require(value === null ||
+    (Number.isSafeInteger(value) && value >= 5 && value <= 1000000));
   for (const row of rows) {
-    keys(row, ["sector", "week_start", "claim_count"]);
+    // v4 adds closed sector-month rows (ADR 0026); earlier versions stay weekly only.
+    const monthly = rollup && row && typeof row === "object" && "month" in row;
+    keys(row, ["sector", monthly ? "month" : "week_start", "claim_count"]);
     require(CODES.includes(row.sector));
-    require(monday(row.week_start) <= generated);
-    require(row.claim_count === null ||
-      (Number.isSafeInteger(row.claim_count) && row.claim_count >= 5 && row.claim_count <= 1000000));
-    const key = `${row.sector}/${row.week_start}`;
-    require(!seen.has(key));
-    seen.add(key); weeks.add(row.week_start);
+    count(row.claim_count);
+    if (monthly) {
+      monthOf(row.month);
+      const key = `${row.sector}/${row.month}`;
+      require(!seen.has(key)); seen.add(key); monthSet.add(row.month); monthRows.push(row);
+    } else {
+      require(monday(row.week_start) <= generated);
+      const key = `${row.sector}/${row.week_start}`;
+      require(!seen.has(key)); seen.add(key); weeks.add(row.week_start); weekRows.push(row);
+    }
   }
   const ordered = [...weeks].sort();
-  if (activity) require(rows.reduce((n, row) => n + (row.claim_count ?? 0), 0) <
-    header.assessed_claims_floor + 25);
-  require(rows.length === ordered.length * CODES.length);
+  const sum = list => list.reduce((n, row) => n + (row.claim_count ?? 0), 0);
+  if (activity) require(sum(weekRows) < header.assessed_claims_floor + 25 &&
+    sum(monthRows) < header.assessed_claims_floor + 25);
+  require(weekRows.length === ordered.length * CODES.length && ordered.length <= MAX_WEEKS);
   ordered.forEach((w, i) => require(!i || monday(w) - monday(ordered[i - 1]) === 7 * DAY));
-  const frozenRows = Object.freeze(rows.map(row => Object.freeze({...row})));
+  // A month holds exactly the weeks whose Monday falls in it, so the two views nest.
+  const months = [...new Set(ordered.map(w => w.slice(0, 7)))];
+  if (rollup) {
+    require(months.join() === [...monthSet].sort().join() &&
+      monthRows.length === months.length * CODES.length && months.length <= MAX_MONTHS);
+    const cell = new Map(weekRows.map(r => [`${r.sector}/${r.week_start}`, r.claim_count]));
+    for (const row of monthRows) {
+      const inner = ordered.filter(w => w.startsWith(row.month)).map(w => cell.get(`${row.sector}/${w}`));
+      const shown = inner.reduce((n, v) => n + (v ?? 0), 0), hidden = inner.filter(v => v === null).length;
+      // Complementary suppression: no month may expose withheld weekly cells.
+      if (!hidden) require(row.claim_count === shown);
+      else require(row.claim_count === null || row.claim_count - shown >= 5);
+    }
+  } else require(!monthSet.size);
+  const frozenRows = Object.freeze(weekRows.map(row => Object.freeze({...row})));
+  const frozenMonths = Object.freeze(monthRows.map(row => Object.freeze({...row})));
+  const shownMonths = rollup ? months : [];
   return Object.freeze({
     header: Object.freeze({...header}), rows: frozenRows, weeks: Object.freeze(ordered),
+    monthRows: frozenMonths, months: Object.freeze(shownMonths),
     stale: now - generated > 14 * DAY,
     sectors: Object.freeze(CODES.map(code => Object.freeze({id: code, name: LABELS[code],
-      counts: Object.freeze(ordered.map(w => rows.find(r => r.sector === code && r.week_start === w).claim_count)),
+      counts: Object.freeze(ordered.map(w => weekRows.find(r => r.sector === code && r.week_start === w).claim_count)),
+      monthCounts: Object.freeze(shownMonths.map(m => monthRows.find(r => r.sector === code && r.month === m).claim_count)),
     }))),
   });
 }
@@ -105,6 +140,8 @@ export function activitySummary(dataset) {
       `${floor.toLocaleString("en-US")}–${(floor + 24).toLocaleString("en-US")}`,
     published: dataset.rows.reduce((n, row) => n + (row.claim_count ?? 0), 0),
     cells: dataset.rows.filter(row => row.claim_count !== null).length,
+    monthCells: dataset.months.length ?
+      dataset.monthRows.filter(row => row.claim_count !== null).length : null,
     captured: dataset.header.generated_at, lastRun: dataset.header.evaluated_at ?? null,
     stale: dataset.stale,
   });
@@ -135,31 +172,38 @@ export async function loadAggregate(fetcher = fetch, now = Date.now()) {
     return {state: dataset.rows.length ? "ready" : "empty", dataset};
   } catch { return {state: "unavailable"}; }
 }
-export function selection(dataset, query, end, length = 12, sort = "name") {
+export const WINDOWS = Object.freeze({week: Object.freeze([1, 4, 12]), month: Object.freeze([1, 3, 12])});
+export function selection(dataset, query, end, length = 12, sort = "name", period = "week") {
+  require(Object.hasOwn(WINDOWS, period));
+  const periods = period === "month" ? dataset.months : dataset.weeks;
+  const field = period === "month" ? "month" : "week_start";
+  const source = period === "month" ? dataset.monthRows : dataset.rows;
   require(typeof query === "string" && Number.isInteger(end) && end >= 0 &&
-    end < dataset.weeks.length && [1, 4, 12].includes(length) &&
+    end < periods.length && WINDOWS[period].includes(length) &&
     ["name", "latest-desc", "latest-asc"].includes(sort));
-  const weeks = dataset.weeks.slice(Math.max(0, end - length + 1), end + 1);
+  const chosen = periods.slice(Math.max(0, end - length + 1), end + 1);
   const term = query.trim().toLowerCase();
+  const counts = s => period === "month" ? s.monthCounts : s.counts;
   const sectors = dataset.sectors.filter(s => `${s.id} ${s.name}`.toLowerCase().includes(term));
   sectors.sort((a, b) => {
     if (sort === "name") return a.name.localeCompare(b.name, "en");
-    const x = a.counts[end], y = b.counts[end];
+    const x = counts(a)[end], y = counts(b)[end];
     return x === null ? y === null ? a.name.localeCompare(b.name, "en") : 1 :
       y === null ? -1 : (sort === "latest-desc" ? y - x : x - y);
   });
   const ids = new Set(sectors.map(s => s.id));
-  const rows = dataset.rows.filter(row => ids.has(row.sector) && weeks.includes(row.week_start));
-  return {sectors, weeks, rows};
+  const rows = source.filter(row => ids.has(row.sector) && chosen.includes(row[field]));
+  return {sectors, period, periods: chosen, weeks: period === "week" ? chosen : [], rows};
 }
 export function exportSelection(dataset, selected) {
-  require(selected.rows.every(row => dataset.rows.includes(row)));
+  const monthly = selected.period === "month";
+  require(selected.rows.every(row => (monthly ? dataset.monthRows : dataset.rows).includes(row)));
   return {
     contract_version: dataset.header.schema_version, dataset: "xevents", synthetic: false,
     framing: "Public claims about cyber incidents, not verified breaches. Names are excluded.",
     license: "CC BY 4.0", attribution: "RansomLook, CC BY 4.0; https://www.ransomlook.io/",
     generated_at: dataset.header.generated_at, coverage: dataset.header.coverage,
     time_basis: dataset.header.time_basis, privacy_floor: 5,
-    stale: dataset.stale, rows: selected.rows,
+    ...(monthly ? {period: "month"} : {}), stale: dataset.stale, rows: selected.rows,
   };
 }
