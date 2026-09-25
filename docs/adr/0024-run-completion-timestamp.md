@@ -25,7 +25,9 @@ published in the coverage-boundary statement. The producer rounds the clock
 up to the next second, so `evaluated_at` is never earlier than
 `generated_at`. The reader requires the field in v3, requires whole-second
 form, refuses values earlier than the capture or more than five minutes
-ahead of the viewer's clock, and displays it as "Accurate as of".
+ahead of the viewer's clock, and displays it as "Accurate as of" in place
+of the capture time. The capture time remains in the data file and export;
+v1 and v2 snapshots still display it.
 
 This supersedes ADR 0023's statement that no public field describes run
 completion, only for this one timestamp. It adds no per-run counts, outcome
