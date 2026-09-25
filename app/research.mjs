@@ -1,4 +1,4 @@
-import {loadAggregate, selection, exportSelection, activitySummary} from "./aggregate.mjs";
+import {loadAggregate, selection, exportSelection, activitySummary, WINDOWS} from "./aggregate.mjs";
 
 const $ = selector => document.querySelector(selector);
 const escape = value => String(value).replace(/[&<>"']/g, c =>
@@ -24,7 +24,16 @@ $(".sidebar-bottom strong").textContent = "Checking public data";
 $(".sidebar-bottom p").textContent = "Only published aggregates are requested. This browser never reads private records.";
 $("#view").innerHTML = '<section class="empty" role="status"><h1>Loading the research dataset</h1><p>Checking the public release file. No private source is contacted.</p></section>';
 let result = await loadAggregate();
-const state = {query: "", sort: "name", end: (result.dataset?.weeks.length || 1) - 1, length: 12};
+// Monthly rollups (ADR 0026) are the default when the snapshot provides them.
+const initial = dataset => {
+  const period = dataset?.months.length ? "month" : "week";
+  const periods = period === "month" ? dataset.months : dataset?.weeks ?? [];
+  return {period, end: Math.max(periods.length - 1, 0), length: 12};
+};
+const state = {query: "", sort: "name", ...initial(result.dataset)};
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const periodLabel = (period, value) => period === "month" ?
+  `${MONTHS[Number(value.slice(5, 7)) - 1]} ${value.slice(0, 4)}` : value;
 let current;
 const heading = (title, body) => `<div class="page-heading"><div><p class="eyebrow">XEVENTS / RESEARCH</p><h1>${title}</h1><p class="lede">${body}</p></div></div>`;
 function connection() {
@@ -35,7 +44,7 @@ function connection() {
 function introduction(showTitle = true) {
   return `<section class="project-intro" aria-label="About xevents">
     ${showTitle ? "<h2>Study ransomware claims without amplifying the leak.</h2>" : ""}
-    <p>xevents collects public listing metadata, checks and groups claims privately, then publishes name-free weekly sector counts. It gives security practitioners and researchers a way to study observed activity over time without republishing affected organizations or attacker publicity.</p>
+    <p>xevents collects public listing metadata, checks and groups claims privately, then publishes name-free weekly and monthly sector counts. It gives security practitioners and researchers a way to study observed activity over time without republishing affected organizations or attacker publicity.</p>
     <p class="intro-detail">The first release covers a limited recent RansomLook window. It does not verify breaches, measure a sector’s risk or provide a blocking feed. <a href="#/methodology">Read the methodology</a></p>
   </section>`;
 }
@@ -51,10 +60,11 @@ function activity() {
     `Latest source capture: <time datetime="${escape(summary.captured)}">${escape(captured)} UTC</time>.`;
   return `<section class="activity-summary" aria-label="Published snapshot activity">
     <h2>From private assessment to public research</h2>
-    <div class="metrics activity-metrics">
+    <div class="metrics activity-metrics${summary.monthCells === null ? "" : " four"}">
       <div><span>Claims assessed privately</span><strong data-testid="activity-assessed">${escape(summary.assessed)}</strong><span>Grouped claims, reported in bands of 25</span></div>
       <div><span>Claims in published counts</span><strong data-testid="activity-published">${count(summary.published)}</strong><span>Only numeric cells; not total incidents</span></div>
       <div><span>Published sector-week counts</span><strong data-testid="activity-cells">${count(summary.cells)}</strong><span>Each contains at least five eligible claims</span></div>
+      ${summary.monthCells === null ? "" : `<div><span>Published sector-month counts</span><strong data-testid="activity-month-cells">${count(summary.monthCells)}</strong><span>Monthly rollups of the same weekly claims</span></div>`}
     </div>
     <p class="activity-note">${when} ${summary.stale ? "<strong>Stale snapshot: more than two weeks old.</strong> " : ""}These measures describe this published snapshot. The first band includes zero; repeat sightings do not increase the grouped-claim count.</p>
   </section>`;
@@ -77,7 +87,7 @@ function unavailable() {
     $("#refresh-data").disabled = true;
     $("#refresh-data").textContent = "Checking…";
     result = await loadAggregate();
-    state.end = (result.dataset?.weeks.length || 1) - 1;
+    Object.assign(state, initial(result.dataset));
     render();
   });
 }
@@ -85,9 +95,10 @@ function methodology() {
   $("#view").innerHTML = heading("Know what the numbers mean", "Claims are observations to examine, not breaches to declare.") +
     `<section class="panel prose"><h2>One limited source window</h2><p>Released counts describe incident claims observed through a bounded recent-record source window. They are not a complete census, a count of confirmed breaches or a risk score.</p>
     <h2>Retrieval weeks, not attack dates</h2><p>Weeks begin on Monday in UTC and use first retrieval time. Source-claimed dates are not used to backdate a sighting or imply when a compromise occurred.</p>
+    <h2>Monthly rollups</h2><p>A month contains every retrieval week whose Monday falls in that calendar month, so a week that crosses a month boundary is counted once, in the month it began. Monthly counts add up the same eligible claims as the weekly cells; they are not additional claims. A monthly count is shown only if it has at least five claims and cannot be used to work out a withheld weekly cell. When that is not possible, the month is withheld too.</p>
     <h2>Classification is provisional</h2><p>Sector assignments use conservative terms in listing descriptions. Ambiguous descriptions stay unclassified. Repeated listings are not independent confirmation, and these counts are not a sector risk ranking.</p>
-    <h2>What the activity measures mean</h2><p>Claims assessed privately counts distinct normalized actor/subject groups in the retained intake, including claims that cannot be published. It is cumulative, not a count of this week’s incidents. Bands of 25 conceal exact small totals; “Fewer than 25” includes zero. Older snapshots without this measure say “Not reported.”</p><p>Claims in published counts sums only numeric sector-week cells across the whole snapshot. Withheld cells add no published number; they are not treated as zero observations. These measures have different scopes and must not be used to calculate an approval rate. The capture timestamp is data freshness, not proof that the most recent scheduled run succeeded.</p>
-    <h2>An automatic, bounded pipeline</h2><p>The collector is scheduled every two hours, with at least six hours between successful source captures and ten recent records requested per capture. It preserves evidence privately, groups repeat claims, checks eligibility and sector classification, scans the exact output, then signs and verifies each release before deployment. Ordinary eligible data does not wait for human review. Failures preserve the last valid site; exceptions stay withheld.</p>
+    <h2>What the activity measures mean</h2><p>Claims assessed privately counts distinct normalized actor/subject groups in the retained intake, including claims that cannot be published. It is cumulative, not a count of this week’s incidents. Bands of 25 conceal exact small totals; “Fewer than 25” includes zero. Older snapshots without this measure say “Not reported.”</p><p>Claims in published counts sums only numeric sector-week cells across the whole snapshot; monthly rollups are not added again. Withheld cells add no published number; they are not treated as zero observations. These measures have different scopes and must not be used to calculate an approval rate. The capture timestamp is data freshness, not proof that the most recent scheduled run succeeded.</p>
+    <h2>An automatic, bounded pipeline</h2><p>The collector is scheduled every two hours, with at least six hours between successful source captures and up to 100 recent records requested per capture so that delayed or skipped runs do not lose listings. Screenshot retrieval is limited to ten attempts per capture. It preserves evidence privately, groups repeat claims, checks eligibility and sector classification, scans the exact output, then signs and verifies each release before deployment. Ordinary eligible data does not wait for human review. Failures preserve the last valid site; exceptions stay withheld.</p>
     <h2>Privacy and uncertainty</h2><p>A cell below five is withheld as null, including zero. Missing and withheld data do not mean no activity. Names and source evidence stay private; name removal and small-cell withholding reduce risk but cannot guarantee anonymity in every context.</p>
     <h2>Research release</h2><p>This is an early counts-only research app. Routine eligible records are intended to flow automatically through private checks and a verified publication process; exceptional or unsafe records remain withheld. The displayed dataset timestamp reflects the latest source capture represented, not just a site rebuild.</p>
     <h2>Attribution</h2><p>Derived source: <a href="https://www.ransomlook.io/" rel="noreferrer">RansomLook</a>, <a href="https://www.ransomlook.io/about" rel="noreferrer">CC BY 4.0</a>. xevents supplies the grouping and sector aggregation. These are listing claims, not confirmed breaches.</p>
@@ -98,38 +109,48 @@ function methodology() {
 function research(datasetMode, sectorCode) {
   const dataset = result.dataset;
   const sector = dataset.sectors.find(s => s.id === sectorCode);
+  const periods = state.period === "month" ? dataset.months : dataset.weeks;
   $("#view").innerHTML = heading(datasetMode ? "A portable research snapshot" : sector ? escape(sector.name) : "Sector exposure",
-    "Listing claims aggregated by retrieval week. Uncertainty remains visible.") +
+    `Listing claims aggregated by retrieval ${state.period}. Uncertainty remains visible.`) +
     (!datasetMode && !sector ? introduction() + activity() : "") +
     (dataset.stale ? '<div class="sample-notice" role="status"><strong>Stale dataset.</strong><span>This release was generated more than two weeks ago. It is not current coverage.</span></div>' : "") +
     `<section class="filters"><label class="search-field"><span>Search sectors</span><input id="search" data-testid="input-search" value="${escape(state.query)}" type="search"></label>
-    <label><span>Reporting week</span><select id="week" data-testid="select-week">${dataset.weeks.map((w, i) =>
-      `<option value="${i}" ${i === state.end ? "selected" : ""}>${w}</option>`).reverse().join("")}</select></label>
-    <label><span>Window</span><select id="window" data-testid="select-window">${[1, 4, 12].map(n =>
-      `<option value="${n}" ${n === state.length ? "selected" : ""}>${n} week${n > 1 ? "s" : ""}</option>`).join("")}</select></label>
+    ${dataset.months.length ? `<label><span>Period</span><select id="period" data-testid="select-period"><option value="month" ${state.period === "month" ? "selected" : ""}>Monthly</option><option value="week" ${state.period === "week" ? "selected" : ""}>Weekly</option></select></label>` : ""}
+    <label><span>Reporting ${state.period}</span><select id="week" data-testid="select-week">${periods.map((w, i) =>
+      `<option value="${i}" ${i === state.end ? "selected" : ""}>${periodLabel(state.period, w)}</option>`).reverse().join("")}</select></label>
+    <label><span>Window</span><select id="window" data-testid="select-window">${WINDOWS[state.period].map(n =>
+      `<option value="${n}" ${n === state.length ? "selected" : ""}>${n} ${state.period}${n > 1 ? "s" : ""}</option>`).join("")}</select></label>
     <label><span>Sort</span><select id="sort"><option value="name">Sector name</option><option value="latest-desc">Most claims</option><option value="latest-asc">Fewest claims</option></select></label>
     <button id="reset" class="quiet">Reset</button><button id="export" class="primary" data-testid="button-export">Download JSON</button></section>
     <p class="lede">${dataset.header.evaluated_at ? "" : `Generated ${escape(dataset.header.generated_at)} · `}Recent-window coverage only</p>
     <div id="results" aria-live="polite"></div>`;
   $("#sort").value = state.sort;
   function update() {
-    current = selection(dataset, sector ? sector.id : state.query, state.end, state.length, state.sort);
+    current = selection(dataset, sector ? sector.id : state.query, state.end, state.length, state.sort, state.period);
+    const counts = s => state.period === "month" ? s.monthCounts : s.counts;
+    const unit = state.period === "month" ? "retrieval months" : "retrieval weeks";
     const visible = current.rows.reduce((sum, row) => sum + (row.claim_count ?? 0), 0);
     const withheld = current.rows.filter(row => row.claim_count === null).length;
     const total = !visible && withheld ? "Withheld" : `${withheld ? "≥ " : ""}${visible.toLocaleString("en-US")}`;
     const output = exportSelection(dataset, current);
-    $("#results").innerHTML = `<section class="metrics"><div><span>Visible claims</span><strong data-testid="metric-total">${total}</strong><span>Not confirmed breaches</span></div><div><span>Sectors selected</span><strong>${current.sectors.length}</strong><span>${current.weeks.length} retrieval weeks</span></div><div><span>Withheld cells</span><strong>${withheld}</strong><span>Never interpreted as zero</span></div></section>` +
+    $("#results").innerHTML = `<section class="metrics"><div><span>Visible claims</span><strong data-testid="metric-total">${total}</strong><span>Not confirmed breaches</span></div><div><span>Sectors selected</span><strong>${current.sectors.length}</strong><span>${current.periods.length} ${unit}</span></div><div><span>Withheld cells</span><strong>${withheld}</strong><span>Never interpreted as zero</span></div></section>` +
       (datasetMode ? `<section class="panel json-panel"><div class="panel-heading"><h2>Selected aggregate export</h2></div><pre tabindex="0" data-testid="json-preview" aria-label="Selected aggregate JSON">${escape(JSON.stringify(output, null, 2))}</pre></section>` :
-      current.sectors.length ? `<section class="panel"><div class="table-scroll"><table class="sectors"><caption class="sr-only">Sector claims by retrieval week</caption><thead><tr><th scope="col">Sector</th>${current.weeks.map(w => `<th scope="col">${w}</th>`).join("")}</tr></thead><tbody>${current.sectors.map(s =>
-        `<tr><th scope="row"><a href="#/sector/${s.id}">${escape(s.name)}</a></th>${current.weeks.map(w => `<td>${count(s.counts[dataset.weeks.indexOf(w)])}</td>`).join("")}</tr>`).join("")}</tbody></table></div><p class="table-footnote">Counts are claims from partial coverage. Null cells remain withheld in every export.</p></section>` :
+      current.sectors.length ? `<section class="panel"><div class="table-scroll"><table class="sectors"><caption class="sr-only">Sector claims by ${unit.slice(0, -1)}</caption><thead><tr><th scope="col">Sector</th>${current.periods.map(w => `<th scope="col">${periodLabel(state.period, w)}</th>`).join("")}</tr></thead><tbody>${current.sectors.map(s =>
+        `<tr><th scope="row"><a href="#/sector/${s.id}">${escape(s.name)}</a></th>${current.periods.map(w => `<td>${count(counts(s)[periods.indexOf(w)])}</td>`).join("")}</tr>`).join("")}</tbody></table></div><p class="table-footnote">Counts are claims from partial coverage. Null cells remain withheld in every export.</p></section>` :
       '<section class="empty"><h2>No matching sectors</h2><p>Try a broader search or reset the filters. No zero-valued observations have been inserted.</p></section>');
   }
+  $("#period")?.addEventListener("change", event => {
+    const period = event.target.value;
+    Object.assign(state, {period, end: (period === "month" ? dataset.months : dataset.weeks).length - 1,
+      length: 12});
+    research(datasetMode, sectorCode);
+  });
   $("#search").addEventListener("input", event => { state.query = event.target.value; update(); });
   $("#week").addEventListener("change", event => { state.end = Number(event.target.value); update(); });
   $("#window").addEventListener("change", event => { state.length = Number(event.target.value); update(); });
   $("#sort").addEventListener("change", event => { state.sort = event.target.value; update(); });
   $("#reset").addEventListener("click", () => {
-    Object.assign(state, {query: "", sort: "name", end: dataset.weeks.length - 1, length: 12}); render();
+    Object.assign(state, {query: "", sort: "name", ...initial(dataset)}); render();
   });
   $("#export").addEventListener("click", () => {
     const blob = new Blob([JSON.stringify(exportSelection(dataset, current), null, 2) + "\n"], {type: "application/json"});

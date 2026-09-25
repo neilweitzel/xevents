@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {CODES, SCHEMA, ACTIVITY_SCHEMA, RUN_SCHEMA, MAX_BYTES, parseAggregate, loadAggregate, selection, exportSelection, activitySummary} from "../aggregate.mjs";
+import {CODES, SCHEMA, ACTIVITY_SCHEMA, RUN_SCHEMA, ROLLUP_SCHEMA, MAX_BYTES, parseAggregate, loadAggregate, selection, exportSelection, activitySummary} from "../aggregate.mjs";
 
 export const NOW = Date.parse("2026-09-23T15:00:00Z");
 export const header = () => ({
@@ -131,4 +131,62 @@ test("v3 carries a whole-second run completion that is never before its capture"
     assessed_claims_floor: 25, evaluated_at: "2026-09-23T14:00:01Z"}), NOW));
   assert.equal(activitySummary(parseAggregate(jsonl({...header(), schema_version: ACTIVITY_SCHEMA,
     assessed_claims_floor: 25}), NOW)).lastRun, null);
+});
+test("v4 monthly rollups nest weeks and never expose a withheld weekly cell", () => {
+  const h = {...header(), schema_version: ROLLUP_SCHEMA, assessed_claims_floor: 50,
+    generated_at: "2026-10-06T14:00:00Z", evaluated_at: "2026-10-06T14:00:01Z"};
+  const now = Date.parse("2026-10-06T15:00:00Z");
+  const weeks = ["2026-09-21", "2026-09-28", "2026-10-05"];
+  // Weekly: 31-33 = 7, 7, 7; 62 = withheld x3 (totals 2+3 -> month 5); 54 = 6, withheld(2), -.
+  const weekly = {"31-33": [7, 7, 7], "62": [null, null, null], "54": [6, null, null]};
+  const w = weeks.flatMap(week_start => CODES.map(sector => ({sector, week_start,
+    claim_count: weekly[sector]?.[weeks.indexOf(week_start)] ?? null})));
+  const monthly = {"2026-09": {"31-33": 14, "62": 5, "54": null}, "2026-10": {"31-33": 7}};
+  const m = ["2026-09", "2026-10"].flatMap(month => CODES.map(sector => ({sector, month,
+    claim_count: monthly[month][sector] ?? null})));
+  const d = parseAggregate(jsonl(h, [...w, ...m]), now);
+  assert.deepEqual(d.months, ["2026-09", "2026-10"]);
+  assert.deepEqual(d.sectors.find(s => s.id === "31-33").monthCounts, [14, 7]);
+  assert.deepEqual(d.sectors.find(s => s.id === "62").monthCounts, [5, null]);
+  assert.equal(activitySummary(d).published, 27);
+  assert.equal(activitySummary(d).cells, 4);
+  assert.equal(activitySummary(d).monthCells, 3);
+  const s = selection(d, "", 1, 3, "latest-desc", "month");
+  assert.deepEqual(s.periods, ["2026-09", "2026-10"]);
+  assert.equal(s.sectors[0].id, "31-33");
+  const e = exportSelection(d, s);
+  assert.equal(e.period, "month"); assert.equal(e.contract_version, ROLLUP_SCHEMA);
+  assert.ok(e.rows.every(r => "month" in r));
+  assert.equal(exportSelection(d, selection(d, "", 2)).period, undefined);
+  assert.throws(() => selection(d, "", 1, 4, "name", "month"));
+  assert.throws(() => selection(d, "", 2, 3, "name", "month"));
+  assert.throws(() => selection(d, "", 0, 1, "name", "year"));
+  assert.throws(() => exportSelection(d, {period: "month", rows: d.rows.slice(0, 1)}));
+  const bad = (month, sector, claim_count) => m.map(r => r.month === month && r.sector === sector ?
+    {...r, claim_count} : r);
+  // A month that would reveal a withheld week (6 shown + 2 hidden = 8 exposes 2).
+  assert.throws(() => parseAggregate(jsonl(h, [...w, ...bad("2026-09", "54", 8)]), now));
+  // A fully published month must equal its weeks and may not be withheld.
+  assert.throws(() => parseAggregate(jsonl(h, [...w, ...bad("2026-09", "31-33", 15)]), now));
+  assert.throws(() => parseAggregate(jsonl(h, [...w, ...bad("2026-09", "31-33", null)]), now));
+  assert.throws(() => parseAggregate(jsonl(h, [...w, ...bad("2026-09", "62", 4)]), now));
+  // Months must cover exactly the weeks' months, rectangular and closed.
+  assert.throws(() => parseAggregate(jsonl(h, w), now));
+  assert.throws(() => parseAggregate(jsonl(h, [...w, ...m.filter(r => r.month === "2026-09")]), now));
+  assert.throws(() => parseAggregate(jsonl(h, [...w, ...m, {sector: "11", month: "2026-11", claim_count: null}]), now));
+  assert.throws(() => parseAggregate(jsonl(h, [...w, ...m.slice(1)]), now));
+  assert.throws(() => parseAggregate(jsonl(h, [...w, ...m, m[0]]), now));
+  for (const month of ["2026-13", "2026-9", "2026-09-01", 202609])
+    assert.throws(() => parseAggregate(jsonl(h, [...w, ...m.map((r, i) => i ? r : {...r, month})]), now));
+  assert.throws(() => parseAggregate(jsonl(h, [...w, ...m.map((r, i) => i ? r :
+    {...r, week_start: "2026-09-21"})]), now));
+  // Month sums are also bounded by the assessment band.
+  assert.throws(() => parseAggregate(jsonl({...h, assessed_claims_floor: 0}, [...w, ...m]), now));
+  // Earlier schemas may not carry month rows; v4 without evaluated_at is refused.
+  assert.throws(() => parseAggregate(jsonl({...h, schema_version: RUN_SCHEMA}, [...w, ...m]), now));
+  const missing = {...h}; delete missing.evaluated_at;
+  assert.throws(() => parseAggregate(jsonl(missing, [...w, ...m]), now));
+  const empty = parseAggregate(jsonl(h, []), now);
+  assert.deepEqual(empty.months, []); assert.equal(activitySummary(empty).monthCells, null);
+  assert.equal(activitySummary(parseAggregate(jsonl(), NOW)).monthCells, null);
 });

@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import {createRequire} from "node:module";
 import {chromium} from "playwright";
-import {CODES, SCHEMA, ACTIVITY_SCHEMA, RUN_SCHEMA} from "../aggregate.mjs";
+import {CODES, SCHEMA, ACTIVITY_SCHEMA, RUN_SCHEMA, ROLLUP_SCHEMA} from "../aggregate.mjs";
 const require = createRequire(import.meta.url);
 const base = process.argv[2] || "http://127.0.0.1:3000";
 const browser = await chromium.launch({headless: true});
@@ -19,10 +19,17 @@ const fixture = state => {
     privacy_floor: 5, time_basis: "retrieved_at", coverage: "recent_only"};
   if (state !== "legacy") Object.assign(header,
     {schema_version: ACTIVITY_SCHEMA, assessed_claims_floor: state === "band" ? 25 : 0});
-  if (state === "run") Object.assign(header, {schema_version: RUN_SCHEMA,
+  if (state === "run" || state === "rollup") Object.assign(header, {schema_version: RUN_SCHEMA,
     evaluated_at: generated.toISOString().replace(".000Z", "Z")});
+  if (state === "rollup") Object.assign(header, {schema_version: ROLLUP_SCHEMA, assessed_claims_floor: 25});
   const rows = state === "empty" ? [] : weeks.flatMap(week_start => CODES.map(sector =>
     ({sector, week_start, claim_count: sector === "31-33" && state !== "withheld" ? 7 : null})));
+  if (state === "rollup") {
+    // Weekly manufacturing cells are published, so each month equals its weeks.
+    const months = [...new Set(weeks.map(w => w.slice(0, 7)))];
+    rows.push(...months.flatMap(month => CODES.map(sector => ({sector, month, claim_count:
+      sector === "31-33" ? 7 * weeks.filter(w => w.startsWith(month)).length : null}))));
+  }
   return [header, ...rows].map(canonical).join("\n") + "\n";
 };
 const context = await browser.newContext({viewport: {width: 1440, height: 1000}, reducedMotion: "reduce"});
@@ -74,14 +81,27 @@ try {
     ["invalid", "The dataset could not be loaded"], ["empty", "No released aggregate cells"],
     ["withheld", "Sector exposure"], ["stale", "Sector exposure"],
     ["legacy", "Sector exposure"], ["band", "Sector exposure"], ["run", "Sector exposure"],
+    ["rollup", "Sector exposure"],
   ]) {
     mode = state; await visit(expected);
     if (state === "withheld") assert.equal(await page.getByTestId("metric-total").innerText(), "Withheld");
     if (state === "stale") await page.getByText("Stale dataset.", {exact: true}).waitFor();
     if (state === "legacy") assert.equal(await page.getByTestId("activity-assessed").innerText(), "Not reported");
     if (state === "band") assert.equal(await page.getByTestId("activity-assessed").innerText(), "25–49");
-    if (state === "run") assert.match(await page.getByTestId("last-run").innerText(), / UTC$/);
-    if (state !== "run" && !["blocked", "failed", "invalid"].includes(state))
+    if (state === "run" || state === "rollup") assert.match(await page.getByTestId("last-run").innerText(), / UTC$/);
+    if (state === "rollup") {
+      assert.equal(await page.getByTestId("select-period").inputValue(), "month");
+      assert.equal(await page.getByTestId("metric-total").innerText(), "≥ 14");
+      assert.match(await page.locator("table.sectors thead").innerText(), /[A-Z][a-z]{2} \d{4}/);
+      assert.equal(await page.getByTestId("activity-month-cells").count(), 1);
+      await page.getByTestId("select-period").selectOption("week");
+      assert.match(await page.locator("table.sectors thead").innerText(), /\d{4}-\d{2}-\d{2}/);
+      assert.equal(await page.getByTestId("select-window").inputValue(), "12");
+      await page.getByTestId("select-period").selectOption("month");
+      await page.getByTestId("select-window").selectOption("3");
+    } else if (!["blocked", "failed", "invalid"].includes(state))
+      assert.equal(await page.getByTestId("select-period").count(), 0);
+    if (!["run", "rollup"].includes(state) && !["blocked", "failed", "invalid"].includes(state))
       assert.equal(await page.getByTestId("last-run").count(), 0);
     if (state === "empty" || state === "withheld") {
       assert.equal(await page.getByTestId("activity-assessed").innerText(), "Fewer than 25");
@@ -94,7 +114,7 @@ try {
       assert.equal(await page.getByTestId("button-export").count(), 0);
   }
   let scans = 0;
-  for (const state of ["waiting", "ready", "stale", "invalid", "empty"]) {
+  for (const state of ["waiting", "ready", "stale", "invalid", "empty", "rollup"]) {
     mode = state;
     for (const width of [1440, 375, 320]) {
       await page.setViewportSize({width, height: 1000});

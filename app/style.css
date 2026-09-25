@@ -127,4 +127,6 @@ footer{display:flex;justify-content:space-between;gap:var(--s4);padding-block:va
 .activity-note{font-size:var(--text-xs);line-height:1.7;margin-bottom:var(--s5)}
 .activity-metrics strong{font-size:var(--text-xl);overflow-wrap:anywhere}
 .activity-metrics span{font-size:var(--text-xs);line-height:1.5}
+@media(min-width:1100px){.activity-metrics.four{grid-template-columns:repeat(4,1fr);gap:var(--s6)}.activity-metrics.four>div+div{padding-left:var(--s6)}}
+@media(min-width:761px) and (max-width:1099px){.activity-metrics.four{grid-template-columns:1fr 1fr}.activity-metrics.four>div:nth-child(3){border-left:0;padding-left:0}}
 @media(max-width:760px){.activity-metrics{grid-template-columns:1fr}.activity-metrics>div+div,.activity-metrics>div:last-child{grid-column:auto;flex-direction:column;align-items:flex-start;border:0;border-top:1px solid var(--border);padding:var(--s3) 0 0;gap:var(--s1)}.activity-metrics>div:last-child>span:last-child{margin-left:0;text-align:left}.activity-metrics>div:last-child strong{font-size:var(--text-xl)}}

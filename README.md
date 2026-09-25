@@ -2,8 +2,8 @@
 
 **Study ransomware claims without amplifying the leak.**
 
-xevents turns observed ransomware listing claims into name-free, weekly sector
-aggregates for security practitioners and researchers. It preserves the evidence
+xevents turns observed ransomware listing claims into name-free, weekly and
+monthly sector aggregates for security practitioners and researchers. It preserves the evidence
 privately and keeps uncertainty visible in the public results. A listing is a
 claim, not confirmation that a breach occurred.
 
@@ -56,6 +56,8 @@ The app explains work in progress using the latest verified snapshot:
 - **Claims in published counts:** the sum of numeric sector-week cells, not
   a total of all private claims or confirmed incidents.
 - **Published sector-week counts:** how many cells contain publishable numbers.
+- **Published sector-month counts:** how many monthly rollup cells contain
+  publishable numbers. Rollups are never added to the published total.
 - **Latest source capture:** when the source was last successfully captured
   for this snapshot, not when the page happened to deploy.
 
@@ -68,7 +70,8 @@ snapshot measures, not a live operational-health dashboard or an approval rate.
 - **Claims, not confirmed incidents:** the initial source is RansomLook.
   Repeated observations do not provide independent corroboration.
 - **Retrieval time, not attack time:** reporting weeks start on Monday in UTC,
-  based on when xevents first retrieved a claim.
+  based on when xevents first retrieved a claim. A month holds the weeks that
+  begin in it.
 - **Partial coverage:** the initial collector samples a bounded recent-record
   window. It cannot establish how many claims were missed or whether a listing
   was later removed.
