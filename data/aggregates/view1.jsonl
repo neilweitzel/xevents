@@ -1,4 +1,4 @@
-{"assessed_claims_floor":100,"coverage":"recent_only","evaluated_at":"2026-09-25T21:52:53Z","file_purpose":"sector_aggregate","generated_at":"2026-09-25T18:26:17.277761Z","privacy_floor":5,"release_state":"released","schema_version":"xevents-view1-display/v4","time_basis":"retrieved_at"}
+{"assessed_claims_floor":100,"coverage":"recent_only","evaluated_at":"2026-09-25T22:26:03Z","file_purpose":"sector_aggregate","generated_at":"2026-09-25T18:26:17.277761Z","privacy_floor":5,"release_state":"released","schema_version":"xevents-view1-display/v4","time_basis":"retrieved_at"}
 {"claim_count":null,"sector":"11","week_start":"2026-09-21"}
 {"claim_count":null,"sector":"21","week_start":"2026-09-21"}
 {"claim_count":null,"sector":"22","week_start":"2026-09-21"}
