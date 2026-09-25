@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import {createRequire} from "node:module";
 import {chromium} from "playwright";
-import {CODES, SCHEMA, ACTIVITY_SCHEMA} from "../aggregate.mjs";
+import {CODES, SCHEMA, ACTIVITY_SCHEMA, RUN_SCHEMA} from "../aggregate.mjs";
 const require = createRequire(import.meta.url);
 const base = process.argv[2] || "http://127.0.0.1:3000";
 const browser = await chromium.launch({headless: true});
@@ -19,6 +19,8 @@ const fixture = state => {
     privacy_floor: 5, time_basis: "retrieved_at", coverage: "recent_only"};
   if (state !== "legacy") Object.assign(header,
     {schema_version: ACTIVITY_SCHEMA, assessed_claims_floor: state === "band" ? 25 : 0});
+  if (state === "run") Object.assign(header, {schema_version: RUN_SCHEMA,
+    evaluated_at: generated.toISOString().replace(".000Z", "Z")});
   const rows = state === "empty" ? [] : weeks.flatMap(week_start => CODES.map(sector =>
     ({sector, week_start, claim_count: sector === "31-33" && state !== "withheld" ? 7 : null})));
   return [header, ...rows].map(canonical).join("\n") + "\n";
@@ -71,13 +73,16 @@ try {
     ["blocked", "The dataset could not be loaded"], ["failed", "The dataset could not be loaded"],
     ["invalid", "The dataset could not be loaded"], ["empty", "No released aggregate cells"],
     ["withheld", "Sector exposure"], ["stale", "Sector exposure"],
-    ["legacy", "Sector exposure"], ["band", "Sector exposure"],
+    ["legacy", "Sector exposure"], ["band", "Sector exposure"], ["run", "Sector exposure"],
   ]) {
     mode = state; await visit(expected);
     if (state === "withheld") assert.equal(await page.getByTestId("metric-total").innerText(), "Withheld");
     if (state === "stale") await page.getByText("Stale dataset.", {exact: true}).waitFor();
     if (state === "legacy") assert.equal(await page.getByTestId("activity-assessed").innerText(), "Not reported");
     if (state === "band") assert.equal(await page.getByTestId("activity-assessed").innerText(), "25–49");
+    if (state === "run") assert.match(await page.getByTestId("accurate-as-of").innerText(), / UTC$/);
+    if (state !== "run" && !["blocked", "failed", "invalid"].includes(state))
+      assert.equal(await page.getByTestId("accurate-as-of").count(), 0);
     if (state === "empty" || state === "withheld") {
       assert.equal(await page.getByTestId("activity-assessed").innerText(), "Fewer than 25");
       assert.equal(await page.getByTestId("activity-published").innerText(), "0");

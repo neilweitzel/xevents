@@ -1,6 +1,7 @@
 /** Closed RC display reader. Not a signing verifier or publication authority. */
 export const SCHEMA = "xevents-view1-display/v1";
 export const ACTIVITY_SCHEMA = "xevents-view1-display/v2";
+export const RUN_SCHEMA = "xevents-view1-display/v3";
 export const MAX_BYTES = 1024 * 1024;
 export const LABELS = Object.freeze({
   "11": "Agriculture, forestry and fishing", "21": "Mining and extraction",
@@ -50,11 +51,13 @@ export function parseAggregate(text, now = Date.now()) {
     return value;
   });
   const header = values[0], rows = values.slice(1);
-  const activity = header?.schema_version === ACTIVITY_SCHEMA;
+  const run = header?.schema_version === RUN_SCHEMA;
+  const activity = run || header?.schema_version === ACTIVITY_SCHEMA;
   keys(header, ["file_purpose", "schema_version", "release_state", "generated_at",
-    "coverage", "time_basis", "privacy_floor", ...(activity ? ["assessed_claims_floor"] : [])]);
+    "coverage", "time_basis", "privacy_floor", ...(activity ? ["assessed_claims_floor"] : []),
+    ...(run ? ["evaluated_at"] : [])]);
   require(header.file_purpose === "sector_aggregate" &&
-    [SCHEMA, ACTIVITY_SCHEMA].includes(header.schema_version) &&
+    [SCHEMA, ACTIVITY_SCHEMA, RUN_SCHEMA].includes(header.schema_version) &&
     header.release_state === "released" && header.coverage === "recent_only" &&
     header.time_basis === "retrieved_at" && header.privacy_floor === 5);
   if (activity) require(Number.isSafeInteger(header.assessed_claims_floor) &&
@@ -62,6 +65,13 @@ export function parseAggregate(text, now = Date.now()) {
     header.assessed_claims_floor % 25 === 0);
   const generated = clock(header.generated_at);
   require(generated <= now + 5 * 60000);
+  if (run) {
+    // Whole-second completion of the release run; never earlier than its capture.
+    require(typeof header.evaluated_at === "string" &&
+      /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/.test(header.evaluated_at));
+    const evaluated = clock(header.evaluated_at);
+    require(evaluated >= generated && evaluated <= now + 5 * 60000);
+  }
   const seen = new Set(), weeks = new Set();
   for (const row of rows) {
     keys(row, ["sector", "week_start", "claim_count"]);
@@ -95,7 +105,8 @@ export function activitySummary(dataset) {
       `${floor.toLocaleString("en-US")}–${(floor + 24).toLocaleString("en-US")}`,
     published: dataset.rows.reduce((n, row) => n + (row.claim_count ?? 0), 0),
     cells: dataset.rows.filter(row => row.claim_count !== null).length,
-    captured: dataset.header.generated_at, stale: dataset.stale,
+    captured: dataset.header.generated_at, accurate: dataset.header.evaluated_at ?? null,
+    stale: dataset.stale,
   });
 }
 export async function loadAggregate(fetcher = fetch, now = Date.now()) {

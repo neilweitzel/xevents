@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {CODES, SCHEMA, ACTIVITY_SCHEMA, MAX_BYTES, parseAggregate, loadAggregate, selection, exportSelection, activitySummary} from "../aggregate.mjs";
+import {CODES, SCHEMA, ACTIVITY_SCHEMA, RUN_SCHEMA, MAX_BYTES, parseAggregate, loadAggregate, selection, exportSelection, activitySummary} from "../aggregate.mjs";
 
 export const NOW = Date.parse("2026-09-23T15:00:00Z");
 export const header = () => ({
@@ -106,4 +106,29 @@ test("missing is waiting; corrupt, private drafts, large and failed responses ar
     assert.equal((await loadAggregate(async () => new Response(body), NOW)).state, "unavailable");
   assert.equal((await loadAggregate(async () => { throw new Error("network"); }, NOW)).state, "unavailable");
   assert.equal((await loadAggregate(async () => new Response("{}", {status: 500}), NOW)).state, "unavailable");
+});
+test("v3 carries a whole-second run completion that is never before its capture", () => {
+  const v3 = (extra = {}) => ({...header(), schema_version: RUN_SCHEMA, assessed_claims_floor: 25,
+    generated_at: "2026-09-23T14:00:00.672575Z", evaluated_at: "2026-09-23T14:00:01Z", ...extra});
+  const d = parseAggregate(jsonl(v3()), NOW);
+  assert.equal(activitySummary(d).accurate, "2026-09-23T14:00:01Z");
+  assert.equal(activitySummary(d).captured, "2026-09-23T14:00:00.672575Z");
+  assert.equal(activitySummary(d).assessed, "25–49");
+  assert.equal(exportSelection(d, selection(d, "", 1)).contract_version, RUN_SCHEMA);
+  // A guarded run: capture unchanged, completion hours later.
+  assert.equal(activitySummary(parseAggregate(jsonl(v3({evaluated_at: "2026-09-23T14:59:00Z"})), NOW)).accurate,
+    "2026-09-23T14:59:00Z");
+  // Equal to a whole-second capture is accepted.
+  parseAggregate(jsonl(v3({generated_at: "2026-09-23T14:00:01Z"})), NOW);
+  for (const evaluated_at of ["2026-09-23T14:00:00Z", "2026-09-23T13:00:00Z", "2026-09-23T15:06:00Z",
+    "2026-09-23T14:00:01.5Z", "2026-02-30T14:00:01Z", "bad", 1790000000, null])
+    assert.throws(() => parseAggregate(jsonl(v3({evaluated_at})), NOW));
+  const missing = v3(); delete missing.evaluated_at;
+  assert.throws(() => parseAggregate(jsonl(missing), NOW));
+  const unbanded = v3(); delete unbanded.assessed_claims_floor;
+  assert.throws(() => parseAggregate(jsonl(unbanded), NOW));
+  assert.throws(() => parseAggregate(jsonl({...header(), schema_version: ACTIVITY_SCHEMA,
+    assessed_claims_floor: 25, evaluated_at: "2026-09-23T14:00:01Z"}), NOW));
+  assert.equal(activitySummary(parseAggregate(jsonl({...header(), schema_version: ACTIVITY_SCHEMA,
+    assessed_claims_floor: 25}), NOW)).accurate, null);
 });
