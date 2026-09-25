@@ -22,7 +22,7 @@ test("closed rectangular dataset roundtrips with nulls and fixed sector labels",
 test("activity bands are strict, compatible and never pretend missing data is zero", () => {
   assert.equal(activitySummary(null), null);
   assert.equal(activitySummary(parseAggregate(jsonl(), NOW)).assessed, "Not reported");
-  for (const [floor, label] of [[0, "Fewer than 25"], [25, "25–49"], [50, "50–74"], [10000, "10,000–10,024"]]) {
+  for (const [floor, label] of [[0, "Fewer than 25"], [25, "25–49"], [50, "50–74"], [10000, "10,000–10,024"], [1000000, "1,000,000–1,000,024"]]) {
     const d = parseAggregate(jsonl({...header(), schema_version: ACTIVITY_SCHEMA,
       assessed_claims_floor: floor}), NOW);
     assert.equal(activitySummary(d).assessed, label);
@@ -30,7 +30,7 @@ test("activity bands are strict, compatible and never pretend missing data is ze
     assert.equal(activitySummary(d).cells, 2);
     assert.equal(exportSelection(d, selection(d, "", 1)).contract_version, ACTIVITY_SCHEMA);
   }
-  for (const value of [-25, 1, 24, 26, 25.1, 10025, true, "25", null])
+  for (const value of [-25, 1, 24, 26, 25.1, 1000025, true, "25", null])
     assert.throws(() => parseAggregate(jsonl({...header(), schema_version: ACTIVITY_SCHEMA,
       assessed_claims_floor: value}), NOW));
   assert.throws(() => parseAggregate(jsonl({...header(), schema_version: ACTIVITY_SCHEMA}), NOW));

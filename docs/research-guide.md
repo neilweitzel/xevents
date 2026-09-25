@@ -17,6 +17,11 @@ The initial collector wakes every two hours but enforces at least six hours
 between successful source captures. Each capture requests up to 100 recent
 records, about two to three days of source activity, so a delayed run does not
 lose listings (see [ADR 0027](adr/0027-wider-recent-intake-window.md)).
+Only listing metadata is collected; screenshots are not
+([ADR 0028](adr/0028-no-screenshot-collection.md)). Detailed private records
+are kept for at least twelve weeks; older months are frozen as their published
+counts and cannot be recalculated
+([ADR 0029](adr/0029-rolling-private-retention.md)).
 That is a sampling policy, not a promise of complete historical or real-time
 coverage. Execution delays and upstream failures can make coverage less complete.
 

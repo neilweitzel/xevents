@@ -68,7 +68,7 @@ export function parseAggregate(text, now = Date.now()) {
     header.release_state === "released" && header.coverage === "recent_only" &&
     header.time_basis === "retrieved_at" && header.privacy_floor === 5);
   if (activity) require(Number.isSafeInteger(header.assessed_claims_floor) &&
-    header.assessed_claims_floor >= 0 && header.assessed_claims_floor <= 10000 &&
+    header.assessed_claims_floor >= 0 && header.assessed_claims_floor <= 1000000 &&
     header.assessed_claims_floor % 25 === 0);
   const generated = clock(header.generated_at);
   require(generated <= now + 5 * 60000);

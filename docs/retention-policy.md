@@ -1,5 +1,12 @@
 # xevents — Retention Policy
 
+> **Superseded for private records by [ADR 0029](adr/0029-rolling-private-retention.md)**
+> (2026-09-25): detailed private records are kept for at least twelve weeks,
+> then each whole month is frozen as its published counts and its records are
+> removed from the working tree. Screenshots are no longer collected
+> ([ADR 0028](adr/0028-no-screenshot-collection.md)). The text below is the
+> earlier draft, kept for history.
+
 **Status:** draft, 2026-09-21. Rewritten for the static-first, two-repo
 architecture (open-decisions.md #11, ADR 0009); supersedes the 2026-09-20
 version, which described database servers and object storage this project
