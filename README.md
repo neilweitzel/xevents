@@ -137,3 +137,17 @@ RansomLook identifies its website, API and datasets as
 [CC BY 4.0](https://www.ransomlook.io/about). xevents transforms observations into
 restricted aggregate outputs; its classifications and limitations are its own.
 Source licensing does not make sensitive personal information safe to publish.
+
+Every source's terms, the reading xevents takes of them, and what that source
+may do (publish, corroborate, enrich or nothing) are recorded in
+[`config/source-registry.json`](config/source-registry.json), with verbatim
+terms in [`research/licence-research-2026-09.md`](research/licence-research-2026-09.md)
+and the policy in [ADR 0030](docs/adr/0030-source-licence-registry.md). Terms are
+read as written. Where a publisher states no licence, that is recorded as
+silence, not as a grant.
+
+**In short:** xevents follows every source licence as we read it, and takes
+real care to do so. Mistakes can still happen. If you think we have read your
+terms wrong, [report a bug](https://github.com/neilweitzel/xevents/issues/new)
+or open a pull request and it will be corrected immediately. Sources are removed
+or restricted on request.
