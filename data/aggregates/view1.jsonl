@@ -1,4 +1,4 @@
-{"assessed_claims_floor":375,"coverage":"recent_only","evaluated_at":"2026-10-03T00:02:03Z","file_purpose":"sector_aggregate","generated_at":"2026-10-02T19:35:10.218275Z","privacy_floor":5,"release_state":"released","schema_version":"xevents-view1-display/v4","time_basis":"retrieved_at"}
+{"assessed_claims_floor":375,"coverage":"recent_only","evaluated_at":"2026-10-03T05:50:46Z","file_purpose":"sector_aggregate","generated_at":"2026-10-03T05:50:42.887396Z","privacy_floor":5,"release_state":"released","schema_version":"xevents-view1-display/v4","time_basis":"retrieved_at"}
 {"claim_count":null,"sector":"11","week_start":"2026-09-21"}
 {"claim_count":null,"sector":"21","week_start":"2026-09-21"}
 {"claim_count":null,"sector":"22","week_start":"2026-09-21"}
@@ -40,7 +40,7 @@
 {"claim_count":null,"sector":"72","week_start":"2026-09-28"}
 {"claim_count":null,"sector":"81","week_start":"2026-09-28"}
 {"claim_count":null,"sector":"92","week_start":"2026-09-28"}
-{"claim_count":107,"sector":"unclassified","week_start":"2026-09-28"}
+{"claim_count":111,"sector":"unclassified","week_start":"2026-09-28"}
 {"claim_count":null,"month":"2026-09","sector":"11"}
 {"claim_count":null,"month":"2026-09","sector":"21"}
 {"claim_count":null,"month":"2026-09","sector":"22"}
@@ -61,4 +61,4 @@
 {"claim_count":null,"month":"2026-09","sector":"72"}
 {"claim_count":null,"month":"2026-09","sector":"81"}
 {"claim_count":null,"month":"2026-09","sector":"92"}
-{"claim_count":186,"month":"2026-09","sector":"unclassified"}
+{"claim_count":190,"month":"2026-09","sector":"unclassified"}
