@@ -18,7 +18,9 @@ between successful source captures. Each capture requests up to 100 recent
 records, about two to three days of source activity, so a delayed run does not
 lose listings (see [ADR 0027](adr/0027-wider-recent-intake-window.md)).
 Only listing metadata is collected; screenshots are not
-([ADR 0028](adr/0028-no-screenshot-collection.md)). Detailed private records
+([ADR 0028](adr/0028-no-screenshot-collection.md)), and a source adding or
+changing a screenshot reference does not count as a changed claim
+([ADR 0031](adr/0031-screenshot-reference-not-part-of-claim.md)). Detailed private records
 are kept for at least twelve weeks; older months are frozen as their published
 counts and cannot be recalculated
 ([ADR 0029](adr/0029-rolling-private-retention.md)).
