@@ -1,2 +1,2 @@
 {"file_purpose":"evidence_manifest","schema_version":"rc-export-binding/v1"}
-{"evidence_binding":"verified_private_chain","path":"data/aggregates/view1.jsonl","sha256":"68673f4f9c79e51bb567197114c598bebf6455e71c30d70495d04ae68fe45648"}
+{"evidence_binding":"verified_private_chain","path":"data/aggregates/view1.jsonl","sha256":"77ce94f92a93dcf21773019546cfd899f760c1f188e0a0b5b78941f874a5eec5"}
