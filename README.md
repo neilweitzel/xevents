@@ -38,8 +38,12 @@ unattended release integration is approved for research release-candidate
 burn-in; it is not yet a graduated production service. End-to-end activation
 has completed successfully, including automatic publication and verified Pages
 deployment. The collector is configured to wake every two hours, with at least
-six hours between successful source captures. A scheduled wake-up is not
-necessarily a new source capture.
+six hours between successful source captures of up to 200 recent records, and
+publishes at most one verified release per UTC day
+([ADR 0036](docs/adr/0036-wide-window-and-headroom-tracking.md),
+[ADR 0037](docs/adr/0037-one-public-release-per-utc-day.md)). A scheduled
+wake-up is not necessarily a new source capture, and a new capture is not
+necessarily a new public release.
 
 The app loads published research data by default. If no dataset has been
 published, it says so instead of substituting sample numbers. An explicitly

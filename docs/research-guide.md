@@ -13,17 +13,24 @@ rollups of the same weeks. It uses exact
 normalized actor/subject grouping, not fuzzy identity resolution. A repeated
 observation of that grouped claim is not another independent source.
 
-The collector is scheduled every two hours but enforces at least eight hours
-between successful source captures
-([ADR 0035](adr/0035-research-cadence-and-capture-only-release.md)).
-Earlier captures retain their original four- or six-hour policies.
-Each capture requests up to 100 recent records to provide overlap across
+The collector is scheduled every two hours as a retry net but enforces at least
+six hours between successful source captures
+([ADR 0036](adr/0036-wide-window-and-headroom-tracking.md)), so it reads the
+source at most three times a day and, given GitHub's measured start rate,
+usually two to three. Earlier captures retain their original eight-, four- or
+six-hour policies ([ADR 0035](adr/0035-research-cadence-and-capture-only-release.md)).
+Each capture requests up to 200 recent records to provide overlap across
 delays, not a guarantee against missed listings
-(see [ADR 0027](adr/0027-wider-recent-intake-window.md)).
-Cadence-limited runs keep a private receipt but publish nothing. A complete
-capture can publish even if it contains only duplicates. A partial capture or
-failed release preserves the previous public snapshot; recovery and corrections
-wait for the next complete capture.
+(see [ADR 0027](adr/0027-wider-recent-intake-window.md) and ADR 0036, which
+also records how window headroom is tracked privately).
+Cadence-limited runs keep a private receipt but publish nothing. At most one
+verified public release is prepared per UTC day, on the first complete capture
+of that day; later complete captures that day are kept privately and deferred
+([ADR 0037](adr/0037-one-public-release-per-utc-day.md)). A complete capture
+can publish even if it contains only duplicates. A partial capture or failed
+release preserves the previous public snapshot; a failed daily attempt is
+retried on the next complete capture that day, and corrections wait for the
+next published release.
 Only listing metadata is collected; screenshots are not
 ([ADR 0028](adr/0028-no-screenshot-collection.md)), and a source adding or
 changing a screenshot reference does not count as a changed claim
