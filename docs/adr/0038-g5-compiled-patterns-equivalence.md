@@ -1,8 +1,11 @@
 # ADR 0038: Compile G5 match patterns once per scan, proven equivalent
 
-Status: proposed (pending user redline)
+Status: accepted
 
 Date: 2026-10-10
+
+Approval: operator reviewed this ADR and approved its implementation on
+2026-10-10, and approved it by merging this ADR.
 
 ## Context
 
@@ -44,7 +47,9 @@ A differential test runs the current implementation and the new one on the
 same inputs and requires identical match reports, byte for byte after removing
 the scan timestamp:
 
-- the pinned real private store's release preparation (private CI only);
+- the pinned real private store's release preparation, run offline before
+  merge with the result recorded in the private pull request, because private
+  CI deliberately has no access to source data;
 - the existing G5 fixtures and adversarial corpus;
 - generated cases that stress the change: more than 512 distinct names; the
   same name in many values; names containing regular-expression metacharacters,
@@ -53,8 +58,10 @@ the scan timestamp:
   names; and inputs that reach the match-count limit;
 - a refusing case for every existing refusal code, confirming the same code.
 
-The old implementation is kept in the test suite as the reference for as long
-as the differential test exists. Both suites run in the existing pinned CI.
+The old implementation is kept verbatim as the reference for as long as the
+differential test exists, in its own private suite (`tests/g5_equivalence`) so
+the documentation evidence that pins the existing G5 test set is unchanged.
+Both suites run in the existing pinned private CI.
 
 ## Consequences
 
