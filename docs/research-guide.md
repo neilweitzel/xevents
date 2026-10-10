@@ -13,8 +13,9 @@ rollups of the same weeks. It uses exact
 normalized actor/subject grouping, not fuzzy identity resolution. A repeated
 observation of that grouped claim is not another independent source.
 
-The initial collector wakes every two hours but enforces at least six hours
-between successful source captures. Each capture requests up to 100 recent
+The collector wakes every two hours but enforces at least four hours
+between successful source captures
+([ADR 0033](adr/0033-four-hour-capture-spacing.md); captures before it used six). Each capture requests up to 100 recent
 records, about two to three days of source activity, so a delayed run does not
 lose listings (see [ADR 0027](adr/0027-wider-recent-intake-window.md)).
 Only listing metadata is collected; screenshots are not
@@ -24,6 +25,10 @@ changing a screenshot reference does not count as a changed claim
 are kept for at least twelve weeks; older months are frozen as their published
 counts and cannot be recalculated
 ([ADR 0029](adr/0029-rolling-private-retention.md)).
+RansomLook's discovery times carry no time zone, so they are treated as local
+times in an unknown zone and are never used to place claims in weeks; a listing
+is withheld for its source time only if that time is more than 14 hours after
+retrieval ([ADR 0034](adr/0034-source-time-unknown-zone.md)).
 That is a sampling policy, not a promise of complete historical or real-time
 coverage. Execution delays and upstream failures can make coverage less complete.
 
