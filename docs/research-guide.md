@@ -35,8 +35,13 @@ Only listing metadata is collected; screenshots are not
 ([ADR 0028](adr/0028-no-screenshot-collection.md)), and a source adding or
 changing a screenshot reference does not count as a changed claim
 ([ADR 0031](adr/0031-screenshot-reference-not-part-of-claim.md)). Detailed private records
-are kept for at least twelve weeks; older months are frozen as their published
-counts and cannot be recalculated
+are kept for at least twelve weeks. Eligible weeks are checkpointed with private
+sufficient statistics that preserve weekly and monthly counts and suppression
+([ADR 0043](adr/0043-weekly-private-retention-checkpoints.md)).
+Historical published snapshots remain in private history. Later corrections
+withhold affected frozen weekly and monthly cells rather than revealing a small
+subtraction; exact repeated normalized claims are not counted again.
+Legacy whole-month checkpoints retain their original rules
 ([ADR 0029](adr/0029-rolling-private-retention.md)).
 RansomLook's discovery times carry no time zone, so they are treated as local
 times in an unknown zone and are never used to place claims in weeks; a listing
