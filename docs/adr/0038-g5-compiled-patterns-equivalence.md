@@ -59,8 +59,8 @@ the scan timestamp:
 - a refusing case for every existing refusal code, confirming the same code.
 
 The old implementation is kept verbatim as the reference for as long as the
-differential test exists, in its own private suite (`tests/g5_equivalence`) so
-the documentation evidence that pins the existing G5 test set is unchanged.
+differential test exists, in a separate private G5 equivalence suite, so the
+documentation evidence that pins the existing G5 test set is unchanged.
 Both suites run in the existing pinned private CI.
 
 ## Consequences
