@@ -20,7 +20,7 @@ const fixture = state => {
   if (state !== "legacy") Object.assign(header,
     {schema_version: ACTIVITY_SCHEMA, assessed_claims_floor: state === "band" ? 25 : 0});
   if (state === "run" || state === "rollup") Object.assign(header, {schema_version: RUN_SCHEMA,
-    evaluated_at: generated.toISOString().replace(".000Z", "Z")});
+    evaluated_at: new Date(+generated + 60000).toISOString().replace(".000Z", "Z")});
   if (state === "rollup") Object.assign(header, {schema_version: ROLLUP_SCHEMA, assessed_claims_floor: 25});
   const rows = state === "empty" ? [] : weeks.flatMap(week_start => CODES.map(sector =>
     ({sector, week_start, claim_count: sector === "31-33" && state !== "withheld" ? 7 : null})));
@@ -88,7 +88,13 @@ try {
     if (state === "stale") await page.getByText("Stale dataset.", {exact: true}).waitFor();
     if (state === "legacy") assert.equal(await page.getByTestId("activity-assessed").innerText(), "Not reported");
     if (state === "band") assert.equal(await page.getByTestId("activity-assessed").innerText(), "25–49");
-    if (state === "run" || state === "rollup") assert.match(await page.getByTestId("last-run").innerText(), / UTC$/);
+    if (!["blocked", "failed", "invalid"].includes(state)) {
+      const header = JSON.parse(fixture(state).split("\n")[0]);
+      assert.match(await page.getByTestId("published-capture").innerText(), / UTC$/);
+      assert.equal(await page.getByTestId("published-capture").getAttribute("datetime"), header.generated_at);
+      assert.equal(await page.getByTestId("last-run").count(), 0);
+      assert.equal(await page.getByText("Last run completed", {exact: false}).count(), 0);
+    }
     if (state === "rollup") {
       assert.equal(await page.getByTestId("select-period").inputValue(), "month");
       assert.equal(await page.getByTestId("metric-total").innerText(), "≥ 14");
@@ -101,8 +107,6 @@ try {
       await page.getByTestId("select-window").selectOption("3");
     } else if (!["blocked", "failed", "invalid"].includes(state))
       assert.equal(await page.getByTestId("select-period").count(), 0);
-    if (!["run", "rollup"].includes(state) && !["blocked", "failed", "invalid"].includes(state))
-      assert.equal(await page.getByTestId("last-run").count(), 0);
     if (state === "empty" || state === "withheld") {
       assert.equal(await page.getByTestId("activity-assessed").innerText(), "Fewer than 25");
       assert.equal(await page.getByTestId("activity-published").innerText(), "0");
