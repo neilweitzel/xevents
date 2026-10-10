@@ -47,8 +47,10 @@ see [the RC contract](../docs/adr/0022-unattended-research-rc.md).
   V2 adds only a bounded global `assessed_claims_floor`, displayed in bands of
   25. V1 remains readable with its assessment metric explicitly not reported.
   The activity panel uses the whole snapshot, not selected table rows.
-  V3 adds only the whole-second `evaluated_at`, shown as "Last run completed"
-  (ADR 0024). It is never earlier than the capture.
+  V3 adds only the whole-second `evaluated_at` release-evaluation field
+  (ADR 0024), which is never earlier than the capture.
+  ADR 0035 replaces the old "Last run completed" heartbeat display with
+  "Latest published capture", using `generated_at` for every schema.
   V4 adds a complete sector-month matrix after the weekly matrix (ADR 0026).
   A month holds the weeks whose Monday falls in it. The reader refuses any
   monthly value that would expose a withheld weekly cell. The app defaults to

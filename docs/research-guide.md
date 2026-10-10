@@ -13,11 +13,17 @@ rollups of the same weeks. It uses exact
 normalized actor/subject grouping, not fuzzy identity resolution. A repeated
 observation of that grouped claim is not another independent source.
 
-The collector wakes every two hours but enforces at least four hours
+The collector is scheduled every two hours but enforces at least eight hours
 between successful source captures
-([ADR 0033](adr/0033-four-hour-capture-spacing.md); captures before it used six). Each capture requests up to 100 recent
-records, about two to three days of source activity, so a delayed run does not
-lose listings (see [ADR 0027](adr/0027-wider-recent-intake-window.md)).
+([ADR 0035](adr/0035-research-cadence-and-capture-only-release.md)).
+Earlier captures retain their original four- or six-hour policies.
+Each capture requests up to 100 recent records to provide overlap across
+delays, not a guarantee against missed listings
+(see [ADR 0027](adr/0027-wider-recent-intake-window.md)).
+Cadence-limited runs keep a private receipt but publish nothing. A complete
+capture can publish even if it contains only duplicates. A partial capture or
+failed release preserves the previous public snapshot; recovery and corrections
+wait for the next complete capture.
 Only listing metadata is collected; screenshots are not
 ([ADR 0028](adr/0028-no-screenshot-collection.md)), and a source adding or
 changing a screenshot reference does not count as a changed claim
@@ -31,6 +37,12 @@ is withheld for its source time only if that time is more than 14 hours after
 retrieval ([ADR 0034](adr/0034-source-time-unknown-zone.md)).
 That is a sampling policy, not a promise of complete historical or real-time
 coverage. Execution delays and upstream failures can make coverage less complete.
+
+“Latest published capture” shows the source retrieval time represented in the
+displayed snapshot, not deployment time or a scheduled-run heartbeat.
+The exported `evaluated_at` remains the release-evaluation time. A skipped run
+does not advance either public timestamp; the existing fourteen-day stale-data
+notice is unchanged.
 
 ## Read the table carefully
 
