@@ -1,4 +1,4 @@
-{"assessed_claims_floor":950,"coverage":"recent_only","evaluated_at":"2026-10-19T05:20:48Z","file_purpose":"sector_aggregate","generated_at":"2026-10-19T05:20:46.662488Z","privacy_floor":5,"release_state":"released","schema_version":"xevents-view1-display/v4","time_basis":"retrieved_at"}
+{"assessed_claims_floor":1000,"coverage":"recent_only","evaluated_at":"2026-10-20T05:19:30Z","file_purpose":"sector_aggregate","generated_at":"2026-10-20T05:19:28.688203Z","privacy_floor":5,"release_state":"released","schema_version":"xevents-view1-display/v4","time_basis":"retrieved_at"}
 {"claim_count":null,"sector":"11","week_start":"2026-09-21"}
 {"claim_count":null,"sector":"21","week_start":"2026-09-21"}
 {"claim_count":null,"sector":"22","week_start":"2026-09-21"}
@@ -103,7 +103,7 @@
 {"claim_count":null,"sector":"72","week_start":"2026-10-19"}
 {"claim_count":null,"sector":"81","week_start":"2026-10-19"}
 {"claim_count":null,"sector":"92","week_start":"2026-10-19"}
-{"claim_count":null,"sector":"unclassified","week_start":"2026-10-19"}
+{"claim_count":21,"sector":"unclassified","week_start":"2026-10-19"}
 {"claim_count":null,"month":"2026-09","sector":"11"}
 {"claim_count":null,"month":"2026-09","sector":"21"}
 {"claim_count":null,"month":"2026-09","sector":"22"}
@@ -131,12 +131,12 @@
 {"claim_count":null,"month":"2026-10","sector":"23"}
 {"claim_count":null,"month":"2026-10","sector":"31-33"}
 {"claim_count":null,"month":"2026-10","sector":"42"}
-{"claim_count":null,"month":"2026-10","sector":"44-45"}
+{"claim_count":13,"month":"2026-10","sector":"44-45"}
 {"claim_count":null,"month":"2026-10","sector":"48-49"}
 {"claim_count":null,"month":"2026-10","sector":"51"}
 {"claim_count":null,"month":"2026-10","sector":"52"}
 {"claim_count":null,"month":"2026-10","sector":"53"}
-{"claim_count":null,"month":"2026-10","sector":"54"}
+{"claim_count":6,"month":"2026-10","sector":"54"}
 {"claim_count":null,"month":"2026-10","sector":"55"}
 {"claim_count":null,"month":"2026-10","sector":"56"}
 {"claim_count":null,"month":"2026-10","sector":"61"}
@@ -145,4 +145,4 @@
 {"claim_count":null,"month":"2026-10","sector":"72"}
 {"claim_count":null,"month":"2026-10","sector":"81"}
 {"claim_count":null,"month":"2026-10","sector":"92"}
-{"claim_count":null,"month":"2026-10","sector":"unclassified"}
+{"claim_count":429,"month":"2026-10","sector":"unclassified"}
